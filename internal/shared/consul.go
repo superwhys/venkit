@@ -5,5 +5,8 @@ var (
 )
 
 func GetConsulAddress() string {
+	if ConsulAddr == nil {
+		return ""
+	}
 	return ConsulAddr()
 }

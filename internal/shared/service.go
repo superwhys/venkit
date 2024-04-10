@@ -5,5 +5,8 @@ var (
 )
 
 func GetServiceName() string {
+	if ServiceName == nil {
+		return ""
+	}
 	return ServiceName()
 }
