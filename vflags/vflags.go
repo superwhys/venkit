@@ -62,7 +62,6 @@ func Parse() {
 
 func optionInit() {
 	if debug() {
-		fmt.Println("is debug")
 		lg.EnableDebug()
 	}
 
@@ -110,4 +109,8 @@ func isZero(i interface{}) bool {
 	default:
 		return true
 	}
+}
+
+func GetServiceName() string {
+	return shared.GetServiceName()
 }

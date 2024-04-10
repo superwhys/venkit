@@ -1,4 +1,4 @@
-package redisutils
+package vredis
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/superwhys/venkit/lg"
 	"github.com/superwhys/venkit/slices"
+	"gopkg.in/vmihailenco/msgpack.v2"
 )
 
 type Task struct {

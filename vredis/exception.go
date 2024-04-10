@@ -1,4 +1,4 @@
-package redisutils
+package vredis
 
 import "errors"
 

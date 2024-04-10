@@ -1,4 +1,4 @@
-package authutils
+package vauth
 
 import (
 	"fmt"

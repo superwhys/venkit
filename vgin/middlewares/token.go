@@ -5,13 +5,14 @@ import (
 	"reflect"
 
 	"github.com/gin-gonic/gin"
-	"github.com/superwhys/venkit/authutils"
 	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/vauth"
+	"github.com/superwhys/venkit/vgin"
 )
 
 const tokenKey = "auth-token"
 
-func TokenManagerMiddleware(tokenTmpl authutils.Token, tokenManager *authutils.TokenManager) gin.HandlerFunc {
+func TokenManagerMiddleware(tokenTmpl vauth.Token, tokenManager *vauth.TokenManager) gin.HandlerFunc {
 	t := reflect.TypeOf(tokenTmpl)
 	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Struct {
 		lg.Fatal("NewTaskQueue: typeObj should be ptr to struct")
@@ -22,7 +23,7 @@ func TokenManagerMiddleware(tokenTmpl authutils.Token, tokenManager *authutils.T
 	return func(c *gin.Context) {
 		headerToken := c.GetHeader(AuthHeaderKey)
 
-		newToken := reflect.New(t).Interface().(authutils.Token)
+		newToken := reflect.New(t).Interface().(vauth.Token)
 		newToken.SetKey(headerToken)
 
 		if err := tokenManager.Read(newToken); err != nil {
@@ -35,11 +36,11 @@ func TokenManagerMiddleware(tokenTmpl authutils.Token, tokenManager *authutils.T
 	}
 }
 
-func GetToken(c *gin.Context) authutils.Token {
+func GetToken(c *gin.Context) vauth.Token {
 	val, exists := c.Get(tokenKey)
 	if !exists {
 		return nil
 	}
 
-	return val.(authutils.Token)
+	return val.(vauth.Token)
 }

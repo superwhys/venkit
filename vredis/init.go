@@ -1,4 +1,4 @@
-package redisutils
+package vredis
 
 import (
 	"github.com/superwhys/venkit/dialer"
