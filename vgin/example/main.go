@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/vgin"
 )
 
 type BeforeRequestMiddleware struct {
@@ -33,7 +34,7 @@ type HelloHandler struct {
 }
 
 func (h *HelloHandler) HandleFunc(ctx context.Context, c *gin.Context) vgin.HandleResponse {
-	if err := vgin.BindParms(c, h); err != nil {
+	if err := vgin.BindParams(c, h); err != nil {
 		lg.Errorf("bind params error: %v", err)
 		vgin.AbortWithError(c, http.StatusBadRequest, err.Error())
 		return nil
