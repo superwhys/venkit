@@ -59,25 +59,25 @@ func TestDupStrings(t *testing.T) {
 	}
 }
 
-func TestDupInt32(t *testing.T) {
+func TestDupInt(t *testing.T) {
 	type args struct {
-		slice []int32
+		slice []int
 	}
 	tests := []struct {
 		name string
 		args args
-		want []int32
+		want []int
 	}{
-		{"empty", args{[]int32{}}, []int32{}},
-		{"one", args{[]int32{1}}, []int32{1}},
-		{"two-diff", args{[]int32{1, 1}}, []int32{1}},
-		{"two-same", args{[]int32{1, 2}}, []int32{1, 2}},
-		{"three-diff", args{[]int32{1, 1, 2}}, []int32{1, 2}},
+		{"empty", args{[]int{}}, []int{}},
+		{"one", args{[]int{1}}, []int{1}},
+		{"two-diff", args{[]int{1, 1}}, []int{1}},
+		{"two-same", args{[]int{1, 2}}, []int{1, 2}},
+		{"three-diff", args{[]int{1, 1, 2}}, []int{1, 2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := DupInt32(tt.args.slice); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("DupInt32() = %v, want %v", got, tt.want)
+			if got := DupInt(tt.args.slice); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Dupint() = %v, want %v", got, tt.want)
 			}
 		})
 	}
