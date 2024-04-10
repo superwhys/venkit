@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	vgin "github.com/superwhys/venkit/vgin"
+	"github.com/superwhys/venkit/vgin"
 )
 
 const (

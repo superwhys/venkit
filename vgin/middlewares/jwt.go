@@ -10,7 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
 	"github.com/superwhys/venkit/lg"
-	vgin "github.com/superwhys/venkit/vgin"
+	"github.com/superwhys/venkit/vgin"
 )
 
 const (
