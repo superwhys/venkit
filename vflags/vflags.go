@@ -38,12 +38,7 @@ func initVFlags() {
 	v.AddConfigPath("./configs")
 	v.AddConfigPath("./tmp/config/")
 
-	debug = Bool("debug", false, "Whether to enable debug mode")
-	shared.ServiceName = StringP("service", "s", os.Getenv("VENKIT-SERVICE"), "Set the service name")
-	shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr")
-	useConsul = Bool("useConsul", true, "Whether to use the consul service center")
-	config = StringP("config", "f", "", "Specify config file. Support json, yaml")
-
+	declareDefaultFlags()
 	if err := v.BindPFlags(pflag.CommandLine); err != nil {
 		lg.Fatal("BindPFlags error: %v", err)
 	}
@@ -68,6 +63,14 @@ func optionInit() {
 	if useConsul() {
 		discover.SetConsulFinderToDefault()
 	}
+}
+
+func declareDefaultFlags() {
+	debug = Bool("debug", false, "Whether to enable debug mode")
+	shared.ServiceName = StringP("service", "s", os.Getenv("VENKIT-SERVICE"), "Set the service name")
+	shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr")
+	useConsul = Bool("useConsul", true, "Whether to use the consul service center")
+	config = StringP("config", "f", "", "Specify config file. Support json, yaml")
 }
 
 func readConfig() {
