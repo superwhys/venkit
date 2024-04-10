@@ -1,7 +1,7 @@
 package vhttp
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 
@@ -37,7 +37,7 @@ func (r *Response) BodyBytes() ([]byte, error) {
 	}
 
 	defer r.Response.Body.Close()
-	bytes, err := ioutil.ReadAll(r.Response.Body)
+	bytes, err := io.ReadAll(r.Response.Body)
 	if err != nil {
 		return []byte{}, err
 	}

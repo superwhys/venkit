@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -111,7 +110,6 @@ func DefaultHTTPHandler() HandleFunc {
 		if c.basicAuth != nil {
 			req.SetBasicAuth(c.basicAuth.user, c.basicAuth.pwd)
 		}
-
 		resp, err := c.client.Do(req)
 		c.Request = req
 		c.Response = resp
@@ -130,7 +128,7 @@ func DefaultResponseBodyHandler() HandleFunc {
 			return
 		}
 		defer c.Response.Body.Close()
-		respByte, err := ioutil.ReadAll(c.Response.Body)
+		respByte, err := io.ReadAll(c.Response.Body)
 		if err != nil {
 			c.err = multierror.Append(c.err, errors.Wrap(err, "read response body"))
 			c.Abort()

@@ -104,18 +104,19 @@ func (cli *Client) SetTimeout(timeout time.Duration) {
 
 func (cli *Client) Start() *Context {
 	ctx := NewContext(cli)
+	defaultHandler := []HandleFunc{
+		DefaultHTTPHandler(),
+		DefaultResponseBodyHandler(),
+	}
+
+	ctx.SetHandler(defaultHandler)
 	return ctx
 }
 
 func (cli *Client) DoRequest(ctx context.Context, url, method string, queryParams Params, header *Header, body []byte, callBack ...HandleFunc) *Response {
-	cli.Use(
-		DefaultHTTPHandler(),
-		DefaultResponseBodyHandler(),
-	)
-	cli.Use(callBack...)
-
 	return cli.
 		Start().
+		SetHandler(callBack).
 		SetMethod(method).
 		SetURL(url).
 		SetQueryParams(queryParams).

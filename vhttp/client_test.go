@@ -3,7 +3,6 @@ package vhttp
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"testing"
@@ -21,16 +20,16 @@ var (
 )
 
 type params struct {
-	Name string `json:"name" form:"name"`
+	Name string `form:"name"`
 }
 
 type FormParams struct {
-	Name     string `json:"name" form:"name"`
-	Password string `json:"password" form:"password"`
+	Name     string `form:"name"`
+	Password string `form:"password"`
 }
 
 type BodyParams struct {
-	Text string `json:"text" form:"text"`
+	Text string `form:"text"`
 }
 
 func TestMain(m *testing.M) {
@@ -39,6 +38,7 @@ func TestMain(m *testing.M) {
 	Cli.isDebug = true
 
 	go func() {
+		gin.SetMode(gin.ReleaseMode)
 		r := gin.Default()
 		r.GET("/test_get", func(c *gin.Context) {
 			c.JSON(200, gin.H{
@@ -70,6 +70,7 @@ func TestMain(m *testing.M) {
 			c.JSON(200, gin.H{
 				"message": fmt.Sprintf("%v-%v success", postParams.Name, postParams.Password),
 			})
+			fmt.Println("test post form final data: ", fmt.Sprintf("%v-%v success", postParams.Name, postParams.Password))
 		})
 		r.POST("/test_post_body", func(c *gin.Context) {
 			bodyParams := &BodyParams{}
@@ -161,14 +162,9 @@ func TestClientGetWithCallBack(t *testing.T) {
 			nil,
 			DefaultJsonHeader(),
 			func(c *Context) {
-				defer c.Response.Body.Close()
-				b, err := ioutil.ReadAll(c.Response.Body)
-				if err != nil {
-					fmt.Printf("read body error:%v\n", err)
-					return
-				}
+				b := c.ResponseBody
 				fmt.Printf("body:%v\n", string(b))
-				err = json.Unmarshal(b, &msg)
+				err := json.Unmarshal(b, &msg)
 				if err != nil {
 					fmt.Printf("unmarshal body error:%v\n", err)
 					return
@@ -198,14 +194,9 @@ func TestClientGetWithCallBack2(t *testing.T) {
 				}
 			},
 			func(c *Context) {
-				defer c.Response.Body.Close()
-				b, err := ioutil.ReadAll(c.Response.Body)
-				if err != nil {
-					fmt.Printf("read body error:%v\n", err)
-					return
-				}
+				b := c.ResponseBody
 				fmt.Printf("body:%v\n", string(b))
-				err = json.Unmarshal(b, &msg)
+				err := json.Unmarshal(b, &msg)
 				if err != nil {
 					fmt.Printf("unmarshal body error:%v\n", err)
 					return
@@ -233,17 +224,15 @@ func TestClientPost(t *testing.T) {
 }
 
 func TestClientPostForm(t *testing.T) {
-	t.Run("testClientPostForm", func(t *testing.T) {
-		resp, err := Cli.Post(
-			context.Background(),
-			fmt.Sprintf("%v/%v", srvApi, "test_post_form"),
-			NewForm().Add("name", "superwhys").Add("password", "123456").Encode(),
-			DefaultFormUrlEncodedHeader(),
-		).BodyString()
-		assert.Nil(t, err)
-		fmt.Println(resp)
-		assert.Equal(t, `{"message":"superwhys-123456 success"}`, resp)
-	})
+	resp, err := Cli.Post(
+		context.Background(),
+		fmt.Sprintf("%v/%v", srvApi, "test_post_form"),
+		NewForm().Add("name", "superwhys").Add("password", "123456").Encode(),
+		DefaultFormUrlEncodedHeader(),
+	).BodyString()
+	assert.Nil(t, err)
+	fmt.Println(resp)
+	assert.Equal(t, `{"message":"superwhys-123456 success"}`, resp)
 }
 
 func TestClientGetError(t *testing.T) {

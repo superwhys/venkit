@@ -59,6 +59,11 @@ func (c *Context) GetError() error {
 	return c.err
 }
 
+func (c *Context) SetHandler(handlers HandlersChain) *Context {
+	c.handlers = append(c.handlers, handlers...)
+	return c
+}
+
 func (c *Context) Next() {
 	c.index++
 	for c.index < int8(len(c.handlers)) {
