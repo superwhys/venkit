@@ -17,7 +17,7 @@ var (
 )
 
 type RedisCache struct {
-	*redisutils.RedisClient
+	*vredis.RedisClient
 	prefix string
 }
 
@@ -31,7 +31,7 @@ func WithPrefix(prefix string) RedisCacheOption {
 
 func NewRedisCache(pool *redis.Pool, opts ...RedisCacheOption) *RedisCache {
 	rc := &RedisCache{
-		RedisClient: redisutils.NewRedisClient(pool),
+		RedisClient: vredis.NewRedisClient(pool),
 	}
 
 	for _, opt := range opts {
