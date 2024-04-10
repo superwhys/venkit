@@ -178,10 +178,14 @@ func TimeFuncDuration() func() time.Duration {
 	}
 }
 
-func TimeDurationDefer(prefix string) func() {
+func TimeDurationDefer(prefix ...string) func() {
+	ps := "operation"
+	if len(prefix) != 0 {
+		ps = strings.Join(prefix, ", ")
+	}
 	start := time.Now()
 
 	return func() {
-		Infof("%v elapsed time: %v", prefix, time.Since(start))
+		Infof("%v elapsed time: %v", ps, time.Since(start))
 	}
 }

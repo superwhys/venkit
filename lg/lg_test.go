@@ -1,6 +1,7 @@
 package lg
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -31,4 +32,15 @@ func TestDebug(t *testing.T) {
 			Debug(tt.args)
 		})
 	}
+}
+
+func TestTimeFuncDefer(t *testing.T) {
+	fn := func() {
+		fmt.Println("before defer")
+		defer TimeDurationDefer()()
+
+		fmt.Println("after defer")
+	}
+
+	fn()
 }
