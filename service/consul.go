@@ -31,3 +31,11 @@ func (vs *VkService) registerIntoConsul(listener net.Listener) mountFn {
 		return nil
 	}
 }
+
+func DiscoverServiceWithTag(service, tag string) string {
+	return discover.GetServiceFinder().GetAddressWithTag(service, tag)
+}
+
+func DiscoverService(service string) string {
+	return DiscoverServiceWithTag(service, "")
+}
