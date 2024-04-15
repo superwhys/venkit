@@ -12,11 +12,12 @@ import (
 )
 
 type Logger struct {
-	infoLog  *log.Logger
-	debugLog *log.Logger
-	warnLog  *log.Logger
-	errLog   *log.Logger
-	fatalLog *log.Logger
+	enableDebug bool
+	infoLog     *log.Logger
+	debugLog    *log.Logger
+	warnLog     *log.Logger
+	errLog      *log.Logger
+	fatalLog    *log.Logger
 }
 
 type Option func(*Logger)
@@ -51,6 +52,10 @@ func New(options ...Option) *Logger {
 	}
 
 	return l
+}
+
+func (l *Logger) EnableDebug() {
+	l.enableDebug = true
 }
 
 func (l *Logger) SetLoggerOutput(stdout, stderr io.Writer) {
@@ -99,7 +104,7 @@ func (l *Logger) Info(v ...interface{}) {
 }
 
 func (l *Logger) Debug(v ...interface{}) {
-	if debug && v[0] != nil {
+	if l.enableDebug && v[0] != nil {
 		l.doLog(l.debugLog, strings.TrimSuffix(fmt.Sprintln(v...), "\n"))
 	}
 }
@@ -156,7 +161,7 @@ func (l *Logger) Infof(msg string, v ...interface{}) {
 }
 
 func (l *Logger) Debugf(msg string, v ...interface{}) {
-	if !debug {
+	if !l.enableDebug {
 		return
 	}
 

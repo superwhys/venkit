@@ -188,7 +188,7 @@ func (l *Logger) Infoc(ctx context.Context, msg string, v ...interface{}) {
 }
 
 func (l *Logger) Debugc(ctx context.Context, msg string, v ...interface{}) {
-	if !debug {
+	if !l.enableDebug {
 		return
 	}
 

@@ -12,7 +12,6 @@ import (
 )
 
 var (
-	debug  = false
 	logger *Logger
 )
 
@@ -25,11 +24,11 @@ func SetDefaultLoggerOutput(stdout, stderr io.Writer) {
 }
 
 func IsDebug() bool {
-	return debug
+	return logger.enableDebug
 }
 
 func EnableDebug() {
-	debug = true
+	logger.EnableDebug()
 }
 
 func EnableLogToFile(logConf *shared.LogConfig) {
