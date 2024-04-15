@@ -21,53 +21,20 @@ type LogContext struct {
 	values []string
 }
 
-func sliceClone(strSlice []string) []string {
-	if strSlice == nil {
-		return strSlice
-	}
-	return append(strSlice[:0:0], strSlice...)
-}
-
-func cloneLogContext(c *LogContext) *LogContext {
-	if c == nil {
+func ParseFromContext(ctx context.Context) *LogContext {
+	if ctx == nil {
 		return nil
 	}
-	clone := &LogContext{
-		msg:    sliceClone(c.msg),
-		keys:   sliceClone(c.keys),
-		values: sliceClone(c.values),
-	}
 
-	return clone
+	val := ctx.Value(logContextKey)
+	lc, ok := val.(*LogContext)
+	if !ok {
+		return nil
+	}
+	return lc
 }
 
-func parseFmtStr(format string) (msg string, isKV []bool, keys, descs []string) {
-	// Format like "% d" will not be supported.
-	var msgs []string
-	for _, s := range strings.Split(format, " ") {
-		s = strings.TrimSpace(s)
-		if s == "" {
-			continue
-		}
-		idx := strings.Index(s, "=%")
-		if idx == -1 || strings.Contains(s[:idx], "=") {
-			re, _ := regexp.Compile("%[^%]+")
-			matches := re.FindAllStringIndex(s, -1)
-			for i := 0; i < len(matches); i++ {
-				isKV = append(isKV, false)
-			}
-			msgs = append(msgs, s)
-			continue
-		}
-		keys = append(keys, s[:idx])
-		descs = append(descs, s[idx+1:])
-		isKV = append(isKV, true)
-	}
-	msg = strings.Join(msgs, " ")
-	return
-}
-
-func With(ctx context.Context, msg string, v ...interface{}) context.Context {
+func (l *Logger) With(ctx context.Context, msg string, v ...interface{}) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -129,17 +96,50 @@ func With(ctx context.Context, msg string, v ...interface{}) context.Context {
 	return context.WithValue(ctx, logContextKey, newLc)
 }
 
-func ParseFromContext(ctx context.Context) *LogContext {
-	if ctx == nil {
+func sliceClone(strSlice []string) []string {
+	if strSlice == nil {
+		return strSlice
+	}
+	return append(strSlice[:0:0], strSlice...)
+}
+
+func cloneLogContext(c *LogContext) *LogContext {
+	if c == nil {
 		return nil
+	}
+	clone := &LogContext{
+		msg:    sliceClone(c.msg),
+		keys:   sliceClone(c.keys),
+		values: sliceClone(c.values),
 	}
 
-	val := ctx.Value(logContextKey)
-	lc, ok := val.(*LogContext)
-	if !ok {
-		return nil
+	return clone
+}
+
+func parseFmtStr(format string) (msg string, isKV []bool, keys, descs []string) {
+	// Format like "% d" will not be supported.
+	var msgs []string
+	for _, s := range strings.Split(format, " ") {
+		s = strings.TrimSpace(s)
+		if s == "" {
+			continue
+		}
+		idx := strings.Index(s, "=%")
+		if idx == -1 || strings.Contains(s[:idx], "=") {
+			re, _ := regexp.Compile("%[^%]+")
+			matches := re.FindAllStringIndex(s, -1)
+			for i := 0; i < len(matches); i++ {
+				isKV = append(isKV, false)
+			}
+			msgs = append(msgs, s)
+			continue
+		}
+		keys = append(keys, s[:idx])
+		descs = append(descs, s[idx+1:])
+		isKV = append(isKV, true)
 	}
-	return lc
+	msg = strings.Join(msgs, " ")
+	return
 }
 
 func (lc *LogContext) LogFmt() string {
@@ -168,7 +168,7 @@ type logable interface {
 	Output(calldepth int, s string) error
 }
 
-func logc(ctx context.Context, l logable) {
+func (l *Logger) logc(ctx context.Context, lb logable) {
 	lc := ParseFromContext(ctx)
 	if lc == nil {
 		return
@@ -176,38 +176,38 @@ func logc(ctx context.Context, l logable) {
 
 	msg := lc.LogFmt()
 	for _, line := range strings.Split(msg, "\n") {
-		l.Output(3, line)
+		lb.Output(3, line)
 	}
 }
 
-func Infoc(ctx context.Context, msg string, v ...interface{}) {
+func (l *Logger) Infoc(ctx context.Context, msg string, v ...interface{}) {
 	if len(msg) > 0 || len(v) > 0 {
-		ctx = With(ctx, msg, v...)
+		ctx = l.With(ctx, msg, v...)
 	}
-	logc(ctx, logger.infoLog)
+	l.logc(ctx, logger.infoLog)
 }
 
-func Debugc(ctx context.Context, msg string, v ...interface{}) {
+func (l *Logger) Debugc(ctx context.Context, msg string, v ...interface{}) {
 	if !debug {
 		return
 	}
 
 	if len(msg) > 0 || len(v) > 0 {
-		ctx = With(ctx, msg, v...)
+		ctx = l.With(ctx, msg, v...)
 	}
-	logc(ctx, logger.debugLog)
+	l.logc(ctx, logger.debugLog)
 }
 
-func Errorc(ctx context.Context, msg string, v ...interface{}) {
+func (l *Logger) Errorc(ctx context.Context, msg string, v ...interface{}) {
 	if len(msg) > 0 || len(v) > 0 {
-		ctx = With(ctx, msg, v...)
+		ctx = l.With(ctx, msg, v...)
 	}
-	logc(ctx, logger.errLog)
+	l.logc(ctx, logger.errLog)
 }
 
-func Warnc(ctx context.Context, msg string, v ...interface{}) {
+func (l *Logger) Warnc(ctx context.Context, msg string, v ...interface{}) {
 	if len(msg) > 0 || len(v) > 0 {
-		ctx = With(ctx, msg, v...)
+		ctx = l.With(ctx, msg, v...)
 	}
-	logc(ctx, logger.warnLog)
+	l.logc(ctx, logger.warnLog)
 }

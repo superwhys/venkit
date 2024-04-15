@@ -58,6 +58,7 @@ func methodColor(method string) string {
 }
 
 func LoggerMiddleware() gin.HandlerFunc {
+	newLogger := New()
 	return func(c *gin.Context) {
 		start := time.Now()
 
@@ -73,18 +74,18 @@ func LoggerMiddleware() gin.HandlerFunc {
 			path = path + "?" + raw
 		}
 		statusCode := c.Writer.Status()
-		spendTime := time.Now().Sub(start)
+		spendTime := time.Since(start)
 
 		var logFunc func(msg string, v ...interface{})
 		switch {
 		case statusCode >= http.StatusOK && statusCode < http.StatusMultipleChoices:
-			logFunc = Infof
+			logFunc = newLogger.Infof
 		case statusCode >= http.StatusMultipleChoices && statusCode < http.StatusBadRequest:
-			logFunc = Warnf
+			logFunc = newLogger.Warnf
 		case statusCode >= http.StatusBadRequest && statusCode <= http.StatusNetworkAuthenticationRequired:
-			logFunc = Errorf
+			logFunc = newLogger.Errorf
 		default:
-			logFunc = Errorf
+			logFunc = newLogger.Errorf
 		}
 
 		logFunc(

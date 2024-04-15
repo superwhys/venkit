@@ -1,11 +1,9 @@
 package lg
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
 	"io"
-	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -48,121 +46,77 @@ func EnableLogToFile(logConf *shared.LogConfig) {
 	SetDefaultLoggerOutput(logger, logger)
 }
 
-func doLog(log *log.Logger, msg string) {
-	for _, line := range strings.Split(msg, "\n") {
-		log.Output(3, line)
-	}
+func Error(v ...any) {
+	logger.Error(v...)
 }
 
-func Error(v ...interface{}) {
-	if v[0] != nil {
-		doLog(logger.errLog, strings.TrimSuffix(fmt.Sprintln(v...), "\n"))
-	}
+func PanicError(err error, msg ...any) {
+	logger.PanicError(err, msg...)
 }
 
-func PanicError(err error, msg ...interface{}) {
-	var s string
-	if err != nil {
-		if len(msg) > 0 {
-			s = err.Error() + ":" + fmt.Sprint(msg...)
-		} else {
-			s = err.Error()
-		}
-		doLog(logger.errLog, s)
-		panic(err)
-	}
+func Warn(v ...any) {
+	logger.Warn(v...)
 }
 
-func Warn(v ...interface{}) {
-	if v[0] != nil {
-		doLog(logger.warnLog, strings.TrimSuffix(fmt.Sprintln(v...), "\n"))
-	}
+func Info(v ...any) {
+	logger.Info(v...)
 }
 
-func Info(v ...interface{}) {
-	if v[0] != nil {
-		doLog(logger.infoLog, strings.TrimSuffix(fmt.Sprintln(v...), "\n"))
-	}
+func Debug(v ...any) {
+	logger.Debug(v...)
 }
 
-func Debug(v ...interface{}) {
-	if debug && v[0] != nil {
-		doLog(logger.debugLog, strings.TrimSuffix(fmt.Sprintln(v...), "\n"))
-	}
+func Fatal(v ...any) {
+	logger.Fatal(v...)
 }
 
-func Fatal(v ...interface{}) {
-	var msg []string
-	for _, i := range v {
-		msg = append(msg, fmt.Sprintf("%v", i))
-	}
-	doLog(logger.fatalLog, strings.Join(msg, " "))
-	os.Exit(1)
+func Fatalf(msg string, v ...any) {
+	logger.Fatalf(msg, v...)
 }
 
-func Fatalf(msg string, v ...interface{}) {
-	var s string
-	if len(v) != 0 {
-		s = strings.TrimSuffix(fmt.Sprintf(msg, v...), "\n")
-	} else {
-		s = msg
-	}
-	doLog(logger.fatalLog, strings.TrimSuffix(s, "\n"))
-	os.Exit(1)
-}
-
-func Jsonify(v interface{}) string {
+func Jsonify(v any) string {
 	d, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
-		Error(err)
+		logger.Error(err)
 		panic(err)
 	}
 	return string(d)
 }
 
-func Errorf(msg string, v ...interface{}) {
-	var s string
-	if len(v) != 0 {
-		s = strings.TrimSuffix(fmt.Sprintf(msg, v...), "\n")
-	} else {
-		s = msg
-	}
-	doLog(logger.errLog, strings.TrimSuffix(s, "\n"))
-
+func Errorf(msg string, v ...any) {
+	logger.Errorf(msg, v...)
 }
 
-func Warnf(msg string, v ...interface{}) {
-	var s string
-	if len(v) != 0 {
-		s = strings.TrimSuffix(fmt.Sprintf(msg, v...), "\n")
-	} else {
-		s = msg
-	}
-	doLog(logger.warnLog, s)
+func Warnf(msg string, v ...any) {
+	logger.Warnf(msg, v...)
 }
 
-func Infof(msg string, v ...interface{}) {
-	var s string
-	if len(v) != 0 {
-		s = strings.TrimSuffix(fmt.Sprintf(msg, v...), "\n")
-	} else {
-		s = msg
-	}
-	doLog(logger.infoLog, s)
+func Infof(msg string, v ...any) {
+	logger.Infof(msg, v...)
 }
 
-func Debugf(msg string, v ...interface{}) {
-	if !debug {
-		return
-	}
+func Debugf(msg string, v ...any) {
+	logger.Debugf(msg, v...)
+}
 
-	var s string
-	if len(v) != 0 {
-		s = strings.TrimSuffix(fmt.Sprintf(msg, v...), "\n")
-	} else {
-		s = msg
-	}
-	doLog(logger.debugLog, s)
+func With(ctx context.Context, msg string, v ...any) context.Context {
+	return logger.With(ctx, msg, v...)
+}
+
+func Infoc(ctx context.Context, msg string, v ...any) {
+	logger.Infoc(ctx, msg, v...)
+}
+
+func Debugc(ctx context.Context, msg string, v ...any) {
+	logger.Debugc(ctx, msg, v...)
+}
+
+func Warnc(ctx context.Context, msg string, v ...any) {
+	logger.Warnc(ctx, msg, v...)
+}
+
+func Errorc(ctx context.Context, msg string, v ...any) {
+	logger.Errorc(ctx, msg, v...)
 }
 
 // TimeFuncDuration returns the duration consumed by function.
