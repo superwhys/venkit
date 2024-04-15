@@ -12,6 +12,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/rs/cors"
+	"github.com/superwhys/venkit/internal/shared"
 	"github.com/superwhys/venkit/lg"
 	"golang.org/x/sync/errgroup"
 )
@@ -135,7 +136,7 @@ func (vs *VkService) serve(listener net.Listener) error {
 		vs.notiKill,
 	}
 
-	if vs.serviceName != "" {
+	if vs.serviceName != "" && shared.GetIsUseConsul() {
 		mounts = append(mounts, vs.registerIntoConsul(listener))
 	}
 

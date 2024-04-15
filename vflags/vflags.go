@@ -18,9 +18,8 @@ var (
 	requiredFlags []string
 	nestedKey     = map[string]interface{}{}
 
-	debug     BoolGetter
-	useConsul BoolGetter
-	config    StringGetter
+	debug  BoolGetter
+	config StringGetter
 )
 
 func Viper() *viper.Viper {
@@ -60,7 +59,7 @@ func optionInit() {
 		lg.EnableDebug()
 	}
 
-	if useConsul() {
+	if shared.GetIsUseConsul() {
 		discover.SetConsulFinderToDefault()
 	}
 }
@@ -69,7 +68,7 @@ func declareDefaultFlags() {
 	debug = Bool("debug", false, "Whether to enable debug mode")
 	shared.ServiceName = StringP("service", "s", os.Getenv("VENKIT-SERVICE"), "Set the service name")
 	shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr")
-	useConsul = Bool("useConsul", true, "Whether to use the consul service center")
+	shared.UseConsul = Bool("useConsul", true, "Whether to use the consul service center")
 	config = StringP("config", "f", "", "Specify config file. Support json, yaml")
 }
 
