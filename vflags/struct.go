@@ -11,6 +11,10 @@ import (
 	"github.com/superwhys/venkit/lg"
 )
 
+var (
+	ErrNotStruct = errors.New("not struct")
+)
+
 type HasDefault interface {
 	SetDefault()
 }
@@ -20,8 +24,13 @@ type HasValidator interface {
 }
 
 func Struct(key string, defaultVal any, usage string) func(out any) error {
-	if err := setPFlagRecursively(key, defaultVal); err != nil {
-		lg.Errorf("Bind struct flags error: %v", err)
+	err := setPFlagRecursively(key, defaultVal)
+	if err != nil {
+		if !errors.Is(err, ErrNotStruct) {
+			lg.Errorf("Bind struct flags error: %v", err)
+			lg.PanicError(err)
+		}
+		lg.Warnf("it won't display `%v` desciption with not struct default val", key)
 	}
 	v.SetDefault(key, defaultVal)
 	return func(out any) error {
@@ -51,7 +60,7 @@ func setPFlagRecursively(prefix string, i interface{}) error {
 		vf = vf.Elem()
 	}
 	if vf.Kind() != reflect.Struct {
-		return errors.New("not struct")
+		return ErrNotStruct
 	}
 	for i := 0; i < vf.NumField(); i++ {
 		field := vf.Type().Field(i)
