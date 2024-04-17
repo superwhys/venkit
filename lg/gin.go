@@ -1,6 +1,7 @@
 package lg
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -58,7 +59,10 @@ func methodColor(method string) string {
 }
 
 func LoggerMiddleware() gin.HandlerFunc {
-	newLogger := New()
+	newLogger := New(
+		WithInfoFlag(log.LstdFlags|log.Lshortfile|log.LUTC),
+		WithWarnFlag(log.LstdFlags|log.Lshortfile|log.LUTC),
+	)
 	return func(c *gin.Context) {
 		start := time.Now()
 

@@ -18,6 +18,12 @@ type Logger struct {
 	warnLog     *log.Logger
 	errLog      *log.Logger
 	fatalLog    *log.Logger
+
+	infoFlag  int
+	debugFlag int
+	warnFlag  int
+	errorFlag int
+	fatalFlag int
 }
 
 type Option func(*Logger)
@@ -35,23 +41,73 @@ func WithFileOption(filename string, maxSize, maxBackup, maxAge int, logCompress
 	}
 }
 
+func WithInfoFlag(flag int) Option {
+	return func(l *Logger) {
+		l.infoFlag = flag
+	}
+}
+
+func WithDebugFlag(flag int) Option {
+	return func(l *Logger) {
+		l.debugFlag = flag
+	}
+}
+
+func WithWarnFlag(flag int) Option {
+	return func(l *Logger) {
+		l.warnFlag = flag
+	}
+}
+
+func WithErrorFlag(flag int) Option {
+	return func(l *Logger) {
+		l.errorFlag = flag
+	}
+}
+
 func New(options ...Option) *Logger {
 	var stdout io.Writer = os.Stdout
 	var stderr io.Writer = os.Stderr
 
-	l := &Logger{
-		infoLog:  log.New(stdout, color.GreenString("[INFO]"), log.LstdFlags|log.LUTC),
-		debugLog: log.New(stdout, color.CyanString("[DEBUG]"), log.LstdFlags|log.Lshortfile|log.LUTC),
-		errLog:   log.New(stderr, color.RedString("[ERROR]"), log.LstdFlags|log.Lshortfile|log.LUTC),
-		warnLog:  log.New(stdout, color.YellowString("[WARN]"), log.LstdFlags|log.LUTC),
-		fatalLog: log.New(stderr, color.RedString("[FATAL]"), log.LstdFlags|log.Llongfile|log.LUTC),
-	}
-
+	l := &Logger{}
 	for _, opt := range options {
 		opt(l)
 	}
+	l.defaultFlag()
+
+	l.infoLog = log.New(stdout, color.GreenString(formatPrefix("INFO")), l.infoFlag)
+	l.debugLog = log.New(stdout, color.CyanString(formatPrefix("DEBUG")), l.debugFlag)
+	l.errLog = log.New(stderr, color.RedString(formatPrefix("ERROR")), l.errorFlag)
+	l.warnLog = log.New(stdout, color.YellowString(formatPrefix("WARN")), l.warnFlag)
+	l.fatalLog = log.New(stderr, color.RedString(formatPrefix("FATAL")), l.fatalFlag)
 
 	return l
+}
+
+func formatPrefix(prefix string) string {
+	return fmt.Sprintf("[%5s]", prefix)
+}
+
+func (l *Logger) defaultFlag() {
+	if l.infoFlag == 0 {
+		l.infoFlag = log.LstdFlags | log.LUTC
+	}
+
+	if l.debugFlag == 0 {
+		l.debugFlag = log.LstdFlags | log.Lshortfile | log.LUTC
+	}
+
+	if l.errorFlag == 0 {
+		l.errorFlag = log.LstdFlags | log.Lshortfile | log.LUTC
+	}
+
+	if l.warnFlag == 0 {
+		l.warnFlag = log.LstdFlags | log.LUTC
+	}
+
+	if l.fatalFlag == 0 {
+		l.fatalFlag = log.LstdFlags | log.Llongfile | log.LUTC
+	}
 }
 
 func (l *Logger) EnableDebug() {
