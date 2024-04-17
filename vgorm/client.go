@@ -14,7 +14,7 @@ const (
 	sqlite
 )
 
-type config interface {
+type Config interface {
 	GetDBType() dbType
 	GetUid() string
 	GetService() string
@@ -23,10 +23,10 @@ type config interface {
 
 type client struct {
 	db     *gorm.DB
-	config config
+	config Config
 }
 
-func NewClient(conf config) *client {
+func NewClient(conf Config) *client {
 	if conf.GetService() == "" {
 		panic(fmt.Sprintf("vgorm: %v db service name can not be empty", conf.GetDBType()))
 	}

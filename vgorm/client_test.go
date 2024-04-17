@@ -18,12 +18,10 @@ func (um *UserModel) TableName() string {
 
 func TestDialMysqlDB(t *testing.T) {
 	mysqlConf := MysqlConfig{
-		AuthConf: AuthConf{
-			Instance: "localhost:3306",
-			Database: "sql_test",
-			Username: "root",
-			Password: "yang4869",
-		},
+		Instance: "localhost:3306",
+		Database: "sql_test",
+		Username: "root",
+		Password: "yang4869",
 	}
 
 	RegisterSqlModel(&mysqlConf, &UserModel{})

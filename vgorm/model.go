@@ -12,17 +12,6 @@ type SqlModel interface {
 	TableName() string
 }
 
-type AuthConf struct {
-	Instance string
-	Database string
-	Username string
-	Password string
-}
-
-func (auth AuthConf) GetInstanceKey() string {
-	return fmt.Sprintf("%v-%v", auth.Instance, auth.Database)
-}
-
 type getClientFunc func() *client
 
 var (
@@ -57,7 +46,7 @@ func GetMysqlDByModel(m SqlModel) *gorm.DB {
 	return db
 }
 
-func registerInstance(conf config) {
+func registerInstance(conf Config) {
 	key := conf.GetUid()
 	dbInstanceClientFuncMap[key] = func() getClientFunc {
 		var cli *client
@@ -74,7 +63,7 @@ func registerInstance(conf config) {
 	}()
 }
 
-func RegisterSqlModel(conf config, ms ...SqlModel) {
+func RegisterSqlModel(conf Config, ms ...SqlModel) {
 	if _, exists := getInstanceClientFunc(conf.GetUid()); exists {
 		panic(fmt.Sprintf("%v has been register", conf.GetUid()))
 	}

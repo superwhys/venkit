@@ -10,7 +10,10 @@ import (
 )
 
 type MysqlConfig struct {
-	AuthConf
+	Instance string
+	Database string
+	Username string
+	Password string
 }
 
 func (m *MysqlConfig) GetDBType() dbType {
