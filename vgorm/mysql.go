@@ -1,6 +1,7 @@
 package vgorm
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -14,6 +15,16 @@ type MysqlConfig struct {
 	Database string
 	Username string
 	Password string
+}
+
+func (m *MysqlConfig) Validate() error {
+	if m.Instance == "" {
+		return errors.New("mysql config need instace name")
+	}
+	if m.Database == "" {
+		return errors.New("mysql config need database")
+	}
+	return nil
 }
 
 func (m *MysqlConfig) GetDBType() dbType {

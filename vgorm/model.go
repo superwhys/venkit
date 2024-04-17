@@ -40,21 +40,9 @@ func getDbByModel(m SqlModel) *gorm.DB {
 }
 
 func getDbByConfig(conf Config) *gorm.DB {
-	var expectKey string
-	for key, val := range modelDbMap {
-		if val == conf.GetUid() {
-			expectKey = key
-			break
-		}
-	}
-
-	if expectKey == "" {
-		panic(fmt.Sprintf("db %v has not been register", conf.GetUid()))
-	}
-
-	clientFunc, ok := getInstanceClientFunc(expectKey)
+	clientFunc, ok := getInstanceClientFunc(conf.GetUid())
 	if !ok {
-		panic(fmt.Sprintf("db instance %v not found", expectKey))
+		panic(fmt.Sprintf("db instance %v not found", conf.GetUid()))
 	}
 	return clientFunc().DB()
 }
