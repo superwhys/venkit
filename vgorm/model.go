@@ -1,4 +1,4 @@
-package mqlmodel
+package vgorm
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type MqlModel interface {
+type SqlModel interface {
 	TableName() string
 }
 
@@ -30,7 +30,7 @@ var (
 	modelDbMap              = make(map[string]string)
 )
 
-func getMysqlDB(m MqlModel) *gorm.DB {
+func getMysqlDB(m SqlModel) *gorm.DB {
 	rt := reflect.TypeOf(m)
 	modelKey := fmt.Sprintf("%v-%v", rt.String(), m.TableName())
 
@@ -52,13 +52,13 @@ func getInstanceClientFunc(key string) (getClientFunc, bool) {
 	return f, exists
 }
 
-func GetMysqlDByModel(m MqlModel) *gorm.DB {
+func GetMysqlDByModel(m SqlModel) *gorm.DB {
 	db := getMysqlDB(m).Model(m)
 	return db
 }
 
-func registerInstance(conf *config) {
-	key := conf.AuthConf.GetInstanceKey()
+func registerInstance(conf config) {
+	key := conf.GetUid()
 	dbInstanceClientFuncMap[key] = func() getClientFunc {
 		var cli *client
 		var once sync.Once
@@ -74,14 +74,11 @@ func registerInstance(conf *config) {
 	}()
 }
 
-func RegisterMqlModel(auth AuthConf, ms ...MqlModel) {
-	if _, exists := getInstanceClientFunc(auth.GetInstanceKey()); exists {
-		panic(fmt.Sprintf("instance %v database %v has been register", auth.Instance, auth.Database))
+func RegisterSqlModel(conf config, ms ...SqlModel) {
+	if _, exists := getInstanceClientFunc(conf.GetUid()); exists {
+		panic(fmt.Sprintf("%v has been register", conf.GetUid()))
 	}
 
-	conf := &config{
-		AuthConf: auth,
-	}
 	registerInstance(conf)
 
 	for _, m := range ms {
@@ -90,6 +87,6 @@ func RegisterMqlModel(auth AuthConf, ms ...MqlModel) {
 		if key, exists := modelDbMap[modelKey]; exists {
 			panic(fmt.Sprintf("model %v has been register into %v", modelKey, key))
 		}
-		modelDbMap[modelKey] = auth.GetInstanceKey()
+		modelDbMap[modelKey] = conf.GetUid()
 	}
 }

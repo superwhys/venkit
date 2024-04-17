@@ -1,4 +1,4 @@
-package mqlmodel
+package vgorm
 
 import (
 	"testing"
@@ -16,15 +16,17 @@ func (um *UserModel) TableName() string {
 	return "user"
 }
 
-func TestDialDB(t *testing.T) {
-	auth := AuthConf{
-		Instance: "localhost:3306",
-		Database: "sql_test",
-		Username: "root",
-		Password: "yang4869",
+func TestDialMysqlDB(t *testing.T) {
+	mysqlConf := MysqlConfig{
+		AuthConf: AuthConf{
+			Instance: "localhost:3306",
+			Database: "sql_test",
+			Username: "root",
+			Password: "yang4869",
+		},
 	}
 
-	RegisterMqlModel(auth, &UserModel{})
+	RegisterSqlModel(&mysqlConf, &UserModel{})
 	var resp []*UserModel
 	if err := GetMysqlDByModel(&UserModel{}).Find(&resp).Error; err != nil {
 		lg.Errorf("get user data error: %v", err)

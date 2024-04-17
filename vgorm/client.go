@@ -1,33 +1,34 @@
-package mqlmodel
+package vgorm
 
 import (
-	"strings"
+	"fmt"
 
-	"github.com/superwhys/venkit/dialer"
 	"github.com/superwhys/venkit/lg"
 	"gorm.io/gorm"
 )
 
-type config struct {
-	AuthConf
+type dbType int
+
+const (
+	mysql = iota
+	sqlite
+)
+
+type config interface {
+	GetDBType() dbType
+	GetUid() string
+	GetService() string
+	DialGorm() (*gorm.DB, error)
 }
 
 type client struct {
 	db     *gorm.DB
-	config *config
+	config config
 }
 
-func (c *config) TrimSpace() {
-	c.Username = strings.TrimSpace(c.Username)
-	c.Password = strings.TrimSpace(c.Password)
-	c.Instance = strings.TrimSpace(c.Instance)
-	c.Database = strings.TrimSpace(c.Database)
-}
-
-func NewClient(conf *config) *client {
-	conf.TrimSpace()
-	if conf.Instance == "" {
-		panic("mqlClient: instance can not be empty")
+func NewClient(conf config) *client {
+	if conf.GetService() == "" {
+		panic(fmt.Sprintf("vgorm: %v db service name can not be empty", conf.GetDBType()))
 	}
 
 	c := &client{config: conf}
@@ -35,16 +36,8 @@ func NewClient(conf *config) *client {
 	return c
 }
 
-func (c *client) dialGorm() (*gorm.DB, error) {
-	return dialer.DialGorm(
-		c.config.Instance,
-		dialer.WithAuth(c.config.Username, c.config.Password),
-		dialer.WithDBName(c.config.Database),
-	)
-}
-
 func (c *client) dial() {
-	db, err := c.dialGorm()
+	db, err := c.config.DialGorm()
 	lg.PanicError(err, "mqlClient: new client error")
 
 	c.db = db
