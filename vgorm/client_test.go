@@ -26,7 +26,7 @@ func TestDialMysqlDB(t *testing.T) {
 
 	RegisterSqlModel(&mysqlConf, &UserModel{})
 	var resp []*UserModel
-	if err := GetMysqlDByModel(&UserModel{}).Find(&resp).Error; err != nil {
+	if err := GetDbByModel(&UserModel{}).Find(&resp).Error; err != nil {
 		lg.Errorf("get user data error: %v", err)
 		return
 	}
