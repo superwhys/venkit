@@ -3,7 +3,6 @@ package dialer
 import (
 	"database/sql"
 	"fmt"
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
@@ -11,56 +10,13 @@ import (
 	"github.com/superwhys/venkit/lg"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 const (
 	DefaultUserName = "root"
 )
 
-type DialOption struct {
-	User     string
-	Password string
-	DBName   string
-	Logger   logger.Interface
-}
-
-type OptionFunc func(*DialOption)
-
-func WithAuth(user, pwd string) OptionFunc {
-	return func(do *DialOption) {
-		do.User = user
-		do.Password = pwd
-	}
-}
-
-func WithDBName(db string) OptionFunc {
-	return func(do *DialOption) {
-		do.DBName = db
-	}
-}
-
-func WithLogger(log logger.Interface) OptionFunc {
-	return func(do *DialOption) {
-		do.Logger = log
-	}
-}
-
-func packDialOption(opts ...OptionFunc) *DialOption {
-	opt := &DialOption{}
-	for _, o := range opts {
-		o(opt)
-	}
-
-	if opt.User == "" {
-		opt.User = DefaultUserName
-	}
-
-	return opt
-}
-
-func generateDSN(address string, opts ...OptionFunc) string {
-	opt := packDialOption(opts...)
+func generateDSN(address string, opt *DialOption) string {
 	dsn := fmt.Sprintf(
 		"%v:%v@tcp(%v)/%v?charset=utf8mb4&parseTime=True&loc=Local",
 		opt.User,
@@ -72,17 +28,35 @@ func generateDSN(address string, opts ...OptionFunc) string {
 	return dsn
 }
 
-func configDB(sqlDB *sql.DB) {
-	sqlDB.SetMaxIdleConns(10)
-	sqlDB.SetMaxOpenConns(100)
-	sqlDB.SetConnMaxLifetime(time.Hour)
+func DialMysqlGorm(service string, opts ...OptionFunc) (*gorm.DB, error) {
+	address := discover.GetServiceFinder().GetAddress(service)
+	lg.Debugf("Discover mysql addr: %v", address)
+
+	opt := packDialOption(opts...)
+
+	dsn := generateDSN(address, opt)
+	db, err := gorm.Open(mysql.Open(dsn), defaultGormConfig(opt))
+	if err != nil {
+		return nil, err
+	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, err
+	}
+
+	configDB(sqlDB)
+	return db, nil
 }
 
+// Deprecated: use DialMysqlGorm replace
 func DialGorm(service string, opts ...OptionFunc) (*gorm.DB, error) {
 	address := discover.GetServiceFinder().GetAddress(service)
 	lg.Debugf("Discover mysql addr: %v", address)
 
-	dsn := generateDSN(address, opts...)
+	opt := packDialOption(opts...)
+
+	dsn := generateDSN(address, opt)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		PrepareStmt: true,
 	})
@@ -102,7 +76,9 @@ func DialGorm(service string, opts ...OptionFunc) (*gorm.DB, error) {
 func DialMysql(service string, opts ...OptionFunc) (*sql.DB, error) {
 	address := discover.GetServiceFinder().GetAddress(service)
 
-	dsn := generateDSN(address, opts...)
+	opt := packDialOption(opts...)
+
+	dsn := generateDSN(address, opt)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err
