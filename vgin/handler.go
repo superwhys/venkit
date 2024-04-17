@@ -14,6 +14,12 @@ type Handler interface {
 	HandleFunc(ctx context.Context, c *gin.Context) HandleResponse
 }
 
+type DefaultHandler struct{}
+
+func (dh *DefaultHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
+	return (&Ret{}).SuccessRet("default handler")
+}
+
 func wrapHandler(ctx context.Context, handlers ...Handler) []gin.HandlerFunc {
 	handlerFuncs := make([]gin.HandlerFunc, 0, len(handlers))
 
