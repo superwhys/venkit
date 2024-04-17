@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"sync"
 
+	"github.com/pkg/errors"
+	"github.com/superwhys/venkit/lg"
 	"gorm.io/gorm"
 )
 
@@ -17,9 +19,10 @@ type getClientFunc func() *client
 var (
 	dbInstanceClientFuncMap = make(map[string]getClientFunc)
 	modelDbMap              = make(map[string]string)
+	models                  = make(map[string][]any)
 )
 
-func getMysqlDB(m SqlModel) *gorm.DB {
+func getDbByModel(m SqlModel) *gorm.DB {
 	rt := reflect.TypeOf(m)
 	modelKey := fmt.Sprintf("%v-%v", rt.String(), m.TableName())
 
@@ -36,14 +39,37 @@ func getMysqlDB(m SqlModel) *gorm.DB {
 	return clientFunc().DB()
 }
 
+func getDbByConfig(conf Config) *gorm.DB {
+	var expectKey string
+	for key, val := range modelDbMap {
+		if val == conf.GetUid() {
+			expectKey = key
+			break
+		}
+	}
+
+	if expectKey == "" {
+		panic(fmt.Sprintf("db %v has not been register", conf.GetUid()))
+	}
+
+	clientFunc, ok := getInstanceClientFunc(expectKey)
+	if !ok {
+		panic(fmt.Sprintf("db instance %v not found", expectKey))
+	}
+	return clientFunc().DB()
+}
+
 func getInstanceClientFunc(key string) (getClientFunc, bool) {
 	f, exists := dbInstanceClientFuncMap[key]
 	return f, exists
 }
 
-func GetMysqlDByModel(m SqlModel) *gorm.DB {
-	db := getMysqlDB(m).Model(m)
-	return db
+func GetDbByModel(m SqlModel) *gorm.DB {
+	return getDbByModel(m).Model(m)
+}
+
+func GetDbByConf(conf Config) *gorm.DB {
+	return getDbByConfig(conf)
 }
 
 func registerInstance(conf Config) {
@@ -77,5 +103,26 @@ func RegisterSqlModel(conf Config, ms ...SqlModel) {
 			panic(fmt.Sprintf("model %v has been register into %v", modelKey, key))
 		}
 		modelDbMap[modelKey] = conf.GetUid()
+
+		// append SqlModel
+		if models[conf.GetUid()] == nil {
+			models[conf.GetUid()] = make([]any, 0)
+		}
+		models[conf.GetUid()] = append(models[conf.GetUid()], m)
 	}
+}
+
+func AutoMigrate(conf Config) error {
+	ms, exists := models[conf.GetUid()]
+	if !exists {
+		panic(fmt.Sprintf("sqlConf %v not found", conf.GetUid()))
+	}
+
+	db := GetDbByConf(conf)
+	if err := db.AutoMigrate(ms...); err != nil {
+		return errors.Wrap(err, "AutoMigrate")
+	}
+
+	lg.Debugf("%v auto migrate success", conf.GetUid())
+	return nil
 }
