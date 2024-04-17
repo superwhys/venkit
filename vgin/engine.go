@@ -6,12 +6,22 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/snail"
 	"github.com/superwhys/venkit/vflags"
 )
 
 var (
 	isTest = vflags.Bool("isTest", false, "whether gin mode is test")
 )
+
+func init() {
+	snail.RegisterObject("ginTest", func() error {
+		if isTest() {
+			gin.SetMode(gin.TestMode)
+		}
+		return nil
+	})
+}
 
 type RouterGroup struct {
 	*gin.RouterGroup
@@ -28,9 +38,7 @@ func NewGinEngine(middlewares ...gin.HandlerFunc) *gin.Engine {
 	if lg.IsDebug() {
 		gin.SetMode(gin.DebugMode)
 	}
-	if isTest() {
-		gin.SetMode(gin.TestMode)
-	}
+
 	engine := gin.New()
 
 	engine.MaxMultipartMemory = 100 << 20
