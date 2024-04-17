@@ -6,6 +6,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/vflags"
+)
+
+var (
+	isTest = vflags.Bool("isTest", false, "whether gin mode is test")
 )
 
 type RouterGroup struct {
@@ -19,8 +24,12 @@ type Engine struct {
 }
 
 func NewGinEngine(middlewares ...gin.HandlerFunc) *gin.Engine {
-	if !lg.IsDebug() {
-		gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.ReleaseMode)
+	if lg.IsDebug() {
+		gin.SetMode(gin.DebugMode)
+	}
+	if isTest() {
+		gin.SetMode(gin.TestMode)
 	}
 	engine := gin.New()
 
