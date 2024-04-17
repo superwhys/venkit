@@ -75,17 +75,21 @@ func New(options ...Option) *Logger {
 	}
 	l.defaultFlag()
 
-	l.infoLog = log.New(stdout, color.GreenString(formatPrefix("INFO")), l.infoFlag)
-	l.debugLog = log.New(stdout, color.CyanString(formatPrefix("DEBUG")), l.debugFlag)
-	l.errLog = log.New(stderr, color.RedString(formatPrefix("ERROR")), l.errorFlag)
-	l.warnLog = log.New(stdout, color.YellowString(formatPrefix("WARN")), l.warnFlag)
-	l.fatalLog = log.New(stderr, color.RedString(formatPrefix("FATAL")), l.fatalFlag)
+	l.infoLog = log.New(stdout, colorString(color.FgCyan, formatPrefix("[INFO]")), l.infoFlag)
+	l.debugLog = log.New(stdout, colorString(color.FgWhite, formatPrefix("[DEBUG]")), l.debugFlag)
+	l.errLog = log.New(stderr, colorString(color.FgRed, formatPrefix("[ERROR]")), l.errorFlag)
+	l.warnLog = log.New(stdout, colorString(color.FgYellow, formatPrefix("[WARN]")), l.warnFlag)
+	l.fatalLog = log.New(stderr, colorString(color.FgRed, formatPrefix("[FATAL]")), l.fatalFlag)
 
 	return l
 }
 
+func colorString(col color.Attribute, str string) string {
+	return color.New(col).Add(color.Bold).Sprintf(str)
+}
+
 func formatPrefix(prefix string) string {
-	return fmt.Sprintf("[%5s]", prefix)
+	return fmt.Sprintf("%-8s", prefix)
 }
 
 func (l *Logger) defaultFlag() {
