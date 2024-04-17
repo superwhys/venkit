@@ -77,6 +77,7 @@ func registerInstance(conf Config) {
 	}()
 }
 
+// RegisterSqlModel will bind the corresponding SqlModel to the specified database connection create by Config
 func RegisterSqlModel(conf Config, ms ...SqlModel) {
 	if _, exists := getInstanceClientFunc(conf.GetUid()); exists {
 		panic(fmt.Sprintf("%v has been register", conf.GetUid()))
