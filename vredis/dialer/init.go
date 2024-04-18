@@ -1,10 +1,11 @@
-package vredis
+package dialer
 
 import (
 	"github.com/superwhys/venkit/dialer"
 	"github.com/superwhys/venkit/lg"
 	"github.com/superwhys/venkit/snail"
 	"github.com/superwhys/venkit/vflags"
+	"github.com/superwhys/venkit/vredis"
 )
 
 type RedisConf struct {
@@ -24,7 +25,7 @@ var (
 	redisConfFlag = vflags.Struct("redisConf", &RedisConf{}, "Redis config")
 )
 
-var Client *RedisClient
+var Client *vredis.RedisClient
 
 func init() {
 	snail.RegisterObject("redisClient", func() error {
@@ -35,7 +36,7 @@ func init() {
 		if conf.Password != "" {
 			pwd = append(pwd, conf.Password)
 		}
-		Client = NewRedisClient(dialer.DialRedisPool(
+		Client = vredis.NewRedisClient(dialer.DialRedisPool(
 			conf.Server,
 			conf.Db,
 			conf.MaxIdle,
