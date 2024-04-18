@@ -22,9 +22,8 @@ func (dh *DefaultHandler) HandleFunc(ctx context.Context, c *gin.Context) Handle
 
 func wrapHandler(ctx context.Context, handlers ...Handler) []gin.HandlerFunc {
 	handlerFuncs := make([]gin.HandlerFunc, 0, len(handlers)+1)
-	handlerFuncs[0] = parseMapParams(ctx)
-	for i := 1; i < len(handlers); i++ {
-		handler := handlers[i]
+	handlerFuncs = append(handlerFuncs, parseMapParams(ctx))
+	for _, handler := range handlers {
 		handlerFuncs = append(handlerFuncs, wrapDefaultHandler(ctx, handler))
 	}
 

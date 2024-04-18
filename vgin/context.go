@@ -130,7 +130,7 @@ func BindParams(c *gin.Context, data any) error {
 
 	config := &mapstructure.DecoderConfig{
 		Result:  data,
-		TagName: "json",
+		TagName: "vgin-params",
 	}
 
 	decoder, err := mapstructure.NewDecoder(config)
