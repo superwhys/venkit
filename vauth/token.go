@@ -19,7 +19,6 @@ type TokenStorager interface {
 
 type Token interface {
 	GetKey() string
-	SetKey(string)
 }
 
 type TokenManager struct {
@@ -68,8 +67,8 @@ func (tm *TokenManager) Save(t Token) error {
 	return tm.storager.SetWithTTL(tm.getKey(t), t, tm.cacheTTL)
 }
 
-func (tm *TokenManager) Read(t Token) error {
-	return tm.storager.Get(tm.getKey(t), t)
+func (tm *TokenManager) Read(key string, t Token) error {
+	return tm.storager.Get(key, t)
 }
 
 func (tm *TokenManager) Remove(t Token) error {
