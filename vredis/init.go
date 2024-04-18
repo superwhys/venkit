@@ -16,9 +16,10 @@ type RedisConf struct {
 }
 
 func (rc *RedisConf) SetDefault() {
-	rc.Server = "localhost:6379"
-	rc.Db = 0
-	rc.MaxIdle = 100
+	if rc.Server == "" && rc.MaxIdle == 0 {
+		rc.Server = "localhost:6379"
+		rc.MaxIdle = 100
+	}
 }
 
 var (
@@ -43,6 +44,7 @@ func init() {
 			pwd = append(pwd, conf.Password)
 		}
 
+		lg.Debugf("auto connect to redis with config: %v", lg.Jsonify(conf))
 		return NewRedisClient(dialer.DialRedisPool(
 			conf.Server,
 			conf.Db,
