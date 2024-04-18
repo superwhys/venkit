@@ -1,11 +1,11 @@
-package redisdialer
+package vredis
 
 import (
+	"os"
+
 	"github.com/superwhys/venkit/dialer"
 	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/snail"
 	"github.com/superwhys/venkit/vflags"
-	"github.com/superwhys/venkit/vredis"
 )
 
 type RedisConf struct {
@@ -22,13 +22,19 @@ func (rc *RedisConf) SetDefault() {
 }
 
 var (
-	redisConfFlag = vflags.Struct("redisConf", &RedisConf{}, "Redis config")
+	autoRedisKey = "VENKIT_AUTO_REDIS"
 )
 
-var Client *vredis.RedisClient
+var RedisConn func() *RedisClient
 
 func init() {
-	snail.RegisterObject("redisClient", func() error {
+	if os.Getenv(autoRedisKey) != "1" {
+		return
+	}
+
+	redisConfFlag := vflags.Struct("redisConf", &RedisConf{}, "Redis config")
+
+	RedisConn = func() *RedisClient {
 		conf := &RedisConf{}
 		lg.PanicError(redisConfFlag(conf))
 
@@ -36,12 +42,12 @@ func init() {
 		if conf.Password != "" {
 			pwd = append(pwd, conf.Password)
 		}
-		Client = vredis.NewRedisClient(dialer.DialRedisPool(
+
+		return NewRedisClient(dialer.DialRedisPool(
 			conf.Server,
 			conf.Db,
 			conf.MaxIdle,
 			pwd...,
 		))
-		return nil
-	})
+	}
 }
