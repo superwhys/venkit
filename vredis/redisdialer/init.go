@@ -1,4 +1,4 @@
-package dialer
+package redisdialer
 
 import (
 	"github.com/superwhys/venkit/dialer"
