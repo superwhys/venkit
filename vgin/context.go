@@ -1,12 +1,9 @@
 package vgin
 
 import (
-	"encoding/json"
 	"net/http"
-	"reflect"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 )
 
@@ -75,72 +72,4 @@ func StatusOk(c *gin.Context, data any) {
 
 func ReturnWithStatus(c *gin.Context, status int, data any) {
 	c.JSON(status, data)
-}
-
-const (
-	paramsKey = "vgin:paramsKey"
-)
-
-func ParseMapParams(c *gin.Context) (map[string]any, error) {
-	params := make(map[string]any)
-
-	bodyBytes, err := c.GetRawData()
-	if err != nil {
-		return nil, err
-	}
-
-	var bodyMap map[string]interface{}
-	if json.Unmarshal(bodyBytes, &bodyMap) == nil {
-		for k, v := range bodyMap {
-			params[k] = v
-		}
-	}
-
-	for _, p := range c.Params {
-		params[p.Key] = p.Value
-	}
-
-	queryMap := c.Request.URL.Query()
-	for k, v := range queryMap {
-		params[k] = v[0]
-	}
-
-	return params, nil
-}
-
-func GetParams(c *gin.Context) (map[string]any, bool) {
-	val, exists := c.Get(paramsKey)
-	if !exists {
-		return nil, false
-	}
-
-	params := val.(map[string]any)
-	return params, true
-}
-
-func BindParams(c *gin.Context, data any) error {
-	if dt := reflect.TypeOf(data); dt.Kind() != reflect.Pointer {
-		return errors.New("data need a struct pointer")
-	}
-
-	params, exists := GetParams(c)
-	if !exists {
-		return errors.New("no params to bind")
-	}
-
-	config := &mapstructure.DecoderConfig{
-		Result:  data,
-		TagName: "vgin-params",
-	}
-
-	decoder, err := mapstructure.NewDecoder(config)
-	if err != nil {
-		return errors.Wrap(err, "new decoder")
-	}
-
-	if err := decoder.Decode(params); err != nil {
-		return errors.Wrap(err, "deocde parasm")
-	}
-
-	return nil
 }

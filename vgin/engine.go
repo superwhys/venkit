@@ -49,7 +49,12 @@ func NewGinEngine(middlewares ...gin.HandlerFunc) *gin.Engine {
 }
 
 func New(middlewares ...gin.HandlerFunc) *Engine {
-	engine := NewGinEngine(middlewares...)
+	engine := NewGinEngine()
+	return NewWithEngine(engine, middlewares...)
+}
+
+func NewWithEngine(engine *gin.Engine, middlewares ...gin.HandlerFunc) *Engine {
+	engine.Use(middlewares...)
 	return &Engine{
 		RouterGroup: &RouterGroup{
 			RouterGroup: &engine.RouterGroup,

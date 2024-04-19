@@ -2,7 +2,6 @@ package vgin
 
 import (
 	"context"
-	"net/http"
 	"reflect"
 
 	"github.com/gin-gonic/gin"
@@ -21,8 +20,7 @@ func (dh *DefaultHandler) HandleFunc(ctx context.Context, c *gin.Context) Handle
 }
 
 func wrapHandler(ctx context.Context, handlers ...Handler) []gin.HandlerFunc {
-	handlerFuncs := make([]gin.HandlerFunc, 0, len(handlers)+1)
-	handlerFuncs = append(handlerFuncs, parseMapParams(ctx))
+	handlerFuncs := make([]gin.HandlerFunc, 0, len(handlers))
 	for _, handler := range handlers {
 		handlerFuncs = append(handlerFuncs, wrapDefaultHandler(ctx, handler))
 	}
@@ -51,23 +49,10 @@ func getHandlerName(handler Handler) string {
 	return ele.Name()
 }
 
-func parseMapParams(ctx context.Context) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		params, err := ParseMapParams(c)
-		if err != nil {
-			lg.Errorc(ctx, "parse params error: %v", err)
-			AbortWithError(c, http.StatusInternalServerError, "请求失败")
-			return
-		}
-		c.Set(paramsKey, params)
-	}
-}
-
 func wrapDefaultHandler(ctx context.Context, handler Handler) gin.HandlerFunc {
 	ctx = lg.With(ctx, "[%v]", getHandlerName(handler))
 
 	return func(c *gin.Context) {
-		BindParams(c, handler)
 		ret := handler.HandleFunc(ctx, c)
 		if ret != nil && ret.GetError() != nil {
 			lg.Errorc(ctx, "%v handle err: %v", lg.StructName(handler), ret.GetError())
