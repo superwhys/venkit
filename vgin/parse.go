@@ -24,6 +24,10 @@ type paramsInHandler struct {
 	into Handler
 }
 
+func (ph *paramsInHandler) InitHandler() Handler {
+	return &paramsInHandler{ph.into.InitHandler()}
+}
+
 func (ph *paramsInHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
 	if err := ParseMapParams(c, ph.into); err != nil {
 		return &Ret{

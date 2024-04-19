@@ -10,10 +10,15 @@ import (
 )
 
 type Handler interface {
+	InitHandler() Handler
 	HandleFunc(ctx context.Context, c *gin.Context) HandleResponse
 }
 
 type DefaultHandler struct{}
+
+func (dh *DefaultHandler) InitHandler() Handler {
+	return &DefaultHandler{}
+}
 
 func (dh *DefaultHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
 	return (&Ret{}).SuccessRet("default handler")
@@ -51,11 +56,13 @@ func getHandlerName(handler Handler) string {
 
 func wrapDefaultHandler(ctx context.Context, handler Handler) gin.HandlerFunc {
 	ctx = lg.With(ctx, "[%v]", getHandlerName(handler))
+	structName := lg.StructName(handler)
 
 	return func(c *gin.Context) {
-		ret := handler.HandleFunc(ctx, c)
+		newHandler := handler.InitHandler()
+		ret := newHandler.HandleFunc(ctx, c)
 		if ret != nil && ret.GetError() != nil {
-			lg.Errorc(ctx, "%v handle err: %v", lg.StructName(handler), ret.GetError())
+			lg.Errorc(ctx, "%v handle err: %v", structName, ret.GetError())
 			AbortWithError(c, ret.GetCode(), ret.GetMessage())
 			return
 		}
@@ -72,6 +79,10 @@ func wrapDefaultHandler(ctx context.Context, handler Handler) gin.HandlerFunc {
 
 type ginHandlerFuncHandler struct {
 	handlerFunc gin.HandlerFunc
+}
+
+func (h *ginHandlerFuncHandler) InitHandler() Handler {
+	return &ginHandlerFuncHandler{h.handlerFunc}
 }
 
 func (h *ginHandlerFuncHandler) HandleFunc(_ context.Context, c *gin.Context) HandleResponse {

@@ -14,6 +14,10 @@ import (
 
 type TestSessionHandler struct{}
 
+func (th *TestSessionHandler) InitHandler() Handler {
+	return th
+}
+
 func (th *TestSessionHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
 	session := sessions.Default(c)
 
@@ -59,5 +63,5 @@ func TestSession(t *testing.T) {
 	}
 
 	fmt.Println(respStr)
-	time.Sleep(time.Second * 10)
+	time.Sleep(time.Second * 5)
 }

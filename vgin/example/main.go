@@ -11,6 +11,10 @@ import (
 type BeforeRequestMiddleware struct {
 }
 
+func (m *BeforeRequestMiddleware) InitHandler() vgin.Handler {
+	return &BeforeRequestMiddleware{}
+}
+
 func (m *BeforeRequestMiddleware) HandleFunc(ctx context.Context, c *gin.Context) vgin.HandleResponse {
 	lg.Infoc(ctx, "into before request middleware")
 	c.Next()
@@ -19,6 +23,10 @@ func (m *BeforeRequestMiddleware) HandleFunc(ctx context.Context, c *gin.Context
 }
 
 type AfterRequestMiddleware struct {
+}
+
+func (m *AfterRequestMiddleware) InitHandler() vgin.Handler {
+	return &AfterRequestMiddleware{}
 }
 
 func (m *AfterRequestMiddleware) HandleFunc(ctx context.Context, c *gin.Context) vgin.HandleResponse {
@@ -30,7 +38,12 @@ type HelloHandler struct {
 	Id          int `vpath:"user_id"`
 	Name        string
 	Age         int
+	Money       float64
 	HeaderToken int `vheader:"Token"`
+}
+
+func (h *HelloHandler) InitHandler() vgin.Handler {
+	return &HelloHandler{}
 }
 
 func (h *HelloHandler) HandleFunc(ctx context.Context, c *gin.Context) vgin.HandleResponse {
@@ -48,7 +61,7 @@ func main() {
 	lg.EnableDebug()
 	engine := vgin.New()
 
-	engine.POST("/hello/:user_id", &BeforeRequestMiddleware{}, vgin.ParamsIn(&HelloHandler{}), &AfterRequestMiddleware{})
+	engine.POST("/hello/:user_id", vgin.ParamsIn(&HelloHandler{}))
 
 	engine.Run(":8080")
 }
