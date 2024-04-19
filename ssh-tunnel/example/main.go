@@ -3,17 +3,17 @@ package main
 import (
 	"context"
 
-	"github.com/superwhys/venkit/ssh-tunnel"
+	sshtunnel "github.com/superwhys/venkit/ssh-tunnel"
 )
 
 func main() {
 	tunnel := sshtunnel.NewTunnel(&sshtunnel.SshConfig{
-		User:         "fdz",
-		HostName:     "s9ga.cnns.net:65522",
-		IdentityFile: "/Users/yong/.ssh/id_rsa_cnns",
+		User:         "yong",
+		HostName:     "10.15.15.123",
+		IdentityFile: "/Users/yong/.ssh/id_rsa",
 	})
 
-	if err := tunnel.Forward(context.TODO(), "localhost:29950", "10.0.0.59:29917"); err != nil {
+	if err := tunnel.Forward(context.TODO(), "localhost:29950", "10.15.15.15.231:80"); err != nil {
 		panic(err)
 	}
 
