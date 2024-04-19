@@ -12,6 +12,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/uuid v1.4.0
+	github.com/gorilla/schema v1.3.0
 	github.com/hashicorp/consul/api v1.25.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
