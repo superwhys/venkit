@@ -55,12 +55,15 @@ func NewTokenManager(storager TokenStorager, opts ...TokenManagerOption) *TokenM
 }
 
 func (tm *TokenManager) getKey(t Token) string {
+	return tm.getKeyWithKeyId(t.GetKey(), t)
+}
+
+func (tm *TokenManager) getKeyWithKeyId(id string, t Token) string {
 	key := tm.cachePrefix
 	if key == "" {
-		key = lg.StructName(t)
+		key = key + lg.StructName(t)
 	}
-
-	return fmt.Sprintf("%v:%v", key, t.GetKey())
+	return fmt.Sprintf("%v:%v", key, id)
 }
 
 func (tm *TokenManager) Save(t Token) error {
@@ -68,6 +71,7 @@ func (tm *TokenManager) Save(t Token) error {
 }
 
 func (tm *TokenManager) Read(key string, t Token) error {
+	key = tm.getKeyWithKeyId(key, t)
 	return tm.storager.Get(key, t)
 }
 

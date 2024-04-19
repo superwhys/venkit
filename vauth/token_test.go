@@ -18,10 +18,6 @@ func (t *TestToken) GetKey() string {
 	return t.Uid
 }
 
-func (t *TestToken) SetKey(val string) {
-	t.Uid = val
-}
-
 func TestTokenManager(t *testing.T) {
 	redisCache := cache.NewRedisCache(dialer.DialRedisPool("localhost:6379", 14, 100))
 	tm := NewTokenManager(redisCache)
@@ -33,8 +29,8 @@ func TestTokenManager(t *testing.T) {
 		return
 	}
 
-	newToken := &TestToken{Uid: token.Uid}
-	if err := tm.Read(newToken); err != nil {
+	newToken := &TestToken{}
+	if err := tm.Read(token.Uid, newToken); err != nil {
 		t.Error(err)
 		return
 	}
