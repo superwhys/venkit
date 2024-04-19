@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/superwhys/venkit/lg"
@@ -28,17 +27,13 @@ func (m *AfterRequestMiddleware) HandleFunc(ctx context.Context, c *gin.Context)
 }
 
 type HelloHandler struct {
-	Id   string `uri:"id" json:"id,omitempty"`
-	Name string `form:"name" json:"name,omitempty"`
-	Age  int    `form:"age" json:"age,omitempty"`
+	Id          int `vpath:"user_id"`
+	Name        string
+	Age         int
+	HeaderToken int `vheader:"Token"`
 }
 
 func (h *HelloHandler) HandleFunc(ctx context.Context, c *gin.Context) vgin.HandleResponse {
-	if err := vgin.BindParams(c, h); err != nil {
-		lg.Errorf("bind params error: %v", err)
-		vgin.AbortWithError(c, http.StatusBadRequest, err.Error())
-		return nil
-	}
 	lg.Info(lg.Jsonify(h))
 
 	ret := &vgin.Ret{
@@ -53,7 +48,7 @@ func main() {
 	lg.EnableDebug()
 	engine := vgin.New()
 
-	engine.POST("/hello/:id", &BeforeRequestMiddleware{}, &HelloHandler{}, &AfterRequestMiddleware{})
+	engine.POST("/hello/:user_id", &BeforeRequestMiddleware{}, vgin.ParamsIn(&HelloHandler{}), &AfterRequestMiddleware{})
 
 	engine.Run(":8080")
 }
