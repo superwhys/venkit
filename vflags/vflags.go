@@ -14,16 +14,20 @@ import (
 )
 
 var (
-	v             = viper.New()
-	requiredFlags []string
-	nestedKey     = map[string]interface{}{}
-
-	debug  BoolGetter
-	config StringGetter
+	v                 = viper.New()
+	requiredFlags     []string
+	nestedKey         = map[string]interface{}{}
+	defaultConfigFile string
+	debug             BoolGetter
+	config            StringGetter
 )
 
 func Viper() *viper.Viper {
 	return v
+}
+
+func OverrideDefaultConfigFile(configFile string) {
+	defaultConfigFile = configFile
 }
 
 func BindPFlag(key string, flag *pflag.Flag) {
@@ -69,7 +73,7 @@ func declareDefaultFlags() {
 	shared.ServiceName = StringP("service", "s", os.Getenv("VENKIT-SERVICE"), "Set the service name")
 	shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr")
 	shared.UseConsul = Bool("useConsul", true, "Whether to use the consul service center")
-	config = StringP("config", "f", "", "Specify config file. Support json, yaml")
+	config = StringP("config", "f", defaultConfigFile, "Specify config file. Support json, yaml")
 }
 
 func readConfig() {
