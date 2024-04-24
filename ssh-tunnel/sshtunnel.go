@@ -3,7 +3,6 @@ package sshtunnel
 import (
 	"context"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"strings"
@@ -34,7 +33,7 @@ func (sc *SshConfig) SetDefaults() {
 }
 
 func getIdentifyKey(filePath string) (ssh.Signer, error) {
-	buff, _ := ioutil.ReadFile(filePath)
+	buff, _ := os.ReadFile(filePath)
 	return ssh.ParsePrivateKey(buff)
 }
 
@@ -87,6 +86,7 @@ func (st *SshTunnel) dial() (*ssh.Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	lg.Infof("SSH dial [%v] success", st.conf.HostName)
 	return client, nil
 }
 
@@ -122,11 +122,88 @@ func (st *SshTunnel) keepAlive() {
 	}
 }
 
+func (st *SshTunnel) Reverse(ctx context.Context, remoteAddr, localAddr string) error {
+	st.wg.Add(1)
+
+	ctx = lg.With(ctx, "[SSHReverse]")
+
+	if strings.HasPrefix(remoteAddr, ":") {
+		remoteAddr = "0.0.0.0" + remoteAddr
+	}
+
+	remoteLst, err := st.sshClient.Listen("tcp", remoteAddr)
+	if err != nil {
+		return errors.Wrapf(err, "listen on remote addr %s", remoteAddr)
+	}
+
+	lg.Infof("listen remote %v success", remoteAddr)
+
+	go func() {
+		defer func() {
+			lg.Infoc(ctx, "disconnected reversing %s to %s", remoteAddr, localAddr)
+		}()
+		defer st.wg.Done()
+		defer remoteLst.Close()
+
+		for {
+			if err := ctx.Err(); err != nil {
+				return
+			}
+
+			if remoteLst == nil {
+				if st.sshClient == nil {
+					lg.Warnc(ctx, "SSH connections lost")
+					continue
+				}
+
+				newLst, err := st.sshClient.Listen("tcp", remoteAddr)
+				if err != nil {
+					lg.Errorc(ctx, "SSH listen redial failed, err: %v", err)
+					continue
+				}
+				lg.Debugc(ctx, "SSH listen redial success -> %v", remoteAddr)
+				remoteLst = newLst
+			}
+
+			remote, err := remoteLst.Accept()
+			if err != nil {
+				if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+					lg.Debugc(ctx, "remote timeout listening")
+					continue
+				}
+				lg.Warnc(ctx, "Remote listening accept error, Redial... : %v", err)
+				if remoteLst != nil {
+					remoteLst.Close()
+				}
+				remoteLst = nil
+				continue
+			}
+			lg.Debugc(ctx, "remote %s accept connection from %s", remote.LocalAddr().String(), remote.RemoteAddr())
+
+			go func(remote net.Conn) {
+				local, err := net.Dial("tcp", localAddr)
+				if err != nil {
+					lg.Errorc(ctx, "dial local addr %s error: %v", localAddr, err)
+					return
+				}
+
+				lg.Debugc(ctx, "start handle remote %s via %s to local %s", remote.RemoteAddr(), remote.LocalAddr(), localAddr)
+				st.handleClient(ctx, remote, local)
+				lg.Debugc(ctx, "end handle remote %s via %v to local %s", remote.RemoteAddr(), remote.LocalAddr(), localAddr)
+			}(remote)
+		}
+	}()
+
+	return nil
+}
+
 func (st *SshTunnel) Forward(ctx context.Context, localAddr, remoteAddr string) error {
 	st.wg.Add(1)
 
+	ctx = lg.With(ctx, "[SSHForward]")
+
 	// start listen on local addr
-	local, err := net.Listen("tcp", localAddr)
+	localLst, err := net.Listen("tcp", localAddr)
 	if err != nil {
 		return errors.Wrapf(err, "listen on local addr %s", localAddr)
 	}
@@ -136,35 +213,42 @@ func (st *SshTunnel) Forward(ctx context.Context, localAddr, remoteAddr string) 
 			lg.Infoc(ctx, "disconnected forwarding %s to %s", localAddr, remoteAddr)
 		}()
 		defer st.wg.Done()
-		defer local.Close()
+		defer localLst.Close()
 		for {
 			if err := ctx.Err(); err != nil {
 				return
 			}
-			// accept connection from local listener
-			client, err := local.Accept()
-			if err != nil {
-				if netErr, ok := err.(net.Error); ok && netErr.Timeout() && netErr.Temporary() {
-					// continue if timeout
+
+			if localLst == nil {
+				if st.sshClient == nil {
+					lg.Warnc(ctx, "SSH connections lost")
 					continue
 				}
-				lg.Errorc(ctx, "local accept error: %v, Redialing...", err)
-				if local != nil {
-					local.Close()
-				}
-				newLocal, err := net.Listen("tcp", localAddr)
+
+				newLocalLst, err := net.Listen("tcp", localAddr)
 				if err != nil {
-					lg.Errorc(ctx, "local listen error: %v", err)
+					lg.Errorc(ctx, "local listen redial failed, err: %v", err)
 					return
 				}
-				local = newLocal
+				localLst = newLocalLst
+			}
+
+			local, err := localLst.Accept()
+			if err != nil {
+				if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+					continue
+				}
+				lg.Warnc(ctx, "Local listening accept error, Redial... : %v", err)
+				if localLst != nil {
+					localLst.Close()
+				}
+				localLst = nil
 				continue
 			}
-			lg.Debugc(ctx, "local %s accept connection from %s", client.LocalAddr().String(), client.RemoteAddr().String())
+			lg.Debugc(ctx, "local %s accept connection from %s", local.LocalAddr(), local.RemoteAddr())
 
-			// dial remote addr and handle local client connections data to remote server
-			go func(client net.Conn) {
-				defer client.Close()
+			go func(local net.Conn) {
+				defer local.Close()
 				if st.sshClient == nil {
 					lg.Errorc(ctx, "lost ssh connection")
 					return
@@ -176,10 +260,10 @@ func (st *SshTunnel) Forward(ctx context.Context, localAddr, remoteAddr string) 
 					return
 				}
 
-				lg.Debugc(ctx, "start handle local %s connection to remote %s", client.LocalAddr().String(), remoteAddr)
-				st.handleClient(ctx, client, remote)
-				lg.Debugc(ctx, "end handle local %s connection to remote %s", client.LocalAddr().String(), remoteAddr)
-			}(client)
+				lg.Debugc(ctx, "start handle local %s connection to remote %s", local.LocalAddr(), remoteAddr)
+				st.handleClient(ctx, local, remote)
+				lg.Debugc(ctx, "end handle local %s connection to remote %s", local.LocalAddr(), remoteAddr)
+			}(local)
 		}
 	}()
 	return nil
@@ -195,7 +279,7 @@ func (st *SshTunnel) handleClient(ctx context.Context, local, remote net.Conn) {
 	go func() {
 		_, err := io.Copy(local, remote)
 		if err != nil {
-			lg.Errorc(ctx, "remote -> local error: %v", err)
+			lg.Warnc(ctx, "remote -> local error: %v", err)
 		}
 		cancel()
 	}()
@@ -209,4 +293,11 @@ func (st *SshTunnel) handleClient(ctx context.Context, local, remote net.Conn) {
 		cancel()
 	}()
 	<-ctx.Done()
+}
+
+func (st *SshTunnel) Close() error {
+	lg.Debugf("SSH tunnel [%v] close", st.conf.HostName)
+	st.wg.Done()
+
+	return st.sshClient.Close()
 }
