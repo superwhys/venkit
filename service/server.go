@@ -12,9 +12,10 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/rs/cors"
-	"github.com/superwhys/venkit/internal/shared"
+	"github.com/soheilhy/cmux"
 	"github.com/superwhys/venkit/lg"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 )
 
 type mountFn func(ctx context.Context) error
@@ -24,11 +25,22 @@ type VkService struct {
 	serviceName string
 	tag         string
 
-	httpCORS bool
+	cmux    cmux.CMux
+	httpLst net.Listener
+	grpcLst net.Listener
 
-	workers     []*worker
+	httpCORS    bool
 	httpMux     *http.ServeMux
 	httpHandler http.Handler
+
+	grpcServer      *grpc.Server
+	grpcOptions     []grpc.ServerOption
+	grpcServersFunc []func(*grpc.Server)
+	grpcUI          bool
+	grpcSelfConn    *grpc.ClientConn
+
+	workers []*worker
+	mounts  []mountFn
 }
 
 type ServiceOption func(*VkService)
@@ -65,9 +77,9 @@ func (vs *VkService) notiKill(ctx context.Context) error {
 	}
 }
 
-func (vs *VkService) runFinalMount(mounts []mountFn) error {
+func (vs *VkService) runFinalMount() error {
 	grp, ctx := errgroup.WithContext(vs.ctx)
-	for _, mount := range mounts {
+	for _, mount := range vs.mounts {
 		mf := mount
 		grp.Go(func() error {
 			err := waitContext(ctx, func() error {
@@ -109,44 +121,61 @@ func (vs *VkService) mountWorker(worker *worker) mountFn {
 	}
 }
 
-func (vs *VkService) wrapWorker() []mountFn {
-	mounts := make([]mountFn, 0, len(vs.workers))
-
+func (vs *VkService) wrapWorker() {
 	for _, worker := range vs.workers {
-		mounts = append(mounts, vs.mountWorker(worker))
+		vs.mounts = append(vs.mounts, vs.mountWorker(worker))
 	}
-
-	return mounts
 }
 
-func (vs *VkService) setHTTPCORS() error {
+func (vs *VkService) setHTTPCORS() {
+	if !vs.httpCORS {
+		return
+	}
 	vs.httpHandler = cors.AllowAll().Handler(vs.httpHandler)
-	return nil
 }
 
 func (vs *VkService) welcome(lis net.Listener) {
-	lg.Infof("Listening addr: %v", lis.Addr().String())
+	lg.Infoc(vs.ctx, "Listening addr: %v", lis.Addr().String())
+	if vs.grpcUI {
+		lg.Infoc(vs.ctx, fmt.Sprintf("GRPCUI start in: http://%s/debug/grpc/ui", vs.grpcSelfConn.Target()))
+	}
+
 	lg.Infof("VenKit Server Version: %v", version)
 }
 
-func (vs *VkService) serve(listener net.Listener) error {
+func (vs *VkService) beginCmux(listener net.Listener) {
+	vs.cmux = cmux.New(listener)
+	vs.grpcLst = vs.cmux.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
+	vs.httpLst = vs.cmux.Match(cmux.HTTP1Fast(), cmux.HTTP2())
+}
 
-	mounts := []mountFn{
-		vs.listenHttpServer(listener),
+func (vs *VkService) listenCmux(ctx context.Context) error {
+	return vs.cmux.Serve()
+}
+
+func (vs *VkService) serve(listener net.Listener) error {
+	vs.beginCmux(listener)
+	vs.beginGrpc()
+
+	vs.mounts = []mountFn{
+		// initialize various connections
+		vs.listenHttpServer(vs.httpLst),
+		vs.listenGrpcServer(vs.grpcLst),
+		vs.listenCmux,
 		vs.notiKill,
 	}
 
-	if vs.serviceName != "" && shared.GetIsUseConsul() {
-		mounts = append(mounts, vs.registerIntoConsul(listener))
+	// grpc self connection will be used in grpcUI
+	if err := vs.prepareGrpcSelfConnect(listener); err != nil {
+		return errors.Wrap(err, "prepare selfConn")
 	}
 
-	if vs.httpCORS {
-		vs.setHTTPCORS()
-	}
-	mounts = append(mounts, vs.wrapWorker()...)
-
+	vs.registerIntoConsul(listener)
+	vs.enableGrpcUI()
+	vs.setHTTPCORS()
+	vs.wrapWorker()
 	vs.welcome(listener)
-	return vs.runFinalMount(mounts)
+	return vs.runFinalMount()
 }
 
 func (vs *VkService) Run(port int) error {

@@ -6,11 +6,16 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/superwhys/venkit/discover"
+	"github.com/superwhys/venkit/internal/shared"
 	"github.com/superwhys/venkit/lg"
 )
 
-func (vs *VkService) registerIntoConsul(listener net.Listener) mountFn {
-	return func(ctx context.Context) error {
+func (vs *VkService) registerIntoConsul(listener net.Listener) {
+	if vs.serviceName == "" || !shared.GetIsUseConsul() {
+		return
+	}
+
+	mountFn := func(ctx context.Context) error {
 		addr := listener.Addr().String()
 		if vs.tag == "" {
 			vs.tag = "dev"
@@ -30,6 +35,8 @@ func (vs *VkService) registerIntoConsul(listener net.Listener) mountFn {
 		discover.GetConsulServiceFinder().Close()
 		return nil
 	}
+
+	vs.mounts = append(vs.mounts, mountFn)
 }
 
 func DiscoverServiceWithTag(service, tag string) string {

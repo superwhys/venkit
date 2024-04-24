@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/superwhys/venkit/lg"
+	"google.golang.org/grpc"
 )
 
 func WithServiceName(name string) ServiceOption {
@@ -30,5 +31,23 @@ func WithHTTPCORS() ServiceOption {
 	return func(vs *VkService) {
 		lg.Debug("Enabled HTTP CORS")
 		vs.httpCORS = true
+	}
+}
+
+func WithGrpcServer(grpcSrv func(srv *grpc.Server)) ServiceOption {
+	return func(vs *VkService) {
+		vs.grpcServersFunc = append(vs.grpcServersFunc, grpcSrv)
+	}
+}
+
+func WithGrpcOptions(opt grpc.ServerOption) ServiceOption {
+	return func(vs *VkService) {
+		vs.grpcOptions = append(vs.grpcOptions, opt)
+	}
+}
+
+func WithGrpcUI() ServiceOption {
+	return func(vs *VkService) {
+		vs.grpcUI = true
 	}
 }
