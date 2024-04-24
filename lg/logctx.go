@@ -3,6 +3,7 @@ package lg
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -118,6 +119,11 @@ func cloneLogContext(c *LogContext) *LogContext {
 
 func parseFmtStr(format string) (msg string, isKV []bool, keys, descs []string) {
 	// Format like "% d" will not be supported.
+
+	if json.Valid([]byte(format)) {
+		return format, nil, nil, nil
+	}
+
 	var msgs []string
 	for _, s := range strings.Split(format, " ") {
 		s = strings.TrimSpace(s)
@@ -176,7 +182,7 @@ func (l *Logger) logc(ctx context.Context, lb logable) {
 
 	msg := lc.LogFmt()
 	for _, line := range strings.Split(msg, "\n") {
-		lb.Output(3, line)
+		lb.Output(4, line)
 	}
 }
 

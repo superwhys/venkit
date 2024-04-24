@@ -1,6 +1,7 @@
 package lg
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -98,11 +99,11 @@ func (l *Logger) defaultFlag() {
 	}
 
 	if l.debugFlag == 0 {
-		l.debugFlag = log.LstdFlags | log.Lshortfile | log.LUTC
+		l.debugFlag = log.LstdFlags | log.LUTC | log.Lshortfile
 	}
 
 	if l.errorFlag == 0 {
-		l.errorFlag = log.LstdFlags | log.Lshortfile | log.LUTC
+		l.errorFlag = log.LstdFlags | log.LUTC | log.Lshortfile
 	}
 
 	if l.warnFlag == 0 {
@@ -128,7 +129,7 @@ func (l *Logger) SetLoggerOutput(stdout, stderr io.Writer) {
 
 func (l *Logger) doLog(log *log.Logger, msg string) {
 	for _, line := range strings.Split(msg, "\n") {
-		log.Output(3, line)
+		log.Output(4, line)
 	}
 }
 
@@ -179,45 +180,28 @@ func (l *Logger) Fatal(v ...interface{}) {
 }
 
 func (l *Logger) Fatalf(msg string, v ...interface{}) {
-	var s string
-	if len(v) != 0 {
-		s = strings.TrimSuffix(fmt.Sprintf(msg, v...), "\n")
-	} else {
-		s = msg
-	}
-	l.doLog(l.fatalLog, strings.TrimSuffix(s, "\n"))
+	ctx := context.TODO()
+	ctx = l.With(ctx, msg, v...)
+	l.logc(ctx, l.fatalLog)
 	os.Exit(1)
 }
 
 func (l *Logger) Errorf(msg string, v ...interface{}) {
-	var s string
-	if len(v) != 0 {
-		s = strings.TrimSuffix(fmt.Sprintf(msg, v...), "\n")
-	} else {
-		s = msg
-	}
-	l.doLog(l.errLog, strings.TrimSuffix(s, "\n"))
-
+	ctx := context.TODO()
+	ctx = l.With(ctx, msg, v...)
+	l.logc(ctx, l.errLog)
 }
 
 func (l *Logger) Warnf(msg string, v ...interface{}) {
-	var s string
-	if len(v) != 0 {
-		s = strings.TrimSuffix(fmt.Sprintf(msg, v...), "\n")
-	} else {
-		s = msg
-	}
-	l.doLog(l.warnLog, s)
+	ctx := context.TODO()
+	ctx = l.With(ctx, msg, v...)
+	l.logc(ctx, l.warnLog)
 }
 
 func (l *Logger) Infof(msg string, v ...interface{}) {
-	var s string
-	if len(v) != 0 {
-		s = strings.TrimSuffix(fmt.Sprintf(msg, v...), "\n")
-	} else {
-		s = msg
-	}
-	l.doLog(l.infoLog, s)
+	ctx := context.TODO()
+	ctx = l.With(ctx, msg, v...)
+	l.logc(ctx, l.infoLog)
 }
 
 func (l *Logger) Debugf(msg string, v ...interface{}) {
@@ -225,11 +209,7 @@ func (l *Logger) Debugf(msg string, v ...interface{}) {
 		return
 	}
 
-	var s string
-	if len(v) != 0 {
-		s = strings.TrimSuffix(fmt.Sprintf(msg, v...), "\n")
-	} else {
-		s = msg
-	}
-	l.doLog(l.debugLog, s)
+	ctx := context.TODO()
+	ctx = l.With(ctx, msg, v...)
+	l.logc(ctx, l.debugLog)
 }
