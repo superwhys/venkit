@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = "sshtunnel/sshtunnelpb";
+
+service SshTunnel {
+	rpc Forward(ConnectRequest) returns (ForwardReply);
+	rpc Reverse(ConnectRequest) returns (ReverseReply);
+	rpc Disconnect(DisconnectRequest) returns (DisconnectReply);
+}
+
+message ConnectRequest {
+	string local = 1;
+	string local_alias = 2;
+	string remote = 3;
+	string remote_alias = 4;
+}
+
+message ForwardReply {
+	string uuid = 1;
+}
+message ReverseReply {
+	string uuid = 1;
+}
+
+message DisconnectRequest {
+	string uuid = 1;
+}
+
+message DisconnectReply {}

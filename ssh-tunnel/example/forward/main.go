@@ -8,12 +8,12 @@ import (
 
 func main() {
 	tunnel := sshtunnel.NewTunnel(&sshtunnel.SshConfig{
-		User:         "yong",
-		HostName:     "yong-ali",
+		User:         "hoven",
+		HostName:     "10.11.43.115",
 		IdentityFile: "/Users/yong/.ssh/id_rsa",
 	})
 
-	if err := tunnel.Forward(context.TODO(), "localhost:8500", "10.15.15.15.231:80"); err != nil {
+	if err := tunnel.Forward(context.TODO(), "localhost:28080", "localhost:80"); err != nil {
 		panic(err)
 	}
 
