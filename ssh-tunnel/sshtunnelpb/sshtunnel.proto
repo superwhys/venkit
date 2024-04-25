@@ -5,14 +5,13 @@ option go_package = "sshtunnel/sshtunnelpb";
 service SshTunnel {
 	rpc Forward(ConnectRequest) returns (ForwardReply);
 	rpc Reverse(ConnectRequest) returns (ReverseReply);
+	rpc ListConnect(ListConnectRequest) returns (ListConnectReply);
 	rpc Disconnect(DisconnectRequest) returns (DisconnectReply);
 }
 
 message ConnectRequest {
 	string local = 1;
-	string local_alias = 2;
-	string remote = 3;
-	string remote_alias = 4;
+	string remote = 2;
 }
 
 message ForwardReply {
@@ -27,3 +26,17 @@ message DisconnectRequest {
 }
 
 message DisconnectReply {}
+
+
+message ListConnectRequest {}
+
+message Connect {
+	string uuid = 1;
+	string connect_type = 2;
+	string local = 3;
+	string remote = 4;
+}
+
+message ListConnectReply {
+	repeated Connect connects = 1;
+}

@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	SshTunnel_Forward_FullMethodName    = "/SshTunnel/Forward"
-	SshTunnel_Reverse_FullMethodName    = "/SshTunnel/Reverse"
-	SshTunnel_Disconnect_FullMethodName = "/SshTunnel/Disconnect"
+	SshTunnel_Forward_FullMethodName     = "/SshTunnel/Forward"
+	SshTunnel_Reverse_FullMethodName     = "/SshTunnel/Reverse"
+	SshTunnel_ListConnect_FullMethodName = "/SshTunnel/ListConnect"
+	SshTunnel_Disconnect_FullMethodName  = "/SshTunnel/Disconnect"
 )
 
 // SshTunnelClient is the client API for SshTunnel service.
@@ -30,6 +31,7 @@ const (
 type SshTunnelClient interface {
 	Forward(ctx context.Context, in *ConnectRequest, opts ...grpc.CallOption) (*ForwardReply, error)
 	Reverse(ctx context.Context, in *ConnectRequest, opts ...grpc.CallOption) (*ReverseReply, error)
+	ListConnect(ctx context.Context, in *ListConnectRequest, opts ...grpc.CallOption) (*ListConnectReply, error)
 	Disconnect(ctx context.Context, in *DisconnectRequest, opts ...grpc.CallOption) (*DisconnectReply, error)
 }
 
@@ -59,6 +61,15 @@ func (c *sshTunnelClient) Reverse(ctx context.Context, in *ConnectRequest, opts 
 	return out, nil
 }
 
+func (c *sshTunnelClient) ListConnect(ctx context.Context, in *ListConnectRequest, opts ...grpc.CallOption) (*ListConnectReply, error) {
+	out := new(ListConnectReply)
+	err := c.cc.Invoke(ctx, SshTunnel_ListConnect_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *sshTunnelClient) Disconnect(ctx context.Context, in *DisconnectRequest, opts ...grpc.CallOption) (*DisconnectReply, error) {
 	out := new(DisconnectReply)
 	err := c.cc.Invoke(ctx, SshTunnel_Disconnect_FullMethodName, in, out, opts...)
@@ -74,6 +85,7 @@ func (c *sshTunnelClient) Disconnect(ctx context.Context, in *DisconnectRequest,
 type SshTunnelServer interface {
 	Forward(context.Context, *ConnectRequest) (*ForwardReply, error)
 	Reverse(context.Context, *ConnectRequest) (*ReverseReply, error)
+	ListConnect(context.Context, *ListConnectRequest) (*ListConnectReply, error)
 	Disconnect(context.Context, *DisconnectRequest) (*DisconnectReply, error)
 	mustEmbedUnimplementedSshTunnelServer()
 }
@@ -87,6 +99,9 @@ func (UnimplementedSshTunnelServer) Forward(context.Context, *ConnectRequest) (*
 }
 func (UnimplementedSshTunnelServer) Reverse(context.Context, *ConnectRequest) (*ReverseReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Reverse not implemented")
+}
+func (UnimplementedSshTunnelServer) ListConnect(context.Context, *ListConnectRequest) (*ListConnectReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListConnect not implemented")
 }
 func (UnimplementedSshTunnelServer) Disconnect(context.Context, *DisconnectRequest) (*DisconnectReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Disconnect not implemented")
@@ -140,6 +155,24 @@ func _SshTunnel_Reverse_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SshTunnel_ListConnect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListConnectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SshTunnelServer).ListConnect(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SshTunnel_ListConnect_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SshTunnelServer).ListConnect(ctx, req.(*ListConnectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _SshTunnel_Disconnect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DisconnectRequest)
 	if err := dec(in); err != nil {
@@ -172,6 +205,10 @@ var SshTunnel_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Reverse",
 			Handler:    _SshTunnel_Reverse_Handler,
+		},
+		{
+			MethodName: "ListConnect",
+			Handler:    _SshTunnel_ListConnect_Handler,
 		},
 		{
 			MethodName: "Disconnect",
