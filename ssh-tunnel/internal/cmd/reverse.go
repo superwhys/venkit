@@ -47,7 +47,7 @@ var ReverseCmd = &cobra.Command{
 				table := make(map[string][]string)
 				table[resp.Uuid] = append(
 					table[resp.Uuid],
-					[]string{string(server.Reverse), fmt.Sprintf("%v -> %v", localAddr, remoteAddr)}...,
+					[]string{string(server.Reverse), fmt.Sprintf("%v -> %v", remoteAddr, localAddr)}...,
 				)
 				lg.Info("Connected services\n" + prettyMaps(table))
 

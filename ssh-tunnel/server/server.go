@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/superwhys/venkit/lg"
 	sshtunnel "github.com/superwhys/venkit/ssh-tunnel"
 	"github.com/superwhys/venkit/ssh-tunnel/sshtunnelpb"
 )
@@ -109,10 +110,11 @@ func (s *Server) Reverse(ctx context.Context, in *sshtunnelpb.ConnectRequest) (*
 func (s *Server) Disconnect(ctx context.Context, in *sshtunnelpb.DisconnectRequest) (*sshtunnelpb.DisconnectReply, error) {
 	c, exists := s.cache[in.Uuid]
 	if !exists {
-		return nil, fmt.Errorf("Uid: %v connect not exists", in.Uuid)
+		return nil, fmt.Errorf("uid: %v connect not exists", in.Uuid)
 	}
 
 	c.Close()
 
+	lg.Infoc(ctx, "Tunnel[%v] close success!", in.Uuid)
 	return &sshtunnelpb.DisconnectReply{}, nil
 }
