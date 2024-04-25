@@ -178,6 +178,9 @@ func (st *SshTunnel) Reverse(ctx context.Context, remoteAddr, localAddr string) 
 				remoteLst = nil
 				continue
 			}
+			if err := ctx.Err(); err != nil {
+				return
+			}
 			lg.Debugc(ctx, "remote %s accept connection from %s", remote.LocalAddr().String(), remote.RemoteAddr())
 
 			go func(remote net.Conn) {
@@ -244,6 +247,9 @@ func (st *SshTunnel) Forward(ctx context.Context, localAddr, remoteAddr string) 
 				}
 				localLst = nil
 				continue
+			}
+			if err := ctx.Err(); err != nil {
+				return
 			}
 			lg.Debugc(ctx, "local %s accept connection from %s", local.LocalAddr(), local.RemoteAddr())
 

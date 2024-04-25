@@ -6,6 +6,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/superwhys/venkit/lg"
@@ -39,6 +40,14 @@ var ReverseCmd = &cobra.Command{
 					Remote: remoteAddr,
 				}
 
+				if strings.HasPrefix(in.Local, ":") {
+					in.Local = "0.0.0.0" + in.Local
+				}
+
+				if strings.HasPrefix(in.Remote, ":") {
+					in.Remote = "0.0.0.0" + in.Remote
+				}
+
 				resp, err := s.Reverse(ctx, in)
 				if err != nil {
 					return err
@@ -49,7 +58,7 @@ var ReverseCmd = &cobra.Command{
 					table[resp.Uuid],
 					[]string{string(server.Reverse), fmt.Sprintf("%v -> %v", remoteAddr, localAddr)}...,
 				)
-				lg.Info("Connected services\n" + prettyMaps(table))
+				lg.Info(prettyMaps(table))
 
 				<-ctx.Done()
 				tunnel.Close()
