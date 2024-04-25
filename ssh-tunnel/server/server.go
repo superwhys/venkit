@@ -90,6 +90,7 @@ func (s *Server) Reverse(_ context.Context, in *sshtunnelpb.ConnectRequest) (*ss
 		cancel: cancel,
 		typ:    Reverse,
 		local:  s.parseAddress(in.Local),
+		remote: s.parseAddress(in.Remote),
 	}
 
 	if err := s.sshTunnel.Reverse(ctx, c.remote.String(), c.local.String()); err != nil {
