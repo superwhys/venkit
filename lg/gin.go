@@ -60,8 +60,9 @@ func methodColor(method string) string {
 
 func LoggerMiddleware() gin.HandlerFunc {
 	newLogger := New(
-		WithInfoFlag(log.LstdFlags|log.Lshortfile|log.LUTC),
-		WithWarnFlag(log.LstdFlags|log.Lshortfile|log.LUTC),
+		WithCalldepth(5),
+		WithDebugFlag(log.LstdFlags|log.LUTC),
+		WithErrorFlag(log.LstdFlags|log.LUTC),
 	)
 	return func(c *gin.Context) {
 		start := time.Now()
