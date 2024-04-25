@@ -189,7 +189,7 @@ func (c *Client) RegisterServiceWithTag(serviceName string, address string, tag 
 	if err != nil {
 		hostname = bson.NewObjectId().Hex()
 	}
-	hostname = strings.Replace(hostname, ".", "-", -1)
+	hostname = strings.ReplaceAll(hostname, ".", "-")
 	serviceID := fmt.Sprintf("%s-%d-%s", serviceName, ip.Port, hostname)
 	checkID := fmt.Sprintf("service:%s", serviceID)
 
@@ -216,12 +216,12 @@ func (c *Client) RegisterServiceWithTag(serviceName string, address string, tag 
 }
 
 func (c *Client) deregisterServiceAndCheck(serviceID, checkID string) (reterr error) {
-	if err := c.Agent().ServiceDeregister(serviceID); err != nil {
-		reterr = errors.Wrap(err, "Deregister service")
-	}
-
 	if err := c.Agent().CheckDeregister(checkID); err != nil {
 		reterr = errors.Wrap(err, "Deregister check")
+	}
+
+	if err := c.Agent().ServiceDeregister(serviceID); err != nil {
+		reterr = errors.Wrap(err, "Deregister service")
 	}
 	return
 }
