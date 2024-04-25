@@ -32,7 +32,8 @@ func (vs *VkService) registerIntoConsul(listener net.Listener) {
 		<-ctx.Done()
 
 		// programe down deregister
-		discover.GetConsulServiceFinder().Close()
+		discover.GetServiceFinder().Close()
+
 		return nil
 	}
 
