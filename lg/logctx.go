@@ -182,7 +182,7 @@ func (l *Logger) logc(ctx context.Context, lb logable) {
 
 	msg := lc.LogFmt()
 	for _, line := range strings.Split(msg, "\n") {
-		lb.Output(4, line)
+		lb.Output(l.calldepth, line)
 	}
 }
 

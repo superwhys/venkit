@@ -13,6 +13,7 @@ import (
 )
 
 type Logger struct {
+	calldepth   int
 	enableDebug bool
 	infoLog     *log.Logger
 	debugLog    *log.Logger
@@ -28,6 +29,12 @@ type Logger struct {
 }
 
 type Option func(*Logger)
+
+func WithCalldepth(calldepth int) Option {
+	return func(l *Logger) {
+		l.calldepth = calldepth
+	}
+}
 
 func WithFileOption(filename string, maxSize, maxBackup, maxAge int, logCompress bool) Option {
 	return func(l *Logger) {
@@ -70,7 +77,9 @@ func New(options ...Option) *Logger {
 	var stdout io.Writer = os.Stdout
 	var stderr io.Writer = os.Stderr
 
-	l := &Logger{}
+	l := &Logger{
+		calldepth: 4,
+	}
 	for _, opt := range options {
 		opt(l)
 	}
@@ -129,7 +138,7 @@ func (l *Logger) SetLoggerOutput(stdout, stderr io.Writer) {
 
 func (l *Logger) doLog(log *log.Logger, msg string) {
 	for _, line := range strings.Split(msg, "\n") {
-		log.Output(4, line)
+		log.Output(l.calldepth, line)
 	}
 }
 
