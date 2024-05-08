@@ -47,6 +47,12 @@ func initVFlags() {
 	}
 }
 
+func ProhibitConsul() {
+	shared.UseConsul = func() bool {
+		return false
+	}
+}
+
 func Parse() {
 	initVFlags()
 	pflag.Parse()
@@ -69,11 +75,13 @@ func optionInit() {
 }
 
 func declareDefaultFlags() {
+	config = StringP("config", "f", defaultConfigFile, "Specify config file. Support json, yaml")
 	debug = Bool("debug", false, "Whether to enable debug mode")
 	shared.ServiceName = StringP("service", "s", os.Getenv("VENKIT-SERVICE"), "Set the service name")
-	shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr")
-	shared.UseConsul = Bool("useConsul", true, "Whether to use the consul service center")
-	config = StringP("config", "f", defaultConfigFile, "Specify config file. Support json, yaml")
+	if shared.UseConsul == nil || shared.UseConsul() {
+		shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr")
+		shared.UseConsul = Bool("useConsul", true, "Whether to use the consul service center")
+	}
 }
 
 func readConfig() {
