@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/superwhys/venkit/discover"
@@ -20,6 +21,7 @@ var (
 	defaultConfigFile string
 	debug             BoolGetter
 	config            StringGetter
+	autoParseConfig   = true
 )
 
 func Viper() *viper.Viper {
@@ -51,6 +53,18 @@ func ProhibitConsul() {
 	shared.UseConsul = func() bool {
 		return false
 	}
+}
+
+func ProhibitAutoParseConfig() {
+	autoParseConfig = false
+}
+
+func ConfigFile() ([]byte, error) {
+	b, err := os.ReadFile(config())
+	if err != nil {
+		return nil, errors.Wrap(err, "readConf")
+	}
+	return b, nil
 }
 
 func Parse() {
@@ -85,7 +99,7 @@ func declareDefaultFlags() {
 }
 
 func readConfig() {
-	if config() != "" {
+	if autoParseConfig && config() != "" {
 		v.SetConfigFile(config())
 		if err := v.ReadInConfig(); err != nil {
 			lg.Errorf("Read on local file: %v, error: %v", config(), err)
