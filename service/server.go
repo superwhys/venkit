@@ -148,16 +148,25 @@ func (vs *VkService) listenCmux(ctx context.Context) error {
 	return vs.cmux.Serve()
 }
 
-func (vs *VkService) serve(listener net.Listener) error {
-	vs.beginCmux(listener)
-	vs.beginGrpc()
+func (vs *VkService) loadServiceName() {
+	if vs.serviceName != "" {
+		return
+	}
+}
 
+func (vs *VkService) serve(listener net.Listener) error {
 	vs.mounts = []mountFn{
-		// initialize various connections
-		vs.listenHttpServer(vs.httpLst),
-		vs.listenGrpcServer(vs.grpcLst),
-		vs.listenCmux,
 		vs.notiKill,
+	}
+
+	if len(vs.grpcServersFunc) != 0 {
+		vs.beginCmux(listener)
+		vs.beginGrpc()
+		vs.mounts = append(vs.mounts, vs.listenHttpServer(vs.httpLst))
+		vs.mounts = append(vs.mounts, vs.listenGrpcServer(vs.grpcLst))
+		vs.mounts = append(vs.mounts, vs.listenCmux)
+	} else {
+		vs.mounts = append(vs.mounts, vs.listenHttpServer(listener))
 	}
 
 	// grpc self connection will be used in grpcUI
@@ -165,6 +174,7 @@ func (vs *VkService) serve(listener net.Listener) error {
 		return errors.Wrap(err, "prepare selfConn")
 	}
 
+	vs.loadServiceName()
 	vs.registerIntoConsul(listener)
 	vs.enableGrpcUI()
 	vs.setHTTPCORS()

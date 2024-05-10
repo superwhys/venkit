@@ -15,6 +15,10 @@ import (
 )
 
 func (vs *VkService) beginGrpc() {
+	if len(vs.grpcServersFunc) == 0 {
+		return
+	}
+
 	vs.grpcServer = grpc.NewServer(vs.grpcOptions...)
 	for _, fn := range vs.grpcServersFunc {
 		fn(vs.grpcServer)
