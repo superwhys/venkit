@@ -50,6 +50,7 @@ func NewGinEngine(middlewares ...gin.HandlerFunc) *gin.Engine {
 
 func New(middlewares ...gin.HandlerFunc) *Engine {
 	engine := NewGinEngine()
+	gin.SetMode(gin.ReleaseMode)
 	return NewWithEngine(engine, middlewares...)
 }
 
@@ -91,22 +92,42 @@ func (g *RouterGroup) Group(relativePath string, handlers ...gin.HandlerFunc) *R
 	}
 }
 
-func (g *RouterGroup) RegisterRouter(method, path string, handlers ...Handler) {
+type HandlersChain []Handler
+
+func (c HandlersChain) Last() Handler {
+	if length := len(c); length > 0 {
+		return c[length-1]
+	}
+	return nil
+}
+
+func (g *RouterGroup) debugPrintRoute(method string, absolutePath string, handlers HandlersChain) {
+	handlerName := lg.StructName(handlers.Last())
+	lg.Debugc(g.ctx, "%-6s %-25s --> %s", method, absolutePath, handlerName)
+}
+
+func (g *RouterGroup) calculateAbsolutePath(relativePath string) string {
+	return joinPaths(g.BasePath(), relativePath)
+}
+
+func (g *RouterGroup) RegisterRouter(method, path string, handlers HandlersChain) {
+	absPath := g.calculateAbsolutePath(path)
 	g.Handle(method, path, wrapHandler(g.ctx, handlers...)...)
+	g.debugPrintRoute(method, absPath, handlers)
 }
 
 func (g *RouterGroup) GET(path string, handler ...Handler) {
-	g.RegisterRouter(http.MethodGet, path, handler...)
+	g.RegisterRouter(http.MethodGet, path, handler)
 }
 
 func (g *RouterGroup) POST(path string, handler ...Handler) {
-	g.RegisterRouter(http.MethodPost, path, handler...)
+	g.RegisterRouter(http.MethodPost, path, handler)
 }
 
 func (g *RouterGroup) PUT(path string, handler ...Handler) {
-	g.RegisterRouter(http.MethodPut, path, handler...)
+	g.RegisterRouter(http.MethodPut, path, handler)
 }
 
 func (g *RouterGroup) DELETE(path string, handler ...Handler) {
-	g.RegisterRouter(http.MethodDelete, path, handler...)
+	g.RegisterRouter(http.MethodDelete, path, handler)
 }

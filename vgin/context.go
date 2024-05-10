@@ -7,6 +7,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+type Data gin.H
+
 type HandleResponse interface {
 	GetCode() int
 	GetError() error
@@ -56,6 +58,16 @@ func (r *Ret) PackContent(code int, data any, err error, message string) *Ret {
 	r.Code = code
 	r.Data = data
 	return r
+}
+
+func ErrorRet(code int, err error, message string) *Ret {
+	ret := &Ret{}
+	return ret.FailedRet(code, err, message)
+}
+
+func SuccessRet(data any) *Ret {
+	ret := &Ret{}
+	return ret.SuccessRet(data)
 }
 
 func AbortWithError(c *gin.Context, code int, message string) {
