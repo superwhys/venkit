@@ -60,6 +60,9 @@ func ProhibitAutoParseConfig() {
 }
 
 func ConfigFile() ([]byte, error) {
+	if config() == "" {
+		return nil, errors.New("no config file specify")
+	}
 	b, err := os.ReadFile(config())
 	if err != nil {
 		return nil, errors.Wrap(err, "readConf")
