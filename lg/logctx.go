@@ -12,8 +12,10 @@ import (
 	"github.com/go-logfmt/logfmt"
 )
 
-const (
-	logContextKey = "logContext"
+type contextKey string
+
+var (
+	logContextKey contextKey = "logContext"
 )
 
 type LogContext struct {

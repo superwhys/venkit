@@ -98,6 +98,10 @@ func Debugf(msg string, v ...any) {
 	logger.Debugf(msg, v...)
 }
 
+func ClearContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, logContextKey, nil)
+}
+
 func With(ctx context.Context, msg string, v ...any) context.Context {
 	return logger.With(ctx, msg, v...)
 }
