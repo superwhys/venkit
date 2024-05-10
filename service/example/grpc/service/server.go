@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/superwhys/venkit/service/example/examplepb"
+	"github.com/superwhys/venkit/service/example/grpc/examplepb"
 	"google.golang.org/grpc/metadata"
 )
 

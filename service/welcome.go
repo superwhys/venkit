@@ -13,20 +13,20 @@ import (
 var fontStandard embed.FS
 
 func (vs *VkService) welcome(lis net.Listener) {
+	lg.Infoc(vs.ctx, "Listening... Addr=%v", lis.Addr().String())
+	if vs.grpcUI {
+		lg.Infoc(vs.ctx, "GRPCUI enabled. URL=%s", fmt.Sprintf("http://%s/debug/grpc/ui", vs.grpcSelfConn.Target()))
+	}
+
 	if vs.serviceName != "" {
 		vs.showServiceName()
 	}
 
 	if vs.tag != "" {
-		lg.Infoc(vs.ctx, "Service tag: %v", vs.tag)
+		lg.Infoc(vs.ctx, "Service Tag=%v", vs.tag)
 	}
 
-	lg.Infoc(vs.ctx, "Listening addr: %v", lis.Addr().String())
-	if vs.grpcUI {
-		lg.Infoc(vs.ctx, fmt.Sprintf("GRPCUI start in: http://%s/debug/grpc/ui", vs.grpcSelfConn.Target()))
-	}
-
-	lg.Infoc(vs.ctx, "VenKit Server Version: %v", version)
+	lg.Infoc(vs.ctx, "VenKit Service Started. Version=%v", version)
 }
 
 func (vs *VkService) showServiceName() {

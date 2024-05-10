@@ -8,7 +8,6 @@ import (
 
 	"github.com/fullstorydev/grpcui/standalone"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/lg"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -49,7 +48,6 @@ func (vs *VkService) prepareGrpcSelfConnect(listener net.Listener) error {
 		return errors.Wrap(err, "self connect to grpc")
 	}
 	vs.grpcSelfConn = conn
-	lg.Debugc(vs.ctx, "inited self connect success")
 	return nil
 }
 

@@ -26,12 +26,15 @@ func (vs *VkService) registerIntoConsul(listener net.Listener) {
 			return errors.Wrap(err, "Register-Consul")
 		}
 
-		logText := fmt.Sprintf("Registered service: %v", vs.serviceName)
+		var logArgs []any
+		logText := "Registered into consul success. Service=%v"
+		logArgs = append(logArgs, vs.serviceName)
 		if len(vs.tag) > 0 {
-			logText = fmt.Sprintf("%v tag: %v", logText, vs.tag)
+			logText = fmt.Sprintf("%v %v", logText, "Tag=%v")
+			logArgs = append(logArgs, vs.tag)
 		}
 
-		lg.Infoc(vs.ctx, logText)
+		lg.Infoc(vs.ctx, logText, logArgs...)
 
 		<-ctx.Done()
 

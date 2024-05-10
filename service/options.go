@@ -3,14 +3,11 @@ package service
 import (
 	"strings"
 
-	"github.com/superwhys/venkit/lg"
 	"google.golang.org/grpc"
 )
 
 func WithServiceName(name string) ServiceOption {
 	return func(vs *VkService) {
-		lg.Debug("With service name", name)
-
 		segs := strings.SplitN(name, ":", 2)
 		if len(segs) < 2 {
 			vs.serviceName = name
@@ -29,7 +26,6 @@ func WithTag(tag string) ServiceOption {
 
 func WithHTTPCORS() ServiceOption {
 	return func(vs *VkService) {
-		lg.Debug("Enabled HTTP CORS")
 		vs.httpCORS = true
 	}
 }

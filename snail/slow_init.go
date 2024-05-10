@@ -26,6 +26,6 @@ func Init() {
 		if err := obj.fn(); err != nil {
 			lg.PanicError(errors.Wrapf(err, "slower init obj: %v", obj.name))
 		}
-		lg.Debugf("slower init obj: %v success!", obj.name)
+		lg.Debugf("slower init obj success! name=%v", obj.name)
 	}
 }

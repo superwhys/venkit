@@ -12,13 +12,14 @@ import (
 	"github.com/superwhys/venkit/internal/shared"
 	"github.com/superwhys/venkit/lg"
 	"github.com/superwhys/venkit/snail"
+	venkitUtils "github.com/superwhys/venkit/utils"
 )
 
 var (
 	v                 = viper.New()
 	requiredFlags     []string
 	nestedKey         = map[string]interface{}{}
-	defaultConfigFile string
+	defaultConfigFile = "config.yaml"
 	debug             BoolGetter
 	config            StringGetter
 )
@@ -31,6 +32,16 @@ type VflagOptionFunc func(*VflagOption)
 
 func Viper() *viper.Viper {
 	return v
+}
+
+func declareDefaultFlags() {
+	config = StringP("config", "f", defaultConfigFile, "Specify config file. Support json, yaml")
+	debug = Bool("debug", false, "Whether to enable debug mode")
+	shared.ServiceName = StringP("service", "s", os.Getenv("VENKIT-SERVICE"), "Set the service name")
+	if shared.UseConsul == nil || shared.UseConsul() {
+		shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr")
+		shared.UseConsul = Bool("useConsul", true, "Whether to use the consul service center")
+	}
 }
 
 func OverrideDefaultConfigFile(configFile string) {
@@ -47,6 +58,7 @@ func initVFlags() {
 	v.AddConfigPath(".")
 	v.AddConfigPath("./configs")
 	v.AddConfigPath("./tmp/config/")
+	v.SetConfigFile("config.yaml")
 
 	declareDefaultFlags()
 	if err := v.BindPFlags(pflag.CommandLine); err != nil {
@@ -108,23 +120,13 @@ func optionInit() {
 	}
 }
 
-func declareDefaultFlags() {
-	config = StringP("config", "f", defaultConfigFile, "Specify config file. Support json, yaml")
-	debug = Bool("debug", false, "Whether to enable debug mode")
-	shared.ServiceName = StringP("service", "s", os.Getenv("VENKIT-SERVICE"), "Set the service name")
-	if shared.UseConsul == nil || shared.UseConsul() {
-		shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr")
-		shared.UseConsul = Bool("useConsul", true, "Whether to use the consul service center")
-	}
-}
-
 func readConfig(opt *VflagOption) {
-	if opt.autoParseConfig && config() != "" {
+	if opt.autoParseConfig && config() != "" && venkitUtils.FileExists(config()) {
 		v.SetConfigFile(config())
 		if err := v.ReadInConfig(); err != nil {
 			lg.Errorf("Read on local file: %v, error: %v", config(), err)
 		} else {
-			lg.Infof("Read config from local file: %v!", config())
+			lg.Infof("Read local config success. Config=%v", config())
 		}
 	}
 }

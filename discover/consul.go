@@ -39,7 +39,6 @@ func IsInsideDockerContainer() bool {
 func init() {
 	addrs, err := net.LookupHost("host.docker.internal")
 	if err == nil && len(addrs) > 0 && IsInsideDockerContainer() {
-		lg.Debugf("is inside docker container, addrs: %v", addrs)
 		HostAddress = addrs[0]
 		return
 	}
@@ -58,7 +57,7 @@ func GetConsulAddress() string {
 func GetConsulClient() *Client {
 	once.Do(func() {
 		defaultConsulClient = newConsulClient(shared.GetConsulAddress())
-		lg.Debugf("Connect consul -> %v", shared.GetConsulAddress())
+		lg.Debugf("Connect consul success. ConsulAddr=%v", shared.GetConsulAddress())
 	})
 
 	return defaultConsulClient

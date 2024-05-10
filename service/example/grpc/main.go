@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/superwhys/venkit/lg"
 	"github.com/superwhys/venkit/service"
-	"github.com/superwhys/venkit/service/example/examplepb"
-	exampleSrv "github.com/superwhys/venkit/service/example/service"
+	"github.com/superwhys/venkit/service/example/grpc/examplepb"
+	exampleSrv "github.com/superwhys/venkit/service/example/grpc/service"
 	"github.com/superwhys/venkit/vflags"
 	"google.golang.org/grpc"
 )
