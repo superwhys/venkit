@@ -19,11 +19,11 @@ func WithWorker(fn workerFunc) ServiceOption {
 
 func WithNameWorker(name string, fn workerFunc) ServiceOption {
 	return func(vs *VkService) {
-		lg.Debugf("Add worker: %v", name)
+		lg.Debugc(vs.ctx, "Add worker: %v", name)
 		vs.workers = append(vs.workers, &worker{
 			name:       name,
 			fn:         fn,
-			isWithName: !(lg.FuncName(fn) == name),
+			isWithName: lg.FuncName(fn) != name,
 		})
 	}
 }

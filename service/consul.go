@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	"github.com/pkg/errors"
@@ -24,10 +25,13 @@ func (vs *VkService) registerIntoConsul(listener net.Listener) {
 			lg.Errorf("register consul error: %v", err)
 			return errors.Wrap(err, "Register-Consul")
 		}
-		lg.Infof("Register service: %v", vs.serviceName)
+
+		logText := fmt.Sprintf("Registered service: %v", vs.serviceName)
 		if len(vs.tag) > 0 {
-			lg.Infof("Registered with tags: %v", vs.tag)
+			logText = fmt.Sprintf("%v tag: %v", logText, vs.tag)
 		}
+
+		lg.Infoc(vs.ctx, logText)
 
 		<-ctx.Done()
 

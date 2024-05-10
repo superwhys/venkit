@@ -47,7 +47,7 @@ type ServiceOption func(*VkService)
 
 func NewVkService(opts ...ServiceOption) *VkService {
 	s := &VkService{
-		ctx:     context.Background(),
+		ctx:     lg.With(context.Background(), "[Venkit]"),
 		httpMux: http.NewServeMux(),
 	}
 	s.httpHandler = s.httpMux
@@ -69,7 +69,7 @@ func (vs *VkService) notiKill(ctx context.Context) error {
 	)
 	select {
 	case sg := <-ch:
-		lg.Info("Graceful stopped server successfully")
+		lg.Infoc(vs.ctx, "Graceful stopped server successfully")
 
 		return errors.Errorf("Signal: %s", sg.String())
 	case <-ctx.Done():
@@ -78,7 +78,7 @@ func (vs *VkService) notiKill(ctx context.Context) error {
 }
 
 func (vs *VkService) runFinalMount() error {
-	grp, ctx := errgroup.WithContext(vs.ctx)
+	grp, ctx := errgroup.WithContext(lg.ClearContext(vs.ctx))
 	for _, mount := range vs.mounts {
 		mf := mount
 		grp.Go(func() error {
@@ -103,7 +103,7 @@ func waitContext(ctx context.Context, fn func() error) error {
 
 	go func() {
 		<-ctx.Done()
-		lg.Debug("Worker force close after 5 seconds")
+		lg.Debugc(ctx, "Worker force close after 5 seconds")
 		time.Sleep(time.Second * 5)
 		stop <- errors.Wrap(ctx.Err(), "Force close")
 	}()
@@ -118,7 +118,7 @@ func (vs *VkService) mountWorker(worker *worker) mountFn {
 		}
 
 		if err := worker.fn(ctx); err != nil {
-			lg.Errorf("worker: %v run error: %v", worker.name, err)
+			lg.Errorc(ctx, "worker: %v run error: %v", worker.name, err)
 			return errors.Wrap(err, worker.name)
 		}
 		return nil
@@ -136,15 +136,6 @@ func (vs *VkService) setHTTPCORS() {
 		return
 	}
 	vs.httpHandler = cors.AllowAll().Handler(vs.httpHandler)
-}
-
-func (vs *VkService) welcome(lis net.Listener) {
-	lg.Infoc(vs.ctx, "Listening addr: %v", lis.Addr().String())
-	if vs.grpcUI {
-		lg.Infoc(vs.ctx, fmt.Sprintf("GRPCUI start in: http://%s/debug/grpc/ui", vs.grpcSelfConn.Target()))
-	}
-
-	lg.Infof("VenKit Server Version: %v", version)
 }
 
 func (vs *VkService) beginCmux(listener net.Listener) {
