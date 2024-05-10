@@ -113,6 +113,10 @@ func waitContext(ctx context.Context, fn func() error) error {
 
 func (vs *VkService) mountWorker(worker *worker) mountFn {
 	return func(ctx context.Context) error {
+		if worker.isWithName {
+			ctx = lg.With(ctx, "[%v]", worker.name)
+		}
+
 		if err := worker.fn(ctx); err != nil {
 			lg.Errorf("worker: %v run error: %v", worker.name, err)
 			return errors.Wrap(err, worker.name)
