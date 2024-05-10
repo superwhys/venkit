@@ -21,8 +21,13 @@ var (
 	defaultConfigFile string
 	debug             BoolGetter
 	config            StringGetter
-	autoParseConfig   = true
 )
+
+type VflagOption struct {
+	autoParseConfig bool
+}
+
+type VflagOptionFunc func(*VflagOption)
 
 func Viper() *viper.Viper {
 	return v
@@ -49,14 +54,18 @@ func initVFlags() {
 	}
 }
 
-func ProhibitConsul() {
-	shared.UseConsul = func() bool {
-		return false
+func ProhibitConsul() VflagOptionFunc {
+	return func(_ *VflagOption) {
+		shared.UseConsul = func() bool {
+			return false
+		}
 	}
 }
 
-func ProhibitAutoParseConfig() {
-	autoParseConfig = false
+func ProhibitAutoParseConfig() VflagOptionFunc {
+	return func(vo *VflagOption) {
+		vo.autoParseConfig = false
+	}
 }
 
 func ConfigFile() ([]byte, error) {
@@ -70,12 +79,20 @@ func ConfigFile() ([]byte, error) {
 	return b, nil
 }
 
-func Parse() {
+func Parse(opts ...VflagOptionFunc) {
+	o := &VflagOption{
+		autoParseConfig: true,
+	}
+
+	for _, opt := range opts {
+		opt(o)
+	}
+
 	initVFlags()
 	pflag.Parse()
 
 	injectNestedKey()
-	readConfig()
+	readConfig(o)
 	checkFlagKey()
 	optionInit()
 	snail.Init()
@@ -101,8 +118,8 @@ func declareDefaultFlags() {
 	}
 }
 
-func readConfig() {
-	if autoParseConfig && config() != "" {
+func readConfig(opt *VflagOption) {
+	if opt.autoParseConfig && config() != "" {
 		v.SetConfigFile(config())
 		if err := v.ReadInConfig(); err != nil {
 			lg.Errorf("Read on local file: %v, error: %v", config(), err)
