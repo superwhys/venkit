@@ -103,7 +103,7 @@ func (c HandlersChain) Last() Handler {
 
 func (g *RouterGroup) debugPrintRoute(method string, absolutePath string, handlers HandlersChain) {
 	handlerName := lg.StructName(handlers.Last())
-	lg.Debugc(g.ctx, "%-6s %-25s --> %s", method, absolutePath, handlerName)
+	lg.Debugc(g.ctx, "Add router --> method=%s router=%s handler=%s", method, absolutePath, handlerName)
 }
 
 func (g *RouterGroup) calculateAbsolutePath(relativePath string) string {
