@@ -21,7 +21,7 @@ func WithHttpHandler(pattern string, handler http.Handler) ServiceOption {
 			pattern = "/" + pattern
 		}
 
-		defer lg.Infof("Registered http endpoint prefix. prefix=%s", pattern)
+		defer lg.Infof("Registered http endpoint prefix. Prefix=%s", pattern)
 
 		if strings.HasSuffix(pattern, "/") {
 			vs.httpMux.Handle(pattern, http.StripPrefix(strings.TrimSuffix(pattern, "/"), handler))
