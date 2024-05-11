@@ -120,8 +120,6 @@ func cloneLogContext(c *LogContext) *LogContext {
 }
 
 func parseFmtStr(format string) (msg string, isKV []bool, keys, descs []string) {
-	// Format like "% d" will not be supported.
-
 	if json.Valid([]byte(format)) {
 		return format, nil, nil, nil
 	}
