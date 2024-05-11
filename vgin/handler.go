@@ -2,67 +2,65 @@ package vgin
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 	"github.com/superwhys/venkit/lg"
 )
 
+// Handler is the base Handler, you can use this when your handler not include parameters
+// be sure to use IsolatedHandler when your handler include parameters
 type Handler interface {
-	InitHandler() Handler
 	HandleFunc(ctx context.Context, c *gin.Context) HandleResponse
 }
 
-type DefaultHandler struct{}
-
-func (dh *DefaultHandler) InitHandler() Handler {
-	return &DefaultHandler{}
+type NameHandler interface {
+	Handler
+	Name() string
 }
+
+// IsolatedHandler is used to prevent multiple concurrent use of variables with the same structure.
+// InitHandler is called to create a new instance each time a request is processed
+// be sure to use this when your handler include parameters
+type IsolatedHandler interface {
+	NameHandler
+	InitHandler() IsolatedHandler
+}
+
+type DefaultHandler struct{}
 
 func (dh *DefaultHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
 	return (&Ret{}).SuccessRet("default handler")
 }
 
-func wrapHandler(ctx context.Context, handlers ...Handler) []gin.HandlerFunc {
+func wrapDefaultHandler(ctx context.Context, handlers ...Handler) []gin.HandlerFunc {
 	handlerFuncs := make([]gin.HandlerFunc, 0, len(handlers))
 	for _, handler := range handlers {
-		handlerFuncs = append(handlerFuncs, wrapDefaultHandler(ctx, handler))
+		handlerFuncs = append(handlerFuncs, wrapHandler(ctx, handler))
 	}
 
 	return handlerFuncs
 }
 
-func bindData(c *gin.Context, data any) error {
-	if dataT := reflect.TypeOf(data); dataT.Kind() != reflect.Pointer {
-		return errors.New("data instance need a struct pointer")
+func wrapHandler(ctx context.Context, handler Handler) gin.HandlerFunc {
+	ctx = lg.With(ctx, "[%v]", guessHandlerName(handler))
+
+	var handlerGetter func() Handler
+	switch h := handler.(type) {
+	case IsolatedHandler:
+		handlerGetter = func() Handler {
+			return h.InitHandler()
+		}
+	default:
+		handlerGetter = func() Handler {
+			return handler
+		}
 	}
-
-	if err := c.ShouldBind(data); err != nil {
-		return errors.Wrap(err, "parse body params")
-	}
-
-	if err := c.ShouldBindUri(data); err != nil {
-		return errors.Wrap(err, "parse uri params")
-	}
-
-	return nil
-}
-
-func getHandlerName(handler Handler) string {
-	ele := reflect.TypeOf(handler).Elem()
-	return ele.Name()
-}
-
-func wrapDefaultHandler(ctx context.Context, handler Handler) gin.HandlerFunc {
-	ctx = lg.With(ctx, "[%v]", getHandlerName(handler))
-	structName := lg.StructName(handler)
 
 	return func(c *gin.Context) {
-		newHandler := handler.InitHandler()
-		ret := newHandler.HandleFunc(ctx, c)
+		h := handlerGetter()
+		ret := h.HandleFunc(ctx, c)
 		if ret != nil && ret.GetError() != nil {
-			lg.Errorc(ctx, "%v handle err: %v", structName, ret.GetError())
+			lg.Errorc(ctx, "handle err: %v", ret.GetError())
 			AbortWithError(c, ret.GetCode(), ret.GetMessage())
 			return
 		}
@@ -79,6 +77,10 @@ func wrapDefaultHandler(ctx context.Context, handler Handler) gin.HandlerFunc {
 
 type ginHandlerFuncHandler struct {
 	handlerFunc gin.HandlerFunc
+}
+
+func (h *ginHandlerFuncHandler) Name() string {
+	return lg.FuncName(h.handlerFunc)
 }
 
 func (h *ginHandlerFuncHandler) InitHandler() Handler {

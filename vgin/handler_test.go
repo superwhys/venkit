@@ -23,7 +23,11 @@ type PingHandler struct {
 	HeaderDataInt   int     `vheader:"header_id"`
 }
 
-func (h *PingHandler) InitHandler() Handler {
+func (h *PingHandler) Name() string {
+	return "PingHandler"
+}
+
+func (h *PingHandler) InitHandler() IsolatedHandler {
 	return &PingHandler{}
 }
 

@@ -2,8 +2,10 @@ package vgin
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
+	"github.com/fatih/color"
 	"github.com/gin-gonic/gin"
 	"github.com/superwhys/venkit/lg"
 )
@@ -88,8 +90,12 @@ func (c HandlersChain) Last() Handler {
 }
 
 func (g *RouterGroup) debugPrintRoute(method string, absolutePath string, handlers HandlersChain) {
-	handlerName := lg.StructName(handlers.Last())
-	lg.Debugc(g.ctx, "Add router --> Method=%s Router=%s Handler=%s", method, absolutePath, handlerName)
+	handler := handlers.Last()
+
+	handlerName := guessHandlerName(handler)
+
+	routerMsg := color.MagentaString(fmt.Sprintf("Method=%-6s Router=%-20s Handler=%s", method, absolutePath, handlerName))
+	lg.Debugc(g.ctx, "Add router --> %v", routerMsg)
 }
 
 func (g *RouterGroup) calculateAbsolutePath(relativePath string) string {
@@ -98,7 +104,7 @@ func (g *RouterGroup) calculateAbsolutePath(relativePath string) string {
 
 func (g *RouterGroup) RegisterRouter(method, path string, handlers HandlersChain) {
 	absPath := g.calculateAbsolutePath(path)
-	g.Handle(method, path, wrapHandler(g.ctx, handlers...)...)
+	g.Handle(method, path, wrapDefaultHandler(g.ctx, handlers...)...)
 	g.debugPrintRoute(method, absPath, handlers)
 }
 

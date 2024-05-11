@@ -14,8 +14,8 @@ import (
 
 type TestSessionHandler struct{}
 
-func (th *TestSessionHandler) InitHandler() Handler {
-	return th
+func (th *TestSessionHandler) Name() string {
+	return "TestSessionHandler"
 }
 
 func (th *TestSessionHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {

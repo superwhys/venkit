@@ -20,11 +20,17 @@ const (
 	ParamsHeaderTag    = "vheader"
 )
 
+type ParamsHandler IsolatedHandler
+
 type paramsInHandler struct {
-	into Handler
+	into ParamsHandler
 }
 
-func (ph *paramsInHandler) InitHandler() Handler {
+func (ph *paramsInHandler) Name() string {
+	return guessHandlerName(ph.into)
+}
+
+func (ph *paramsInHandler) InitHandler() IsolatedHandler {
 	return &paramsInHandler{ph.into.InitHandler()}
 }
 
@@ -41,7 +47,7 @@ func (ph *paramsInHandler) HandleFunc(ctx context.Context, c *gin.Context) Handl
 	return ph.into.HandleFunc(ctx, c)
 }
 
-func ParamsIn(handler Handler) Handler {
+func ParamsIn(handler ParamsHandler) Handler {
 	return &paramsInHandler{handler}
 }
 
