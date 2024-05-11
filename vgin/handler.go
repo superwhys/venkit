@@ -22,7 +22,7 @@ type NameHandler interface {
 // InitHandler is called to create a new instance each time a request is processed
 // be sure to use this when your handler include parameters
 type IsolatedHandler interface {
-	NameHandler
+	Handler
 	InitHandler() IsolatedHandler
 }
 

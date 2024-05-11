@@ -47,7 +47,7 @@ func NewWithEngine(engine *gin.Engine, middlewares ...gin.HandlerFunc) *Engine {
 	return &Engine{
 		RouterGroup: &RouterGroup{
 			RouterGroup: &engine.RouterGroup,
-			ctx:         context.Background(),
+			ctx:         lg.With(context.Background(), "[Vgin]"),
 		},
 		engine: engine,
 	}
