@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -13,14 +14,14 @@ import (
 )
 
 type PingHandler struct {
-	JsonDataStr     string  `vjson:"name"`
-	JsonDataInt     int     `vjson:"age"`
-	JsonDataFloat64 float64 `vjson:"money"`
+	JsonDataStr     string  `vjson:"name" form:"name"`
+	JsonDataInt     int     `vjson:"age" form:"age"`
+	JsonDataFloat64 float64 `vjson:"money" form:"money"`
 	QueryDataStr    string  `vquery:"query1"`
 	QueryDataInt    int     `vquery:"query2"`
 	PathData        int     `vpath:"test_id"`
 	HeaderDataStr   string  `vheader:"Token"`
-	HeaderDataInt   int     `vheader:"header_id"`
+	HeaderDataInt   int     `vheader:"header_id" `
 }
 
 func (h *PingHandler) Name() string {
@@ -92,10 +93,59 @@ func TestParseJson(t *testing.T) {
 }
 
 func BenchmarkVgin(b *testing.B) {
-	r := NewWithEngine(gin.New(), gin.Recovery())
+	r := NewWithEngine(gin.New(), gin.Recovery(), BodyBufferMiddleware())
 	r.POST("/ping/:test_id", ParamsIn(&PingHandler{}))
 
 	// 运行基准测试
+	for i := 0; i < b.N; i++ {
+		reqBody := `{"name": "John Doe", "age": 18}`
+		req := httptest.NewRequest("POST", fmt.Sprintf("/ping/%v?query1=asd&query2=123", "12"), strings.NewReader(reqBody))
+		req.Header.Set("Token", "asdfasdfasfdasdfasdfadsfasdfasdfasddf")
+		req.Header.Set("header_id", "123123123")
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+	}
+}
+
+func BenchmarkVginWithMiddlewareAndPoolOptimize(b *testing.B) {
+	r := NewWithEngine(gin.New(), gin.Recovery(), BodyBufferMiddleware())
+	r.POST("/ping/:test_id", ParamsIn(&PingHandler{}), ParamsIn(&PingHandler{}))
+
+	for i := 0; i < b.N; i++ {
+		reqBody := `{"name": "John Doe", "age": 18}`
+		req := httptest.NewRequest("POST", fmt.Sprintf("/ping/%v?query1=asd&query2=123", "12"), strings.NewReader(reqBody))
+		req.Header.Set("Token", "asdfasdfasfdasdfasdfadsfasdfasdfasddf")
+		req.Header.Set("header_id", "123123123")
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+	}
+}
+
+func BenchmarkOriginGin(b *testing.B) {
+	r := gin.New()
+	r.Use(gin.Recovery())
+	r.POST("/ping/:test_id", func(ctx *gin.Context) {
+		data := &PingHandler{}
+		if err := ctx.ShouldBind(data); err != nil {
+			fmt.Println(err)
+			ctx.JSON(400, "parse data error")
+			return
+		}
+
+		testId, _ := strconv.ParseInt(ctx.Param("test_id"), 10, 64)
+		data.PathData = int(testId)
+		data.QueryDataStr = ctx.Query("query1")
+		query2Int, _ := strconv.ParseInt(ctx.Query("query2"), 10, 64)
+		data.QueryDataInt = int(query2Int)
+		data.HeaderDataStr = ctx.GetHeader("Token")
+		headerId, _ := strconv.ParseInt(ctx.GetHeader("header_id"), 10, 64)
+		data.HeaderDataInt = int(headerId)
+	})
+
 	for i := 0; i < b.N; i++ {
 		reqBody := `{"name": "John Doe", "age": 18}`
 		req := httptest.NewRequest("POST", fmt.Sprintf("/ping/%v?query1=asd&query2=123", "12"), strings.NewReader(reqBody))

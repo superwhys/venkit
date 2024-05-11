@@ -42,7 +42,7 @@ type HelloHandler struct {
 	HeaderToken int `vheader:"Token"`
 }
 
-func (h *HelloHandler) InitHandler() vgin.Handler {
+func (h *HelloHandler) InitHandler() vgin.IsolatedHandler {
 	return &HelloHandler{}
 }
 

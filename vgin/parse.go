@@ -1,15 +1,22 @@
 package vgin
 
 import (
+	"bytes"
 	"context"
 	"mime/multipart"
 	"net/http"
+	"reflect"
+	"regexp"
+	"strings"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
 	"github.com/gorilla/schema"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
+	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/slices"
 )
 
 const (
@@ -35,7 +42,7 @@ func (ph *paramsInHandler) InitHandler() IsolatedHandler {
 }
 
 func (ph *paramsInHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
-	if err := ParseMapParams(c, ph.into); err != nil {
+	if err := ParseMapParams(ctx, c, ph.into); err != nil {
 		return &Ret{
 			Code:    http.StatusInternalServerError,
 			Data:    nil,
@@ -51,16 +58,72 @@ func ParamsIn(handler ParamsHandler) Handler {
 	return &paramsInHandler{handler}
 }
 
-func ParseMapParams(c *gin.Context, into Handler) (err error) {
+var (
+	pattern     = regexp.MustCompile(`(\w+):"[^"]+"`)
+	tagMap      = make(map[string]slices.StringSet)
+	tagMapMutex sync.RWMutex
+)
+
+func findHandlerTag(h Handler) slices.StringSet {
+	handlerName := lg.StructName(h)
+	tagMapMutex.RLock()
+	if r, exists := tagMap[handlerName]; exists {
+		tagMapMutex.RUnlock()
+		return r
+	}
+	tagMapMutex.RUnlock()
+
+	tagMapMutex.Lock()
+	defer tagMapMutex.Unlock()
+	if r, exists := tagMap[lg.StructName(h)]; exists {
+		return r
+	}
+
+	uv := reflect.TypeOf(h)
+
+	if uv.Kind() == reflect.Pointer {
+		uv = uv.Elem()
+	}
+
+	numField := uv.NumField()
+	if numField == 0 {
+		return nil
+	}
+
+	tagSet := slices.NewStringSet()
+	for idx := 0; idx < numField; idx++ {
+		field := uv.Field(idx)
+		ret := pattern.FindAllStringSubmatch(string(field.Tag), -1)
+		for _, r := range ret {
+			if len(r) != 2 {
+				continue
+			}
+			tagSet.Add(r[1])
+		}
+	}
+
+	tagMap[handlerName] = tagSet
+	return tagSet
+}
+
+func ParseMapParams(ctx context.Context, c *gin.Context, into Handler) (err error) {
+	tagSet := findHandlerTag(into)
+
 	switch c.ContentType() {
 	case gin.MIMEJSON:
+		if !tagSet.Contains(ParamsJsonTag) {
+			break
+		}
 		var raw []byte
-		raw, err = c.GetRawData()
+		raw, err = BodyRawData(c)
 		if err != nil {
 			return err
 		}
-		err = parseJson(raw, into)
+		err = parseJson(ctx, raw, into)
 	case gin.MIMEMultipartPOSTForm:
+		if !tagSet.Contains(ParamsMultiFormTag) {
+			break
+		}
 		var form *multipart.Form
 		form, err = c.MultipartForm()
 		if err != nil {
@@ -73,9 +136,9 @@ func ParseMapParams(c *gin.Context, into Handler) (err error) {
 	}
 
 	allwaysParse := []func(*gin.Context, Handler) error{
-		parseQuery,
-		parsePath,
-		parseHeader,
+		parseQuery(tagSet.Contains(ParamsQueryTag)),
+		parsePath(tagSet.Contains(ParamsPathTag)),
+		parseHeader(tagSet.Contains(ParamsHeaderTag)),
 	}
 
 	for _, parser := range allwaysParse {
@@ -87,53 +150,85 @@ func ParseMapParams(c *gin.Context, into Handler) (err error) {
 	return nil
 }
 
-func parseHeader(c *gin.Context, intoHandler Handler) error {
-	if len(c.Request.Header) == 0 {
+func parseHeader(needDo bool) func(c *gin.Context, intoHandler Handler) error {
+	return func(c *gin.Context, intoHandler Handler) error {
+		if !needDo || len(c.Request.Header) == 0 {
+			return nil
+		}
+
+		headerMap := c.Request.Header
+		if err := schemaDecoder(ParamsHeaderTag).Decode(intoHandler, headerMap); err != nil {
+			return errors.Wrap(err, "parseHeader")
+		}
+
 		return nil
-	}
 
-	headerMap := c.Request.Header
-	if err := schemaDecoder(ParamsHeaderTag).Decode(intoHandler, headerMap); err != nil {
-		return errors.Wrap(err, "parseHeader")
 	}
-
-	return nil
 }
 
-func parsePath(c *gin.Context, intoHandler Handler) error {
-	if len(c.Params) == 0 {
+func parsePath(needDo bool) func(c *gin.Context, intoHandler Handler) error {
+	return func(c *gin.Context, intoHandler Handler) error {
+		if !needDo || len(c.Params) == 0 {
+			return nil
+		}
+
+		tmp := make(map[string][]string)
+		for _, p := range c.Params {
+			tmp[p.Key] = []string{p.Value}
+		}
+		if err := schemaDecoder(ParamsPathTag).Decode(intoHandler, tmp); err != nil {
+			return errors.Wrap(err, "parsePath")
+		}
+
 		return nil
-	}
 
-	tmp := make(map[string][]string)
-	for _, p := range c.Params {
-		tmp[p.Key] = []string{p.Value}
 	}
-
-	if err := schemaDecoder(ParamsPathTag).Decode(intoHandler, tmp); err != nil {
-		return errors.Wrap(err, "parsePath")
-	}
-
-	return nil
 }
 
-func parseQuery(c *gin.Context, intoHandler Handler) error {
-	queryMap := c.Request.URL.Query()
-	if len(queryMap) == 0 {
+func parseQuery(needDo bool) func(c *gin.Context, intoHandler Handler) error {
+	return func(c *gin.Context, intoHandler Handler) error {
+		if !needDo {
+			return nil
+		}
+
+		queryMap := c.Request.URL.Query()
+		if len(queryMap) == 0 {
+			return nil
+		}
+
+		if err := schemaDecoder(ParamsQueryTag).Decode(intoHandler, queryMap); err != nil {
+			return errors.Wrap(err, "parseQuert")
+		}
+
 		return nil
-	}
 
-	if err := schemaDecoder(ParamsQueryTag).Decode(intoHandler, queryMap); err != nil {
-		return errors.Wrap(err, "parseQuert")
 	}
-
-	return nil
 }
+
+var (
+	schemaDecoderMap = make(map[string]*schema.Decoder)
+	schemaMapMutex   sync.RWMutex
+)
 
 func schemaDecoder(tag string) *schema.Decoder {
+	schemaMapMutex.RLock()
+	if decoder, exists := schemaDecoderMap[tag]; exists {
+		schemaMapMutex.RUnlock()
+		return decoder
+	}
+	schemaMapMutex.RUnlock()
+
+	schemaMapMutex.Lock()
+	defer schemaMapMutex.Unlock()
+
+	if decoder, exists := schemaDecoderMap[tag]; exists {
+		return decoder
+	}
+
 	decoder := schema.NewDecoder()
 	decoder.SetAliasTag(tag)
 	decoder.IgnoreUnknownKeys(true)
+	schemaDecoderMap[tag] = decoder
 	return decoder
 }
 
@@ -151,18 +246,24 @@ func mapstructureDecoder(tag string, result Handler) (*mapstructure.Decoder, err
 	return decoder, nil
 }
 
-func parseJson(data []byte, intoHandler Handler) error {
+func parseJson(ctx context.Context, data []byte, intoHandler Handler) error {
+	data = bytes.TrimSpace(data)
 	tmp := make(map[string]any)
 	if err := json.Unmarshal(data, &tmp); err != nil {
-		return errors.Wrap(err, "parseJson")
+		return errors.Wrap(err, "decode json")
 	}
 	decoder, err := mapstructureDecoder(ParamsJsonTag, intoHandler)
 	if err != nil {
-		return errors.Wrap(err, "parseJson")
+		return errors.Wrap(err, "map decode")
 	}
 
-	if err := decoder.Decode(tmp); err != nil {
-		errors.Wrap(err, "parseJson")
+	err = decoder.Decode(tmp)
+	if err != nil {
+		if strings.Contains(err.Error(), "unconvertible type") {
+			lg.Warnc(ctx, "Type error: %v", err)
+		} else {
+			return errors.Wrap(err, "map decode json")
+		}
 	}
 
 	return nil
