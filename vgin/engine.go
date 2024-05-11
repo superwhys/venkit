@@ -94,7 +94,7 @@ func (g *RouterGroup) debugPrintRoute(method string, absolutePath string, handle
 
 	handlerName := guessHandlerName(handler)
 
-	routerMsg := color.MagentaString(fmt.Sprintf("Method=%-6s Router=%-20s Handler=%s", method, absolutePath, handlerName))
+	routerMsg := color.MagentaString(fmt.Sprintf("Method=%-6s Router=%-26s Handler=%s", method, absolutePath, handlerName))
 	lg.Debugc(g.ctx, "Add router --> %v", routerMsg)
 }
 
