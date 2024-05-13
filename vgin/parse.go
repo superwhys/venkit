@@ -108,7 +108,6 @@ func findHandlerTag(h Handler) slices.StringSet {
 
 func ParseMapParams(ctx context.Context, c *gin.Context, into Handler) (err error) {
 	tagSet := findHandlerTag(into)
-
 	switch c.ContentType() {
 	case gin.MIMEJSON:
 		if !tagSet.Contains(ParamsJsonTag) {

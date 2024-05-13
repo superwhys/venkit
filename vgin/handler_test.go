@@ -157,3 +157,38 @@ func BenchmarkOriginGin(b *testing.B) {
 		r.ServeHTTP(w, req)
 	}
 }
+
+type SimpleHandler struct{}
+
+func (h *SimpleHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
+	return SuccessRet("success")
+}
+
+func BenchmarkVginSimple(b *testing.B) {
+	r := NewWithEngine(gin.New(), gin.Recovery())
+
+	r.POST("/ping", &SimpleHandler{})
+
+	for i := 0; i < b.N; i++ {
+		req := httptest.NewRequest("POST", "/ping", nil)
+
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+	}
+}
+
+func BenchmarkGinSimple(b *testing.B) {
+	r := gin.New()
+	r.Use(gin.Recovery())
+
+	r.POST("/ping", func(ctx *gin.Context) {
+		ctx.JSON(200, "success")
+	})
+
+	for i := 0; i < b.N; i++ {
+		req := httptest.NewRequest("POST", "/ping", nil)
+
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+	}
+}

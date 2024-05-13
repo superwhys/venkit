@@ -57,8 +57,7 @@ func wrapHandler(ctx context.Context, handler Handler) gin.HandlerFunc {
 	}
 
 	return func(c *gin.Context) {
-		h := handlerGetter()
-		ret := h.HandleFunc(ctx, c)
+		ret := handlerGetter().HandleFunc(ctx, c)
 		if ret != nil && ret.GetError() != nil {
 			lg.Errorc(ctx, "handle err: %v", ret.GetError())
 			AbortWithError(c, ret.GetCode(), ret.GetMessage())

@@ -73,9 +73,9 @@ func (g *RouterGroup) StaticFS(relativePath string, fs http.FileSystem) gin.IRou
 	return g.RouterGroup.StaticFS(relativePath, fs)
 }
 
-func (g *RouterGroup) Group(relativePath string, handlers ...gin.HandlerFunc) *RouterGroup {
+func (g *RouterGroup) Group(relativePath string, handlers ...Handler) *RouterGroup {
 	return &RouterGroup{
-		RouterGroup: g.RouterGroup.Group(relativePath, handlers...),
+		RouterGroup: g.RouterGroup.Group(relativePath, wrapDefaultHandler(g.ctx, handlers...)...),
 		ctx:         g.ctx,
 	}
 }
