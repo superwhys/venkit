@@ -1,12 +1,18 @@
 # vgin
 vgin is a toolkit that lightly encapsulates the gin framework.
 
-In this toolkit, a `Handler` is defined, and all parameter binding is done automatically in the handler
+In this toolkit, a `Handler` is defined, and all the interface logic can be write in HandleFunc
 ```Go
 type Handler interface {
 	HandleFunc(ctx context.Context, c *gin.Context) HandleResponse
 }
 ```
+
+If your api needs to accept some parameters, you can choose to parse the parameters into the structure yourself, 
+
+or you can choose the `ParamsIn` provided here to automatically bind `Body`, `Form`, `Path`, `Query`, `Header` data into the `Handler`
+
+When you use `ParamsIn` for automatic binding, you also need to upgrade the `Handler` to `IsolatedHandler` to prevent fields in the Handler from being used simultaneously in multiple threads.
 
 ## Example
 ```GO
@@ -15,6 +21,10 @@ type HelloHandler struct {
 	Name        string
 	Age         int
 	HeaderToken int `vheader:"Token"`
+}
+
+func (h *HelloHandler) InitHandler() IsolatedHandler {
+	return &HelloHandler{}
 }
 
 func (h *HelloHandler) HandleFunc(ctx context.Context, c *gin.Context) vgin.HandleResponse {
@@ -27,15 +37,11 @@ func (h *HelloHandler) HandleFunc(ctx context.Context, c *gin.Context) vgin.Hand
 }
 
 func main() {
-	lg.EnableDebug()
 	engine := vgin.New()
 
-	engine.POST("/hello/:user_id", &HelloHandler{})
+	engine.POST("/hello", &HelloHandler{})
 	engine.POST("/hello/auto_bind/:user_id", vgin.ParamsIn(&HelloHandler{}))
 
 	engine.Run(":8080")
 }
 ```
-
-You can use `vgin.ParamsIn` handelr to let `vgin` auto bind the `Body`, `Form`, `Path`, `Query` data into the handler
-
