@@ -12,7 +12,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
-	"github.com/gorilla/schema"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"github.com/superwhys/venkit/lg"
@@ -155,13 +154,7 @@ func parseHeader(needDo bool) func(c *gin.Context, intoHandler Handler) error {
 			return nil
 		}
 
-		headerMap := c.Request.Header
-		if err := schemaDecoder(ParamsHeaderTag).Decode(intoHandler, headerMap); err != nil {
-			return errors.Wrap(err, "parseHeader")
-		}
-
-		return nil
-
+		return mapFormByTag(intoHandler, c.Request.Header, ParamsHeaderTag)
 	}
 }
 
@@ -175,12 +168,7 @@ func parsePath(needDo bool) func(c *gin.Context, intoHandler Handler) error {
 		for _, p := range c.Params {
 			tmp[p.Key] = []string{p.Value}
 		}
-		if err := schemaDecoder(ParamsPathTag).Decode(intoHandler, tmp); err != nil {
-			return errors.Wrap(err, "parsePath")
-		}
-
-		return nil
-
+		return mapFormByTag(intoHandler, tmp, ParamsPathTag)
 	}
 }
 
@@ -191,44 +179,8 @@ func parseQuery(needDo bool) func(c *gin.Context, intoHandler Handler) error {
 		}
 
 		queryMap := c.Request.URL.Query()
-		if len(queryMap) == 0 {
-			return nil
-		}
-
-		if err := schemaDecoder(ParamsQueryTag).Decode(intoHandler, queryMap); err != nil {
-			return errors.Wrap(err, "parseQuert")
-		}
-
-		return nil
-
+		return mapFormByTag(intoHandler, queryMap, ParamsQueryTag)
 	}
-}
-
-var (
-	schemaDecoderMap = make(map[string]*schema.Decoder)
-	schemaMapMutex   sync.RWMutex
-)
-
-func schemaDecoder(tag string) *schema.Decoder {
-	schemaMapMutex.RLock()
-	if decoder, exists := schemaDecoderMap[tag]; exists {
-		schemaMapMutex.RUnlock()
-		return decoder
-	}
-	schemaMapMutex.RUnlock()
-
-	schemaMapMutex.Lock()
-	defer schemaMapMutex.Unlock()
-
-	if decoder, exists := schemaDecoderMap[tag]; exists {
-		return decoder
-	}
-
-	decoder := schema.NewDecoder()
-	decoder.SetAliasTag(tag)
-	decoder.IgnoreUnknownKeys(true)
-	schemaDecoderMap[tag] = decoder
-	return decoder
 }
 
 func mapstructureDecoder(tag string, result Handler) (*mapstructure.Decoder, error) {
@@ -269,5 +221,5 @@ func parseJson(ctx context.Context, data []byte, intoHandler Handler) error {
 }
 
 func parseMultiForm(data map[string][]string, intoHandler Handler) error {
-	return schemaDecoder(ParamsMultiFormTag).Decode(intoHandler, data)
+	return mapFormByTag(intoHandler, data, ParamsMultiFormTag)
 }
