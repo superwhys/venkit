@@ -28,7 +28,7 @@ func (h *jsonHandler) InitHandler() IsolatedHandler {
 	return &jsonHandler{}
 }
 
-func (h *jsonHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
+func (h *jsonHandler) HandleFunc(ctx context.Context, c *Context) HandleResponse {
 	return &Ret{
 		Code: 200,
 		Data: h,
@@ -115,7 +115,7 @@ func (h *queryHandler) InitHandler() IsolatedHandler {
 	return &queryHandler{}
 }
 
-func (h *queryHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
+func (h *queryHandler) HandleFunc(ctx context.Context, c *Context) HandleResponse {
 	return &Ret{
 		Code: 200,
 		Data: h,
@@ -176,7 +176,7 @@ func (h *headerHandler) InitHandler() IsolatedHandler {
 	return &headerHandler{}
 }
 
-func (h *headerHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
+func (h *headerHandler) HandleFunc(ctx context.Context, c *Context) HandleResponse {
 	return &Ret{
 		Code: 200,
 		Data: h,
@@ -233,7 +233,7 @@ func (h *pathHandler) InitHandler() IsolatedHandler {
 	return &pathHandler{}
 }
 
-func (h *pathHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
+func (h *pathHandler) HandleFunc(ctx context.Context, c *Context) HandleResponse {
 	return &Ret{
 		Code: 200,
 		Data: h,
@@ -330,7 +330,7 @@ func BenchmarkOriginGin(b *testing.B) {
 
 type SimpleHandler struct{}
 
-func (h *SimpleHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
+func (h *SimpleHandler) HandleFunc(ctx context.Context, c *Context) HandleResponse {
 	return SuccessRet("success")
 }
 
@@ -371,7 +371,7 @@ func (h *oneJSonHandler) InitHandler() IsolatedHandler {
 	return &oneJSonHandler{}
 }
 
-func (h *oneJSonHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
+func (h *oneJSonHandler) HandleFunc(ctx context.Context, c *Context) HandleResponse {
 	return SuccessRet(h)
 }
 
@@ -421,7 +421,7 @@ func (h *oneQueryHandler) InitHandler() IsolatedHandler {
 	return &oneQueryHandler{}
 }
 
-func (h *oneQueryHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
+func (h *oneQueryHandler) HandleFunc(ctx context.Context, c *Context) HandleResponse {
 	// data := new(oneJSonHandler)
 	// if err := c.ShouldBindJSON(data); err != nil {
 	// 	return ErrorRet(400, err, err.Error())

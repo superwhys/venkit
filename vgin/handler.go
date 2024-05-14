@@ -7,10 +7,14 @@ import (
 	"github.com/superwhys/venkit/lg"
 )
 
+type Context struct {
+	*gin.Context
+}
+
 // Handler is the base Handler, you can use this when your handler not include parameters
 // be sure to use IsolatedHandler when your handler include parameters
 type Handler interface {
-	HandleFunc(ctx context.Context, c *gin.Context) HandleResponse
+	HandleFunc(ctx context.Context, c *Context) HandleResponse
 }
 
 type NameHandler interface {
@@ -28,7 +32,7 @@ type IsolatedHandler interface {
 
 type DefaultHandler struct{}
 
-func (dh *DefaultHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
+func (dh *DefaultHandler) HandleFunc(ctx context.Context, c *Context) HandleResponse {
 	return (&Ret{}).SuccessRet("default handler")
 }
 
@@ -57,7 +61,7 @@ func wrapHandler(ctx context.Context, handler Handler) gin.HandlerFunc {
 	}
 
 	return func(c *gin.Context) {
-		ret := handlerGetter().HandleFunc(ctx, c)
+		ret := handlerGetter().HandleFunc(ctx, &Context{c})
 		if ret != nil && ret.GetError() != nil {
 			lg.Errorc(ctx, "handle err: %v", ret.GetError())
 			AbortWithError(c, ret.GetCode(), ret.GetMessage())
@@ -86,8 +90,8 @@ func (h *ginHandlerFuncHandler) InitHandler() Handler {
 	return &ginHandlerFuncHandler{h.handlerFunc}
 }
 
-func (h *ginHandlerFuncHandler) HandleFunc(_ context.Context, c *gin.Context) HandleResponse {
-	h.handlerFunc(c)
+func (h *ginHandlerFuncHandler) HandleFunc(_ context.Context, c *Context) HandleResponse {
+	h.handlerFunc(c.Context)
 	return nil
 }
 

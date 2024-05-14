@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
-	"github.com/gin-gonic/gin"
 	"github.com/superwhys/venkit/vhttp"
 )
 
@@ -18,8 +17,8 @@ func (th *TestSessionHandler) Name() string {
 	return "TestSessionHandler"
 }
 
-func (th *TestSessionHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
-	session := sessions.Default(c)
+func (th *TestSessionHandler) HandleFunc(ctx context.Context, c *Context) HandleResponse {
+	session := sessions.Default(c.Context)
 
 	session.Set("share_code", "aaabbbccc")
 	session.Save()

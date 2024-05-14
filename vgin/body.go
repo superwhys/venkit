@@ -37,7 +37,7 @@ func BodyBufferMiddleware() gin.HandlerFunc {
 	}
 }
 
-func BodyRawData(c *gin.Context) ([]byte, error) {
+func BodyRawData(c *Context) ([]byte, error) {
 	if b, exists := c.Get(bodyDataKey); exists {
 		return b.([]byte), nil
 	}

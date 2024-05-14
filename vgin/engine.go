@@ -80,6 +80,13 @@ func (g *RouterGroup) Group(relativePath string, handlers ...Handler) *RouterGro
 	}
 }
 
+func (g *RouterGroup) GroupOrigin(relativePath string, handlers ...gin.HandlerFunc) *RouterGroup {
+	return &RouterGroup{
+		RouterGroup: g.RouterGroup.Group(relativePath, handlers...),
+		ctx:         g.ctx,
+	}
+}
+
 type HandlersChain []Handler
 
 func (c HandlersChain) Last() Handler {

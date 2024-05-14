@@ -40,7 +40,7 @@ func (ph *paramsInHandler) InitHandler() IsolatedHandler {
 	return &paramsInHandler{ph.into.InitHandler()}
 }
 
-func (ph *paramsInHandler) HandleFunc(ctx context.Context, c *gin.Context) HandleResponse {
+func (ph *paramsInHandler) HandleFunc(ctx context.Context, c *Context) HandleResponse {
 	if err := ParseMapParams(ctx, c, ph.into); err != nil {
 		return &Ret{
 			Code:    http.StatusInternalServerError,
@@ -105,7 +105,7 @@ func findHandlerTag(h Handler) slices.StringSet {
 	return tagSet
 }
 
-func ParseMapParams(ctx context.Context, c *gin.Context, into Handler) (err error) {
+func ParseMapParams(ctx context.Context, c *Context, into Handler) (err error) {
 	tagSet := findHandlerTag(into)
 	switch c.ContentType() {
 	case gin.MIMEJSON:
@@ -133,7 +133,7 @@ func ParseMapParams(ctx context.Context, c *gin.Context, into Handler) (err erro
 		return errors.Wrap(err, "parse contentType data")
 	}
 
-	allwaysParse := []func(*gin.Context, Handler) error{
+	allwaysParse := []func(*Context, Handler) error{
 		parseQuery(tagSet.Contains(ParamsQueryTag)),
 		parsePath(tagSet.Contains(ParamsPathTag)),
 		parseHeader(tagSet.Contains(ParamsHeaderTag)),
@@ -148,8 +148,8 @@ func ParseMapParams(ctx context.Context, c *gin.Context, into Handler) (err erro
 	return nil
 }
 
-func parseHeader(needDo bool) func(c *gin.Context, intoHandler Handler) error {
-	return func(c *gin.Context, intoHandler Handler) error {
+func parseHeader(needDo bool) func(c *Context, intoHandler Handler) error {
+	return func(c *Context, intoHandler Handler) error {
 		if !needDo || len(c.Request.Header) == 0 {
 			return nil
 		}
@@ -158,8 +158,8 @@ func parseHeader(needDo bool) func(c *gin.Context, intoHandler Handler) error {
 	}
 }
 
-func parsePath(needDo bool) func(c *gin.Context, intoHandler Handler) error {
-	return func(c *gin.Context, intoHandler Handler) error {
+func parsePath(needDo bool) func(c *Context, intoHandler Handler) error {
+	return func(c *Context, intoHandler Handler) error {
 		if !needDo || len(c.Params) == 0 {
 			return nil
 		}
@@ -172,8 +172,8 @@ func parsePath(needDo bool) func(c *gin.Context, intoHandler Handler) error {
 	}
 }
 
-func parseQuery(needDo bool) func(c *gin.Context, intoHandler Handler) error {
-	return func(c *gin.Context, intoHandler Handler) error {
+func parseQuery(needDo bool) func(c *Context, intoHandler Handler) error {
+	return func(c *Context, intoHandler Handler) error {
 		if !needDo {
 			return nil
 		}
