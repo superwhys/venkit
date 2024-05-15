@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"github.com/superwhys/venkit/discover"
 	"github.com/superwhys/venkit/lg"
@@ -91,4 +92,15 @@ func DialMysql(service string, opts ...OptionFunc) (*sql.DB, error) {
 
 	configDB(db)
 	return db, nil
+}
+
+func DialMysqlX(service string, opts ...OptionFunc) (*sqlx.DB, error) {
+	db, err := DialMysql(service, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	dbx := sqlx.NewDb(db, "mysql")
+
+	return dbx, nil
 }
