@@ -13,6 +13,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/uuid v1.4.0
+	github.com/gorilla/websocket v1.5.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/hashicorp/consul/api v1.25.1
 	github.com/hashicorp/go-multierror v1.1.1
