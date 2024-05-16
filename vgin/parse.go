@@ -26,22 +26,29 @@ const (
 	ParamsHeaderTag    = "vheader"
 )
 
-type ParamsHandler IsolatedHandler
+type WrapInHandler interface {
+	IsolatedHandler
+	OriginHandler() Handler
+}
 
 type paramsInHandler struct {
-	into ParamsHandler
+	Into IsolatedHandler
 }
 
 func (ph *paramsInHandler) Name() string {
-	return guessHandlerName(ph.into)
+	return guessHandlerName(ph.Into)
 }
 
 func (ph *paramsInHandler) InitHandler() IsolatedHandler {
-	return &paramsInHandler{ph.into.InitHandler()}
+	return &paramsInHandler{ph.Into.InitHandler()}
+}
+
+func (ph *paramsInHandler) OriginHandler() Handler {
+	return ph.Into.InitHandler()
 }
 
 func (ph *paramsInHandler) HandleFunc(ctx context.Context, c *Context) HandleResponse {
-	if err := ParseMapParams(ctx, c, ph.into); err != nil {
+	if err := ParseMapParams(ctx, c, ph.Into); err != nil {
 		return &Ret{
 			Code:    http.StatusInternalServerError,
 			Data:    nil,
@@ -50,10 +57,13 @@ func (ph *paramsInHandler) HandleFunc(ctx context.Context, c *Context) HandleRes
 		}
 	}
 
-	return ph.into.HandleFunc(ctx, c)
+	return ph.Into.HandleFunc(ctx, c)
 }
 
-func ParamsIn(handler ParamsHandler) Handler {
+func ParamsIn(handler IsolatedHandler) Handler {
+	if checkIsWebsocket(handler) {
+		lg.Fatal("Websocket can not use `ParamsIn` inject handler")
+	}
 	return &paramsInHandler{handler}
 }
 

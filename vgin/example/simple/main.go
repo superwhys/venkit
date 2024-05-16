@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 
-	"github.com/gin-gonic/gin"
 	"github.com/superwhys/venkit/lg"
 	"github.com/superwhys/venkit/vgin"
 )
@@ -11,11 +10,11 @@ import (
 type BeforeRequestMiddleware struct {
 }
 
-func (m *BeforeRequestMiddleware) InitHandler() vgin.Handler {
+func (m *BeforeRequestMiddleware) InitHandler() vgin.IsolatedHandler {
 	return &BeforeRequestMiddleware{}
 }
 
-func (m *BeforeRequestMiddleware) HandleFunc(ctx context.Context, c *gin.Context) vgin.HandleResponse {
+func (m *BeforeRequestMiddleware) HandleFunc(ctx context.Context, c *vgin.Context) vgin.HandleResponse {
 	lg.Infoc(ctx, "into before request middleware")
 	c.Next()
 	lg.Infoc(ctx, "before request middleware done")
@@ -25,11 +24,11 @@ func (m *BeforeRequestMiddleware) HandleFunc(ctx context.Context, c *gin.Context
 type AfterRequestMiddleware struct {
 }
 
-func (m *AfterRequestMiddleware) InitHandler() vgin.Handler {
+func (m *AfterRequestMiddleware) InitHandler() vgin.IsolatedHandler {
 	return &AfterRequestMiddleware{}
 }
 
-func (m *AfterRequestMiddleware) HandleFunc(ctx context.Context, c *gin.Context) vgin.HandleResponse {
+func (m *AfterRequestMiddleware) HandleFunc(ctx context.Context, c *vgin.Context) vgin.HandleResponse {
 	lg.Infoc(ctx, "into after request middleware")
 	return nil
 }
@@ -46,7 +45,7 @@ func (h *HelloHandler) InitHandler() vgin.IsolatedHandler {
 	return &HelloHandler{}
 }
 
-func (h *HelloHandler) HandleFunc(ctx context.Context, c *gin.Context) vgin.HandleResponse {
+func (h *HelloHandler) HandleFunc(ctx context.Context, c *vgin.Context) vgin.HandleResponse {
 	lg.Info(lg.Jsonify(h))
 
 	ret := &vgin.Ret{

@@ -75,7 +75,7 @@ func (g *RouterGroup) StaticFS(relativePath string, fs http.FileSystem) gin.IRou
 
 func (g *RouterGroup) Group(relativePath string, handlers ...Handler) *RouterGroup {
 	return &RouterGroup{
-		RouterGroup: g.RouterGroup.Group(relativePath, wrapDefaultHandler(g.ctx, handlers...)...),
+		RouterGroup: g.RouterGroup.Group(relativePath, WrapHandler(g.ctx, handlers...)...),
 		ctx:         g.ctx,
 	}
 }
@@ -111,7 +111,7 @@ func (g *RouterGroup) calculateAbsolutePath(relativePath string) string {
 
 func (g *RouterGroup) RegisterRouter(method, path string, handlers HandlersChain) {
 	absPath := g.calculateAbsolutePath(path)
-	g.Handle(method, path, wrapDefaultHandler(g.ctx, handlers...)...)
+	g.Handle(method, path, WrapHandler(g.ctx, handlers...)...)
 	g.debugPrintRoute(method, absPath, handlers)
 }
 
