@@ -57,7 +57,7 @@ func GetConsulAddress() string {
 func GetConsulClient() *Client {
 	once.Do(func() {
 		defaultConsulClient = newConsulClient(shared.GetConsulAddress())
-		lg.Debugf("Connect consul success. ConsulAddr=%v", shared.GetConsulAddress())
+		lg.Debugc(lg.Ctx, "Connect consul success. ConsulAddr=%v", shared.GetConsulAddress())
 	})
 
 	return defaultConsulClient

@@ -124,9 +124,9 @@ func readConfig(opt *VflagOption) {
 	if opt.autoParseConfig && config() != "" && venkitUtils.FileExists(config()) {
 		v.SetConfigFile(config())
 		if err := v.ReadInConfig(); err != nil {
-			lg.Errorf("Read on local file: %v, error: %v", config(), err)
+			lg.Errorc(lg.Ctx, "Read on local file: %v, error: %v", config(), err)
 		} else {
-			lg.Infof("Read local config success. Config=%v", config())
+			lg.Infoc(lg.Ctx, "Read local config success. Config=%v", config())
 		}
 	}
 }

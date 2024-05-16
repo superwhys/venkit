@@ -25,13 +25,13 @@ func generateDSN(address string, opt *DialOption) string {
 		address,
 		opt.DBName,
 	)
-	lg.Debugf("gorm dial dsn: %v", dsn)
+	lg.Debugc(lg.Ctx, "Gorm dsn generate. dsn=%v", dsn)
 	return dsn
 }
 
 func DialMysqlGorm(service string, opts ...OptionFunc) (*gorm.DB, error) {
 	address := discover.GetServiceFinder().GetAddress(service)
-	lg.Debugf("Discover mysql addr: %v", address)
+	lg.Debugc(lg.Ctx, "Discover mysql addr. Addr=%v", address)
 
 	opt := packDialOption(opts...)
 
@@ -53,7 +53,7 @@ func DialMysqlGorm(service string, opts ...OptionFunc) (*gorm.DB, error) {
 // Deprecated: use DialMysqlGorm replace
 func DialGorm(service string, opts ...OptionFunc) (*gorm.DB, error) {
 	address := discover.GetServiceFinder().GetAddress(service)
-	lg.Debugf("Discover mysql addr: %v", address)
+	lg.Debugc(lg.Ctx, "Discover mysql addr. Addr=%v", address)
 
 	opt := packDialOption(opts...)
 

@@ -12,6 +12,10 @@ import (
 	"github.com/go-logfmt/logfmt"
 )
 
+var (
+	Ctx = With(context.Background(), "[Venkit]")
+)
+
 type contextKey string
 
 var (
