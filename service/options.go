@@ -13,14 +13,14 @@ func WithServiceName(name string) ServiceOption {
 			vs.serviceName = name
 		} else {
 			vs.serviceName = segs[0]
-			vs.tag = segs[1]
+			vs.tags = append(vs.tags, segs[1])
 		}
 	}
 }
 
 func WithTag(tag string) ServiceOption {
 	return func(vs *VkService) {
-		vs.tag = tag
+		vs.tags = append(vs.tags, tag)
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"net"
+	"strings"
 
 	"github.com/lukesampson/figlet/figletlib"
 	"github.com/superwhys/venkit/lg"
@@ -22,8 +23,8 @@ func (vs *VkService) welcome(lis net.Listener) {
 		vs.showServiceName()
 	}
 
-	if vs.tag != "" {
-		lg.Infoc(vs.ctx, "Service Tag=%v", vs.tag)
+	if len(vs.tags) != 0 {
+		lg.Infoc(vs.ctx, "Service Tag=%v", strings.Join(vs.tags, ","))
 	}
 
 	lg.Infoc(vs.ctx, "VenKit Service Started. Version=%v", version)
