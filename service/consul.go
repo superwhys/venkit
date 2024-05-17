@@ -24,7 +24,7 @@ func (vs *VkService) registerIntoConsul(listener net.Listener) {
 		}
 
 		if len(vs.grpcServersFunc) != 0 {
-			vs.tags = append(vs.tags, "grpc")
+			vs.tags = append(vs.tags, GrpcTag)
 		}
 
 		if err := discover.GetServiceFinder().RegisterServiceWithTags(vs.serviceName, addr, vs.tags); err != nil {

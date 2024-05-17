@@ -13,6 +13,10 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+const (
+	GrpcTag = "grpc"
+)
+
 func (vs *VkService) beginGrpc() {
 	if len(vs.grpcServersFunc) == 0 {
 		return
