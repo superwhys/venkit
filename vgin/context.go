@@ -60,6 +60,10 @@ func (r *Ret) PackContent(code int, data any, err error, message string) *Ret {
 	return r
 }
 
+func FailedRet(code int, message string) *Ret {
+	return ErrorRet(code, errors.New(message), message)
+}
+
 func ErrorRet(code int, err error, message string) *Ret {
 	ret := &Ret{}
 	return ret.FailedRet(code, err, message)
