@@ -65,8 +65,10 @@ func wrapHandler(ctx context.Context, handler Handler) gin.HandlerFunc {
 				return
 			}
 
-			conn, _ := cc.Get(webSocketConnKey)
-			ret = wh.HandleWebSocket(ctx, cc, conn.(*websocket.Conn))
+			stats, _ := cc.Get(webSocketConnKey)
+			conn := stats.(*websocket.Conn)
+			defer conn.Close()
+			ret = wh.HandleWebSocket(ctx, cc, conn)
 		}
 
 		if checkRet(ctx, cc, ret) {
