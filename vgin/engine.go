@@ -10,6 +10,14 @@ import (
 	"github.com/superwhys/venkit/lg"
 )
 
+var (
+	anyMethods = []string{
+		http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch,
+		http.MethodHead, http.MethodOptions, http.MethodDelete, http.MethodConnect,
+		http.MethodTrace,
+	}
+)
+
 type RouterGroup struct {
 	*gin.RouterGroup
 	ctx context.Context
@@ -129,4 +137,10 @@ func (g *RouterGroup) PUT(path string, handler ...Handler) {
 
 func (g *RouterGroup) DELETE(path string, handler ...Handler) {
 	g.RegisterRouter(http.MethodDelete, path, handler)
+}
+
+func (g *RouterGroup) Any(path string, handler ...Handler) {
+	for _, method := range anyMethods {
+		g.RegisterRouter(method, path, handler)
+	}
 }
