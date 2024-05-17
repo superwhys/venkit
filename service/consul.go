@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/superwhys/venkit/discover"
@@ -18,10 +19,15 @@ func (vs *VkService) registerIntoConsul(listener net.Listener) {
 
 	mountFn := func(ctx context.Context) error {
 		addr := listener.Addr().String()
-		if vs.tag == "" {
-			vs.tag = "dev"
+		if len(vs.tags) == 0 {
+			vs.tags = append(vs.tags, "dev")
 		}
-		if err := discover.GetServiceFinder().RegisterServiceWithTag(vs.serviceName, addr, vs.tag); err != nil {
+
+		if len(vs.grpcServersFunc) != 0 {
+			vs.tags = append(vs.tags, "grpc")
+		}
+
+		if err := discover.GetServiceFinder().RegisterServiceWithTags(vs.serviceName, addr, vs.tags); err != nil {
 			lg.Errorf("register consul error: %v", err)
 			return errors.Wrap(err, "Register-Consul")
 		}
@@ -29,9 +35,9 @@ func (vs *VkService) registerIntoConsul(listener net.Listener) {
 		var logArgs []any
 		logText := "Registered into consul success. Service=%v"
 		logArgs = append(logArgs, vs.serviceName)
-		if len(vs.tag) > 0 {
+		if len(vs.tags) > 0 {
 			logText = fmt.Sprintf("%v %v", logText, "Tag=%v")
-			logArgs = append(logArgs, vs.tag)
+			logArgs = append(logArgs, strings.Join(vs.tags, ","))
 		}
 
 		lg.Infoc(vs.ctx, logText, logArgs...)

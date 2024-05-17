@@ -23,7 +23,7 @@ type mountFn func(ctx context.Context) error
 type VkService struct {
 	ctx         context.Context
 	serviceName string
-	tag         string
+	tags        []string
 
 	cmux    cmux.CMux
 	httpLst net.Listener
