@@ -7,7 +7,7 @@ import (
 type Service struct {
 	ServiceName string
 	Address     string
-	Tags        string
+	Tags        []string
 }
 
 type ServiceFinder interface {
@@ -18,6 +18,7 @@ type ServiceFinder interface {
 
 	RegisterService(service, address string) error
 	RegisterServiceWithTag(service, address, tag string) error
+	RegisterServiceWithTags(service, address string, tags []string) error
 	Close()
 }
 

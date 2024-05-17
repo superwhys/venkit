@@ -1,6 +1,9 @@
 package discover
 
-import "sync"
+import (
+	"reflect"
+	"sync"
+)
 
 type ManualFinder struct {
 	// serviceMap key is service name, value is a list of service struct
@@ -56,7 +59,7 @@ func (mf *ManualFinder) GetAllAddressWithTag(service string, tag string) []strin
 
 	if services, ok := mf.serviceMap[service]; ok {
 		for _, s := range services {
-			if s.Tags == tag {
+			if containsTag(s.Tags, tag) {
 				ret = append(ret, s.Address)
 			}
 		}
@@ -66,25 +69,38 @@ func (mf *ManualFinder) GetAllAddressWithTag(service string, tag string) []strin
 	return nil
 }
 
+func containsTag(tags []string, tag string) bool {
+	for _, s := range tags {
+		if s == tag {
+			return true
+		}
+	}
+	return false
+}
+
 func (mf *ManualFinder) RegisterService(service string, address string) error {
 	return mf.RegisterServiceWithTag(service, address, "")
 }
 
 func (mf *ManualFinder) RegisterServiceWithTag(service string, address string, tag string) error {
+	return mf.RegisterServiceWithTags(service, address, []string{tag})
+}
+
+func (mf *ManualFinder) RegisterServiceWithTags(service string, address string, tags []string) error {
 	mf.lock.Lock()
 	defer mf.lock.Unlock()
 
 	// check if service already registered
 	if services, ok := mf.serviceMap[service]; ok {
 		for _, s := range services {
-			if s.Address == address && s.Tags == tag {
+			if s.Address == address && reflect.DeepEqual(s.Tags, tags) {
 				return nil
 			}
 		}
 		mf.serviceMap[service] = append(mf.serviceMap[service], &Service{
 			ServiceName: service,
 			Address:     address,
-			Tags:        tag,
+			Tags:        tags,
 		})
 		return nil
 	}
@@ -92,7 +108,7 @@ func (mf *ManualFinder) RegisterServiceWithTag(service string, address string, t
 		{
 			ServiceName: service,
 			Address:     address,
-			Tags:        tag,
+			Tags:        tags,
 		},
 	}
 

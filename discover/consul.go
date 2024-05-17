@@ -174,6 +174,10 @@ func (c *Client) RegisterService(serviceName string, address string) error {
 }
 
 func (c *Client) RegisterServiceWithTag(serviceName string, address string, tag string) error {
+	return c.RegisterServiceWithTags(serviceName, address, []string{tag})
+}
+
+func (c *Client) RegisterServiceWithTags(serviceName string, address string, tags []string) error {
 	if !validServiceName(serviceName) {
 		return errors.New("Invalid service name")
 	}
@@ -196,7 +200,7 @@ func (c *Client) RegisterServiceWithTag(serviceName string, address string, tag 
 		ID:   serviceID,
 		Name: serviceName,
 		Port: ip.Port,
-		Tags: []string{tag},
+		Tags: tags,
 		Check: &api.AgentServiceCheck{
 			CheckID:                        checkID,
 			Name:                           serviceID,
