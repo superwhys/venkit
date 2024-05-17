@@ -1,10 +1,12 @@
 package vgin
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"github.com/superwhys/venkit/lg"
 )
 
 type Data gin.H
@@ -14,6 +16,7 @@ type HandleResponse interface {
 	GetError() error
 	GetData() any
 	GetMessage() string
+	GetJson() string
 }
 
 type Ret struct {
@@ -37,6 +40,12 @@ func (r *Ret) GetData() any {
 
 func (r *Ret) GetMessage() string {
 	return r.Message
+}
+
+func (r *Ret) GetJson() string {
+	b, err := json.Marshal(r)
+	lg.PanicError(err)
+	return string(b)
 }
 
 func (r *Ret) SuccessRet(data any) *Ret {
