@@ -144,7 +144,8 @@ func (c *Client) GetAddressWithTag(service string, tag string) string {
 		return ""
 	}
 	addr := cs[0]
-	lg.Debugf("Found %s:%s -> %s in consul.", service, tag, addr)
+
+	lg.Debugf("Find %s address in consul. Addr=%s", strings.Join([]string{service, tag}, ":"), addr)
 	return addr
 }
 
