@@ -25,7 +25,7 @@ func generateDSN(address string, opt *DialOption) string {
 		address,
 		opt.DBName,
 	)
-	lg.Debugc(lg.Ctx, "Gorm dsn generate. dsn=%v", dsn)
+	lg.Debugc(lg.Ctx, "sql dsn generate. dsn=%v", dsn)
 	return dsn
 }
 

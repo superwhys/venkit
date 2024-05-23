@@ -2,7 +2,6 @@ package dialer
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/superwhys/venkit/discover"
@@ -58,7 +57,11 @@ func dialGrpcWithTagContextUnblock(ctx context.Context, service string, tag stri
 		options...,
 	)
 
-	lg.Debug(fmt.Sprintf("dial grpc service %s with tag %s", service, tag))
+	if tag != "" {
+		lg.Debugc(ctx, "dial grpc service %s with tag %s. Addr=%s", service, tag, address)
+	} else {
+		lg.Debugc(ctx, "dial grpc service %s. Addr=%s", service, address)
+	}
 	return conn, err
 }
 
@@ -74,6 +77,10 @@ func dialGrpcWithTagContext(ctx context.Context, service, tag string, opts ...gr
 		options...,
 	)
 
-	lg.Debug(fmt.Sprintf("dial grpc service %s with tag %s", service, tag))
+	if tag != "" {
+		lg.Debugc(ctx, "dial grpc service %s with tag %s. Addr=%s", service, tag, address)
+	} else {
+		lg.Debugc(ctx, "dial grpc service %s. Addr=%s", service, address)
+	}
 	return conn, err
 }
