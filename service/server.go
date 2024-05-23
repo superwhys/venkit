@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	gwRuntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/pkg/errors"
 	"github.com/rs/cors"
 	"github.com/soheilhy/cmux"
@@ -33,11 +34,20 @@ type VkService struct {
 	httpMux     *http.ServeMux
 	httpHandler http.Handler
 
-	grpcServer      *grpc.Server
-	grpcOptions     []grpc.ServerOption
-	grpcServersFunc []func(*grpc.Server)
-	grpcUI          bool
-	grpcSelfConn    *grpc.ClientConn
+	grpcUI                bool
+	grpcServer            *grpc.Server
+	grpcOptions           []grpc.ServerOption
+	grpcUnaryInterceptors []grpc.UnaryServerInterceptor
+	grpcServersFunc       []func(*grpc.Server)
+	grpcSelfConn          *grpc.ClientConn
+
+	// grpc gateway
+	grpcGwServeMuxOption       []gwRuntime.ServeMuxOption
+	grpcIncomingHeaderMapping  map[string]string
+	grpcOutgoingHeaderMapping  map[string]string
+	gatewayAPIPrefix           []string
+	gatewayHandlers            []gatewayFunc
+	gatewayMiddlewaresHandlers [][]gatewatMiddlewareHandler
 
 	workers []*worker
 	mounts  []mountFn
@@ -176,6 +186,7 @@ func (vs *VkService) serve(listener net.Listener) error {
 
 	vs.loadServiceName()
 	vs.registerIntoConsul(listener)
+	vs.mountGRPCRestfulGateway()
 	vs.enableGrpcUI()
 	vs.setHTTPCORS()
 	vs.wrapWorker()
