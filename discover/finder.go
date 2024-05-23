@@ -28,7 +28,7 @@ var (
 )
 
 func init() {
-	defaultServiceFinder = NewManualFinder()
+	defaultServiceFinder = NewDirectFinder()
 }
 
 func GetServiceFinder() ServiceFinder {

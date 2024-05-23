@@ -1,120 +1,39 @@
 package discover
 
-import (
-	"reflect"
-	"sync"
-)
+type DirectFinder struct{}
 
-type ManualFinder struct {
-	// serviceMap key is service name, value is a list of service struct
-	serviceMap map[string][]*Service
-	lock       sync.RWMutex
+func NewDirectFinder() *DirectFinder {
+	return &DirectFinder{}
 }
 
-func NewManualFinder() *ManualFinder {
-	return &ManualFinder{
-		serviceMap: make(map[string][]*Service),
-	}
+func (df *DirectFinder) GetAddress(service string) string {
+	return service
 }
 
-func (mf *ManualFinder) GetAddress(service string) string {
-	addresses := mf.GetAllAddress(service)
-	if len(addresses) > 0 {
-		return addresses[0]
-	}
-
-	return ""
+func (df *DirectFinder) GetAllAddress(service string) []string {
+	return []string{service}
 }
 
-func (mf *ManualFinder) GetAllAddress(service string) []string {
-	mf.lock.RLock()
-	defer mf.lock.RUnlock()
+func (df *DirectFinder) GetAddressWithTag(service string, tag string) string {
+	return df.GetAddress(service)
+}
 
-	var ret []string
+func (df *DirectFinder) GetAllAddressWithTag(service string, tag string) []string {
+	return df.GetAllAddress(service)
+}
 
-	if services, ok := mf.serviceMap[service]; ok {
-		for _, s := range services {
-			ret = append(ret, s.Address)
-		}
-		return ret
-	}
-
+func (df *DirectFinder) RegisterService(service string, address string) error {
 	return nil
 }
 
-func (mf *ManualFinder) GetAddressWithTag(service string, tag string) string {
-	addresses := mf.GetAllAddressWithTag(service, tag)
-	if len(addresses) > 0 {
-		return addresses[0]
-	}
-
-	return ""
+func (df *DirectFinder) RegisterServiceWithTag(service string, address string, tag string) error {
+	return df.RegisterService(service, address)
 }
 
-func (mf *ManualFinder) GetAllAddressWithTag(service string, tag string) []string {
-	mf.lock.RLock()
-	defer mf.lock.RUnlock()
-
-	var ret []string
-
-	if services, ok := mf.serviceMap[service]; ok {
-		for _, s := range services {
-			if containsTag(s.Tags, tag) {
-				ret = append(ret, s.Address)
-			}
-		}
-		return ret
-	}
-
-	return nil
+func (df *DirectFinder) RegisterServiceWithTags(service string, address string, tags []string) error {
+	return df.RegisterService(service, address)
 }
 
-func containsTag(tags []string, tag string) bool {
-	for _, s := range tags {
-		if s == tag {
-			return true
-		}
-	}
-	return false
-}
-
-func (mf *ManualFinder) RegisterService(service string, address string) error {
-	return mf.RegisterServiceWithTag(service, address, "")
-}
-
-func (mf *ManualFinder) RegisterServiceWithTag(service string, address string, tag string) error {
-	return mf.RegisterServiceWithTags(service, address, []string{tag})
-}
-
-func (mf *ManualFinder) RegisterServiceWithTags(service string, address string, tags []string) error {
-	mf.lock.Lock()
-	defer mf.lock.Unlock()
-
-	// check if service already registered
-	if services, ok := mf.serviceMap[service]; ok {
-		for _, s := range services {
-			if s.Address == address && reflect.DeepEqual(s.Tags, tags) {
-				return nil
-			}
-		}
-		mf.serviceMap[service] = append(mf.serviceMap[service], &Service{
-			ServiceName: service,
-			Address:     address,
-			Tags:        tags,
-		})
-		return nil
-	}
-	mf.serviceMap[service] = []*Service{
-		{
-			ServiceName: service,
-			Address:     address,
-			Tags:        tags,
-		},
-	}
-
-	return nil
-}
-
-func (mf *ManualFinder) Close() {
+func (df *DirectFinder) Close() {
 	// do nothing
 }
