@@ -3,11 +3,13 @@ package vflags
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	_ "github.com/spf13/viper/remote"
 	"github.com/superwhys/venkit/discover"
 	"github.com/superwhys/venkit/internal/shared"
 	"github.com/superwhys/venkit/lg"
@@ -22,6 +24,8 @@ var (
 	defaultConfigFile = "config.yaml"
 	debug             BoolGetter
 	config            StringGetter
+	useRemoteConfig   BoolGetter
+	watchRemoteConfig BoolGetter
 )
 
 type VflagOption struct {
@@ -35,12 +39,14 @@ func Viper() *viper.Viper {
 }
 
 func declareDefaultFlags() {
-	config = StringP("config", "f", defaultConfigFile, "Specify config file. Support json, yaml")
-	debug = Bool("debug", false, "Whether to enable debug mode")
-	shared.ServiceName = StringP("service", "s", os.Getenv("VENKIT_SERVICE"), "Set the service name")
+	config = StringP("config", "f", defaultConfigFile, "Specify config file. Support json, yaml.")
+	debug = Bool("debug", false, "Whether to enable debug mode.")
+	useRemoteConfig = Bool("useRemoteConfig", false, "Set true to use remote config.")
+	watchRemoteConfig = Bool("watchRemoteConfig", false, "Set true to watch change of remote config.")
+	shared.ServiceName = StringP("service", "s", os.Getenv("VENKIT_SERVICE"), "Set the service name.")
 	if shared.UseConsul == nil || shared.UseConsul() {
-		shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr")
-		shared.UseConsul = Bool("useConsul", true, "Whether to use the consul service center")
+		shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr.")
+		shared.UseConsul = Bool("useConsul", true, "Whether to use the consul service center.")
 	}
 }
 
@@ -120,8 +126,33 @@ func optionInit() {
 	}
 }
 
+func getServiceNameWithoutTag() string {
+	s := GetServiceName()
+	segs := strings.SplitN(s, ":", 2)
+	if len(segs) < 2 {
+		return s
+	}
+	return segs[0]
+}
+
+func getServiceTag() string {
+	s := GetServiceName()
+	segs := strings.SplitN(s, ":", 2)
+	if len(segs) < 2 {
+		return ""
+	}
+	return segs[1]
+}
+
 func readConfig(opt *VflagOption) {
-	if opt.autoParseConfig && config() != "" && venkitUtils.FileExists(config()) {
+	if useRemoteConfig() {
+		path := readConsulConfig()
+		if watchRemoteConfig() {
+			go watchCnosulConfigChange(path)
+		}
+		lg.Infoc(lg.Ctx, "Read consul config success. Config=%v", path)
+	} else if opt.autoParseConfig && config() != "" && venkitUtils.FileExists(config()) {
+		// use local config
 		v.SetConfigFile(config())
 		if err := v.ReadInConfig(); err != nil {
 			lg.Errorc(lg.Ctx, "Read on local file: %v, error: %v", config(), err)
