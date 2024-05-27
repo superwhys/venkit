@@ -64,6 +64,10 @@ func NewRedisSessionStoreWithRedisPool(pool *redisgo.Pool, keyPairs [][]byte) (r
 	return redis.NewStoreWithPool(pool, keyPairs...)
 }
 
+func SessionDefault(ctx *Context) sessions.Session {
+	return sessions.Default(ctx.Context)
+}
+
 var (
 	ErrorTokenNotFound = errors.New("Token not found!")
 )
