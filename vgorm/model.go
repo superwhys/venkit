@@ -77,7 +77,33 @@ func registerInstance(conf Config) {
 	}()
 }
 
+func RegisterSqlModelWithConf(conf Config, ms ...SqlModel) error {
+	if _, exists := getInstanceClientFunc(conf.GetUid()); exists {
+		return fmt.Errorf("%v has been register", conf.GetUid())
+	}
+
+	registerInstance(conf)
+
+	for _, m := range ms {
+		rt := reflect.TypeOf(m)
+		modelKey := fmt.Sprintf("%v-%v", rt.String(), m.TableName())
+		if key, exists := modelDbMap[modelKey]; exists {
+			return fmt.Errorf("model %v has been register into %v", modelKey, key)
+		}
+		modelDbMap[modelKey] = conf.GetUid()
+
+		// append SqlModel
+		if models[conf.GetUid()] == nil {
+			models[conf.GetUid()] = make([]any, 0)
+		}
+		models[conf.GetUid()] = append(models[conf.GetUid()], m)
+	}
+	return nil
+}
+
 // RegisterSqlModel will bind the corresponding SqlModel to the specified database connection create by Config
+//
+// Deprecated: This method will directly panic the error and is not recommended
 func RegisterSqlModel(conf Config, ms ...SqlModel) {
 	if _, exists := getInstanceClientFunc(conf.GetUid()); exists {
 		panic(fmt.Sprintf("%v has been register", conf.GetUid()))
