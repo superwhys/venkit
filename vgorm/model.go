@@ -1,6 +1,7 @@
 package vgorm
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"sync"
@@ -53,11 +54,11 @@ func getInstanceClientFunc(key string) (getClientFunc, bool) {
 }
 
 func GetDbByModel(m SqlModel) *gorm.DB {
-	return getDbByModel(m).Model(m)
+	return getDbByModel(m).Model(m).WithContext(context.Background())
 }
 
 func GetDbByConf(conf Config) *gorm.DB {
-	return getDbByConfig(conf)
+	return getDbByConfig(conf).WithContext(context.Background())
 }
 
 func registerInstance(conf Config) {
