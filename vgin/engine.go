@@ -144,3 +144,9 @@ func (g *RouterGroup) Any(path string, handler ...Handler) {
 		g.RegisterRouter(method, path, handler)
 	}
 }
+
+func (g *RouterGroup) Specify(path string, methods []string, handler ...Handler) {
+	for _, method := range methods {
+		g.RegisterRouter(method, path, handler)
+	}
+}

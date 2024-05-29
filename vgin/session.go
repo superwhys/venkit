@@ -2,6 +2,8 @@ package vgin
 
 import (
 	"context"
+	"encoding/gob"
+	"net/url"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
@@ -11,6 +13,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/superwhys/venkit/dialer"
 )
+
+func init() {
+	gob.Register(url.Values{})
+}
 
 type RedisStoreOptions struct {
 	user     string
@@ -66,6 +72,12 @@ func NewRedisSessionStoreWithRedisPool(pool *redisgo.Pool, keyPairs [][]byte) (r
 
 func SessionDefault(ctx *Context) sessions.Session {
 	return sessions.Default(ctx.Context)
+}
+
+func RegisterSessionGob(vals ...any) {
+	for _, v := range vals {
+		gob.Register(v)
+	}
 }
 
 var (

@@ -24,6 +24,8 @@ const (
 	ParamsQueryTag     = "vquery"
 	ParamsPathTag      = "vpath"
 	ParamsHeaderTag    = "vheader"
+
+	defaultMemory = 32 << 20
 )
 
 type WrapInHandler interface {
@@ -125,7 +127,7 @@ func ParseMapParams(ctx context.Context, c *Context, into Handler) (err error) {
 		var raw []byte
 		raw, err = BodyRawData(c)
 		if err != nil {
-			return err
+			break
 		}
 		err = parseJson(ctx, raw, into)
 	case gin.MIMEMultipartPOSTForm:
@@ -135,9 +137,21 @@ func ParseMapParams(ctx context.Context, c *Context, into Handler) (err error) {
 		var form *multipart.Form
 		form, err = c.MultipartForm()
 		if err != nil {
-			return err
+			break
 		}
 		err = parseMultiForm(form.Value, into)
+	case gin.MIMEPOSTForm:
+		if !tagSet.Contains(ParamsMultiFormTag) {
+			break
+		}
+
+		if err = c.Request.ParseForm(); err != nil {
+			break
+		}
+		if err = c.Request.ParseMultipartForm(defaultMemory); err != nil && !errors.Is(err, http.ErrNotMultipart) {
+			break
+		}
+		err = parseMultiForm(c.Request.Form, into)
 	}
 	if err != nil {
 		return errors.Wrap(err, "parse contentType data")
