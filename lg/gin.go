@@ -18,7 +18,7 @@ const (
 	cyan    = "\033[97;46m"
 	reset   = "\033[0m"
 
-	logMsg = "| %s %v %s | %13v | %15s | %s %4v %s| %15s | %-7s"
+	logMsg = "| %s %v %s | %13v | %15s | %s %4v %s| %#v"
 )
 
 func statusCodeColor(code int) string {
@@ -100,7 +100,6 @@ func LoggerMiddleware() gin.HandlerFunc {
 			clientIp,
 			methodColor(method), method, reset,
 			path,
-			c.Request.Proto,
 		)
 	}
 }
