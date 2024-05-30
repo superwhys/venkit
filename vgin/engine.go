@@ -73,6 +73,14 @@ func (e *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	e.engine.ServeHTTP(w, req)
 }
 
+func (e *Engine) LoadHTMLGlob(pattern string) {
+	e.engine.LoadHTMLGlob(pattern)
+}
+
+func (e *Engine) LoadHTMLFiles(files ...string) {
+	e.engine.LoadHTMLFiles(files...)
+}
+
 func (g *RouterGroup) Static(relativePath, root string) gin.IRoutes {
 	return g.RouterGroup.Static(relativePath, root)
 }
