@@ -86,12 +86,19 @@ func wrapHandler(ctx context.Context, handler Handler) gin.HandlerFunc {
 }
 
 func checkRet(ctx context.Context, c *Context, ret HandleResponse) (hasErr bool) {
-	if ret != nil && ret.GetError() != nil {
+	if ret == nil {
+		return
+	}
+
+	if ret.GetCode() != 200 && ret.GetError() != nil {
 		lg.Errorc(ctx, "handle err: %v", ret.GetError())
 		AbortWithError(c.Context, ret.GetCode(), ret.GetMessage())
-		return true
+		hasErr = true
+	} else if ret.GetCode() != 200 {
+		AbortWithError(c.Context, ret.GetCode(), ret.GetMessage())
+		hasErr = true
 	}
-	return false
+	return
 }
 
 func checkIsWebsocket(handler Handler) bool {
