@@ -15,14 +15,21 @@ func (dh *DefaultHandler) HandleFunc(ctx context.Context, c *Context) HandleResp
 
 type ginHandlerFuncHandler struct {
 	handlerFunc gin.HandlerFunc
+	name        string
 }
 
 func (h *ginHandlerFuncHandler) Name() string {
+	if h.name != "" {
+		return h.name
+	}
 	return lg.FuncName(h.handlerFunc)
 }
 
 func (h *ginHandlerFuncHandler) InitHandler() Handler {
-	return &ginHandlerFuncHandler{h.handlerFunc}
+	return &ginHandlerFuncHandler{
+		h.handlerFunc,
+		h.name,
+	}
 }
 
 func (h *ginHandlerFuncHandler) HandleFunc(_ context.Context, c *Context) HandleResponse {
@@ -31,5 +38,9 @@ func (h *ginHandlerFuncHandler) HandleFunc(_ context.Context, c *Context) Handle
 }
 
 func WrapGinHandlerFunc(handlerFunc gin.HandlerFunc) Handler {
-	return &ginHandlerFuncHandler{handlerFunc}
+	return &ginHandlerFuncHandler{handlerFunc: handlerFunc}
+}
+
+func WrapGinHandlerFuncWithName(name string, handlerFunc gin.HandlerFunc) Handler {
+	return &ginHandlerFuncHandler{handlerFunc: handlerFunc, name: name}
 }
