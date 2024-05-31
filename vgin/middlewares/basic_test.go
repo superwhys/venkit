@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/superwhys/venkit/lg"
 	"github.com/superwhys/venkit/vgin"
@@ -33,7 +32,7 @@ func (g *TestAuthGetter) SetAuth(name string) error {
 type TestHandler struct {
 }
 
-func (h *TestHandler) HandleFunc(ctx context.Context, c *gin.Context) vgin.HandleResponse {
+func (h *TestHandler) HandleFunc(ctx context.Context, c *vgin.Context) vgin.HandleResponse {
 	lg.Info("success")
 	return &vgin.Ret{
 		Code: 200,
