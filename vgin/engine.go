@@ -131,6 +131,10 @@ func (g *RouterGroup) RegisterRouter(method, path string, handlers HandlersChain
 	g.debugPrintRoute(method, absPath, handlers)
 }
 
+func (g *RouterGroup) UseMiddleware(middleware ...Handler) {
+	g.Use(WrapHandler(g.ctx, middleware...)...)
+}
+
 func (g *RouterGroup) GET(path string, handler ...Handler) {
 	g.RegisterRouter(http.MethodGet, path, handler)
 }
