@@ -41,13 +41,17 @@ func Viper() *viper.Viper {
 func declareDefaultFlags() {
 	config = StringP("config", "f", defaultConfigFile, "Specify config file. Support json, yaml.")
 	debug = Bool("debug", false, "Whether to enable debug mode.")
-	useRemoteConfig = Bool("useRemoteConfig", false, "Set true to use remote config.")
-	watchRemoteConfig = Bool("watchRemoteConfig", false, "Set true to watch change of remote config.")
 	shared.ServiceName = StringP("service", "s", os.Getenv("VENKIT_SERVICE"), "Set the service name.")
-	if shared.UseConsul == nil || shared.UseConsul() {
+	if useConsul() {
 		shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr.")
 		shared.UseConsul = Bool("useConsul", true, "Whether to use the consul service center.")
+		useRemoteConfig = Bool("useRemoteConfig", false, "Set true to use remote config.")
+		watchRemoteConfig = Bool("watchRemoteConfig", false, "Set true to watch change of remote config.")
 	}
+}
+
+func useConsul() bool {
+	return shared.UseConsul == nil || shared.UseConsul()
 }
 
 func OverrideDefaultConfigFile(configFile string) {
@@ -145,7 +149,7 @@ func getServiceTag() string {
 }
 
 func readConfig(opt *VflagOption) {
-	if useRemoteConfig() {
+	if useConsul() && useRemoteConfig() {
 		path := readConsulConfig()
 		if watchRemoteConfig() {
 			go watchCnosulConfigChange(path)
