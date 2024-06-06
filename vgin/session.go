@@ -6,6 +6,8 @@ import (
 	"net/url"
 
 	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-contrib/sessions/memstore"
 	"github.com/gin-contrib/sessions/redis"
 	redisgo "github.com/gomodule/redigo/redis"
 
@@ -53,6 +55,22 @@ func WithKeyPairs(keyPairs ...string) RedisStoreOptionFunc {
 		}
 		o.keyPairs = append(o.keyPairs, bs...)
 	}
+}
+
+func NewMemSessionStore(keyPairs ...string) sessions.Store {
+	var bs [][]byte
+	for _, kp := range keyPairs {
+		bs = append(bs, []byte(kp))
+	}
+	return memstore.NewStore(bs...)
+}
+
+func NewCookieSessionStore(keyPairs ...string) sessions.Store {
+	var bs [][]byte
+	for _, kp := range keyPairs {
+		bs = append(bs, []byte(kp))
+	}
+	return cookie.NewStore(bs...)
 }
 
 func NewRedisSessionStore(service string, opts ...RedisStoreOptionFunc) (redis.Store, error) {
