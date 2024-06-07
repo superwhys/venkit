@@ -46,7 +46,7 @@ func readConsulConfig() string {
 	// use remote config
 	serviceName := getServiceNameWithoutTag()
 	serviceTag := getServiceTag()
-	path := fmt.Sprintf("/configs/%v/%v.yaml", serviceName, serviceTag)
+	path := fmt.Sprintf("/etc/configs/%v/%v.yaml", serviceName, serviceTag)
 	v.AddRemoteProvider("consul", shared.GetConsulAddress(), path)
 	v.SetConfigType("yaml")
 	if err := v.ReadRemoteConfig(); err != nil {
