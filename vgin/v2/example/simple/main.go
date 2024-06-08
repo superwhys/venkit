@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/v2/vgin"
+	"github.com/superwhys/venkit/vgin/v2"
 )
 
 type User struct {
@@ -13,9 +13,9 @@ type User struct {
 }
 
 type jsonHandler struct {
-	JsonDataStr     string  `vjson:"name" form:"name"`
-	JsonDataInt     int     `vjson:"age" form:"age"`
-	JsonDataFloat64 float64 `vjson:"money" form:"money"`
+	JsonDataStr     string  `json:"name" form:"name"`
+	JsonDataInt     int     `json:"age" form:"age"`
+	JsonDataFloat64 float64 `json:"money" form:"money"`
 }
 
 func JsonHandler(ctx context.Context, c *vgin.Context, data *jsonHandler) vgin.HandleResponse {
