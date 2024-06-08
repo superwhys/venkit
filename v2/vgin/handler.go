@@ -13,10 +13,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/superwhys/venkit/lg"
 	"github.com/superwhys/venkit/slices"
+	v1Vgin "github.com/superwhys/venkit/vgin"
 )
 
 const (
-	handlerFormatInvalid = "Handler must be a format of func(ctx context.Context, c *vgin.Context, data *DataStruct) vgin.HandleResponse"
+	handlerFormatInvalid = "handler supports only gin.HandlerFunc, v1Vgin.Handler, and func(ctx context.Context, c *vgin.Context, data *DataStruct) vgin.HandleResponse"
 )
 
 type Context struct {
@@ -29,11 +30,13 @@ type Handler any
 func WrapHandler(ctx context.Context, handlers ...Handler) []gin.HandlerFunc {
 	handlerFuncs := make([]gin.HandlerFunc, 0, len(handlers))
 	for _, handler := range handlers {
-		f, ok := handler.(gin.HandlerFunc)
-		if ok {
-			handlerFuncs = append(handlerFuncs, f)
-		} else {
-			handlerFuncs = append(handlerFuncs, wrapHandler(ctx, handler))
+		switch h := handler.(type) {
+		case gin.HandlerFunc:
+			handlerFuncs = append(handlerFuncs, h)
+		case v1Vgin.Handler:
+			handlerFuncs = append(handlerFuncs, v1Vgin.WrapHandler(ctx, h)...)
+		default:
+			handlerFuncs = append(handlerFuncs, wrapHandler(ctx, h))
 		}
 	}
 
@@ -44,7 +47,7 @@ func wrapHandler(ctx context.Context, handler Handler) gin.HandlerFunc {
 	fv := reflect.ValueOf(handler)
 	ft := fv.Type()
 	if ft.Kind() != reflect.Func {
-		lg.Fatalf("handler must be a function, get %v", ft.Kind())
+		lg.Fatal(handlerFormatInvalid)
 	}
 
 	ctx = lg.With(ctx, "[%s]", runtime.FuncForPC(fv.Pointer()).Name())
