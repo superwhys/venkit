@@ -92,7 +92,10 @@ func wrapHandlerFunc(ctx context.Context, fv reflect.Value, ft reflect.Type) gin
 		prepareParams(ctx, vc, ft, funcParamsNum, args)
 
 		responses := fv.Call(args)
-		ret := responses[0].Interface().(HandleResponse)
+		var ret HandleResponse
+		if r := responses[0].Interface(); r != nil {
+			ret = r.(HandleResponse)
+		}
 		if checkRet(ctx, vc, ret) {
 			return
 		}
