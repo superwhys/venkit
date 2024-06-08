@@ -33,6 +33,8 @@ func WrapHandler(ctx context.Context, handlers ...Handler) []gin.HandlerFunc {
 		switch h := handler.(type) {
 		case gin.HandlerFunc:
 			handlerFuncs = append(handlerFuncs, h)
+		case func(*gin.Context):
+			handlerFuncs = append(handlerFuncs, h)
 		case v1Vgin.Handler:
 			handlerFuncs = append(handlerFuncs, v1Vgin.WrapHandler(ctx, h)...)
 		default:
