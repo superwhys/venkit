@@ -2,7 +2,9 @@ package vgin
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"net/http"
 
 	"github.com/fatih/color"
@@ -161,4 +163,11 @@ func (g *RouterGroup) Specify(path string, methods []string, handler ...Handler)
 	for _, method := range methods {
 		g.RegisterRouter(method, path, handler)
 	}
+}
+
+func (g *RouterGroup) StaticFsEmbed(router, fileRelativePath string, files embed.FS) {
+	subFs, err := fs.Sub(files, fileRelativePath)
+	lg.PanicError(err)
+
+	g.StaticFS(router, http.FS(subFs))
 }
