@@ -34,7 +34,3 @@ func BasicAuthMiddleware(authGetter AuthGetter) gin.HandlerFunc {
 		c.Next()
 	}
 }
-
-func BasicAuthMiddlewareHandler(authGetter AuthGetter) vgin.Handler {
-	return vgin.WrapGinHandlerFunc(BasicAuthMiddleware(authGetter))
-}

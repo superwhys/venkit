@@ -29,7 +29,12 @@ type Handler any
 func WrapHandler(ctx context.Context, handlers ...Handler) []gin.HandlerFunc {
 	handlerFuncs := make([]gin.HandlerFunc, 0, len(handlers))
 	for _, handler := range handlers {
-		handlerFuncs = append(handlerFuncs, wrapHandler(ctx, handler))
+		f, ok := handler.(gin.HandlerFunc)
+		if ok {
+			handlerFuncs = append(handlerFuncs, f)
+		} else {
+			handlerFuncs = append(handlerFuncs, wrapHandler(ctx, handler))
+		}
 	}
 
 	return handlerFuncs

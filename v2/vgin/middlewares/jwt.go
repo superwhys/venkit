@@ -86,7 +86,3 @@ func JWTMiddleware(signKey string, claimsTmp jwt.Claims) gin.HandlerFunc {
 		c.Next()
 	}
 }
-
-func JWTMiddlewareHandler(signKey string, claimsTmp jwt.Claims) vgin.Handler {
-	return vgin.WrapGinHandlerFunc(JWTMiddleware(signKey, claimsTmp))
-}
