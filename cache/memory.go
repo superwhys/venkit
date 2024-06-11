@@ -71,7 +71,7 @@ func (mc *MemoryCache) Get(key string, out any) error {
 	p, ok := mc.payload[key]
 	mc.lock.RUnlock()
 
-	if !ok || !p.IsExpire() {
+	if !ok || p.IsExpire() {
 		return errors.New("not found")
 	}
 
