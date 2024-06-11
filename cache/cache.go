@@ -17,10 +17,21 @@ type Cache interface {
 	Close() error
 }
 
+type CacheObj interface {
+	Cache
+	GetObj(key string) (any, error)
+	GetOrCreateObj(key string, creater Creater) (any, error)
+}
+
 type CacheWithTTL interface {
 	Cache
 	GetOrCreateWithTTL(key string, ttl time.Duration, creator Creater, out any) error
 	SetWithTTL(key string, ttl time.Duration, value any) error
+}
+
+type CacheObjWithTTL interface {
+	CacheObj
+	GetOrCreateWithTTLObj(key string, ttl time.Duration, creator Creater) (any, error)
 }
 
 type payload struct {
@@ -42,6 +53,14 @@ func (p payload) Get(out any) error {
 	}
 
 	return decoder.Decode(p.Content)
+}
+
+func (p payload) GetObj() (any, error) {
+	if p.Error != nil {
+		return nil, p.Error
+	}
+
+	return p.Content, nil
 }
 
 func newPayload(content any, err error) payload {

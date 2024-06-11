@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var _ CacheWithTTL = (*MemoryCache)(nil)
+var _ CacheObjWithTTL = (*MemoryCache)(nil)
 
 type payloadWithExpire struct {
 	payload  payload
@@ -28,6 +28,10 @@ func (p *payloadWithExpire) IsExpire() bool {
 
 func (p *payloadWithExpire) Get(out any) error {
 	return p.payload.Get(out)
+}
+
+func (p *payloadWithExpire) GetObj() (any, error) {
+	return p.payload.GetObj()
 }
 
 type MemoryCache struct {
@@ -78,12 +82,28 @@ func (mc *MemoryCache) Get(key string, out any) error {
 	return p.Get(out)
 }
 
+func (mc *MemoryCache) GetObj(key string) (any, error) {
+	mc.lock.RLock()
+	p, ok := mc.payload[key]
+	mc.lock.RUnlock()
+
+	if !ok || p.IsExpire() {
+		return nil, errors.New("not found")
+	}
+
+	return p.GetObj()
+}
+
 func (mc *MemoryCache) Set(key string, value any) error {
 	return mc.SetWithTTL(key, 0, value)
 }
 
 func (mc *MemoryCache) GetOrCreate(key string, creater Creater, out any) error {
 	return mc.GetOrCreateWithTTL(key, 0, creater, out)
+}
+
+func (mc *MemoryCache) GetOrCreateObj(key string, creater Creater) (any, error) {
+	return mc.GetOrCreateWithTTLObj(key, 0, creater)
 }
 
 func (mc *MemoryCache) Delete(key string) error {
@@ -104,16 +124,34 @@ func (mc *MemoryCache) Close() error {
 	return nil
 }
 
-func (mc *MemoryCache) GetOrCreateWithTTL(key string, ttl time.Duration, creator Creater, out any) error {
+func (mc *MemoryCache) GetOrCreateWithTTLObj(key string, ttl time.Duration, creater Creater) (any, error) {
+	np, err := mc.getOrCreate(key, ttl, creater)
+	if err != nil {
+		return nil, err
+	}
+
+	return np.GetObj()
+}
+
+func (mc *MemoryCache) GetOrCreateWithTTL(key string, ttl time.Duration, creater Creater, out any) error {
+	np, err := mc.getOrCreate(key, ttl, creater)
+	if err != nil {
+		return err
+	}
+
+	return np.Get(out)
+}
+
+func (mc *MemoryCache) getOrCreate(key string, ttl time.Duration, creater Creater) (payload, error) {
 	mc.lock.RLock()
 	p, ok := mc.payload[key]
 	mc.lock.RUnlock()
 
 	if ok && !p.IsExpire() {
-		return p.Get(out)
+		return p.payload, nil
 	}
 
-	np := newPayload(creator())
+	np := newPayload(creater())
 	mc.lock.Lock()
 
 	var expireAt time.Time
@@ -126,7 +164,8 @@ func (mc *MemoryCache) GetOrCreateWithTTL(key string, ttl time.Duration, creator
 		expireAt: expireAt,
 	}
 	mc.lock.Unlock()
-	return np.Get(out)
+
+	return np, nil
 }
 
 func (mc *MemoryCache) SetWithTTL(key string, ttl time.Duration, value any) error {
