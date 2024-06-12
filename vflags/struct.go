@@ -87,6 +87,8 @@ func setPFlagRecursively(prefix string, i interface{}) error {
 			}
 		case reflect.Float64:
 			setPFlag(name, pflag.Float64(name, vf.Field(i).Float(), usage))
+		case reflect.Map:
+			// The map type can only be read from the configuration file, so it does not need to be set in pflag
 		case reflect.Slice:
 			switch field.Type.String() {
 			case "[]int":
@@ -99,6 +101,8 @@ func setPFlagRecursively(prefix string, i interface{}) error {
 				setPFlag(name, pflag.BoolSlice(name, vf.Field(i).Interface().([]bool), usage))
 			case "[]time.Duration":
 				setPFlag(name, pflag.DurationSlice(name, vf.Field(i).Interface().([]time.Duration), usage))
+			case "[]map[string]interface {}", "[]map[string]string", "[]map[string]int":
+				// The map type can only be read from the configuration file, so it does not need to be set in pflag
 			default:
 				return fmt.Errorf("unsupport type of field %s %s", field.Name, field.Type.String())
 			}
