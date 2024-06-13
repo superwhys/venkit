@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/lg/log"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
 )
@@ -16,7 +17,7 @@ type gormLogger struct {
 	slowThreshold             time.Duration
 	ignoreRecordNotFoundError bool
 	logMod                    logger.LogLevel
-	logger                    *lg.Logger
+	logger                    lg.Logger
 
 	traceStr, traceErrStr, traceWarnStr string
 }
@@ -49,7 +50,7 @@ func NewGormLogger(opts ...GormLoggerOption) *gormLogger {
 	)
 
 	l := &gormLogger{
-		logger:       lg.New(),
+		logger:       log.New(),
 		traceStr:     traceStr,
 		traceWarnStr: traceWarnStr,
 		traceErrStr:  traceErrStr,
