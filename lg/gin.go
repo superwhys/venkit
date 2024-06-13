@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	log2 "github.com/superwhys/venkit/lg/log"
 )
 
 const (
@@ -59,10 +60,10 @@ func methodColor(method string) string {
 }
 
 func LoggerMiddleware() gin.HandlerFunc {
-	newLogger := New(
-		WithCalldepth(5),
-		WithDebugFlag(log.LstdFlags|log.LUTC),
-		WithErrorFlag(log.LstdFlags|log.LUTC),
+	newLogger := log2.New(
+		log2.WithCalldepth(5),
+		log2.WithDebugFlag(log.LstdFlags|log.LUTC),
+		log2.WithErrorFlag(log.LstdFlags|log.LUTC),
 	)
 	return func(c *gin.Context) {
 		start := time.Now()
@@ -81,7 +82,7 @@ func LoggerMiddleware() gin.HandlerFunc {
 		statusCode := c.Writer.Status()
 		spendTime := time.Since(start)
 
-		var logFunc func(msg string, v ...interface{})
+		var logFunc func(msg string, v ...any)
 		switch {
 		case statusCode >= http.StatusOK && statusCode < http.StatusMultipleChoices:
 			logFunc = newLogger.Infof

@@ -5,11 +5,11 @@ import (
 	"runtime"
 )
 
-func FuncName(i interface{}) string {
+func FuncName(i any) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 
-func StructName(i interface{}) string {
+func StructName(i any) string {
 	tPtr := reflect.TypeOf(i)
 
 	if tPtr.Kind() == reflect.Ptr {

@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
+	"log/slog"
+	"os"
 
 	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/lg/log"
+	mySlog "github.com/superwhys/venkit/lg/slog"
 )
 
 type Data struct {
@@ -11,40 +15,52 @@ type Data struct {
 	Age  int
 }
 
-func main() {
-	lg.EnableDebug()
+func init() {
+}
 
-	lg.Info("this is log")
-	lg.Debug("this is log")
-	lg.Warn("this is log")
-	lg.Error("this is log")
+func main() {
+	logLogger := log.New()
+	logLogger.EnableDebug()
 
 	ctx := context.Background()
-	lg.Infoc(ctx, "this is log")
-	lg.Debugc(ctx, "this is log")
-	lg.Warnc(ctx, "this is log")
-	lg.Errorc(ctx, "this is log")
+	logLogger.Infoc(ctx, "this is log")
+	logLogger.Debugc(ctx, "this is log")
+	logLogger.Warnc(ctx, "this is log")
+	logLogger.Errorc(ctx, "this is log")
 
-	ctx = lg.With(ctx, "[test]")
-	lg.Infoc(ctx, "this is log")
-	lg.Debugc(ctx, "this is log")
-	lg.Warnc(ctx, "this is log")
-	lg.Errorc(ctx, "this is log")
+	ctx = logLogger.With(ctx, "[test] prefix=%s", "logLogger")
+	logLogger.Infoc(ctx, "this is log")
+	logLogger.Debugc(ctx, "this is log")
+	logLogger.Warnc(ctx, "this is log")
+	logLogger.Errorc(ctx, "this is log", "name", "super")
 
-	lg.Infof("this is log: %v", 1)
-	lg.Debugf("this is log: %v", 1)
-	lg.Warnf("this is log: %v", 1)
-	lg.Errorf("this is log: %v", 1)
+	logLogger.Infof("this is log: %v", 1)
+	logLogger.Debugf("this is log: %v", 1)
+	logLogger.Warnf("this is log: %v", 1)
+	logLogger.Errorf("this is log: %v", 1)
 
 	data := &Data{
 		Name: "hoven",
 		Age:  16,
 	}
 
-	lg.Warnc(ctx, lg.Jsonify(data))
-	lg.Infoc(ctx, lg.Jsonify(data))
-	lg.Debugc(ctx, lg.Jsonify(data))
-	lg.Errorc(ctx, lg.Jsonify(data))
+	logLogger.Warnc(ctx, lg.Jsonify(data))
+	logLogger.Infoc(ctx, lg.Jsonify(data))
+	logLogger.Debugc(ctx, lg.Jsonify(data))
+	logLogger.Errorc(ctx, lg.Jsonify(data))
 
-	lg.Fatal("test")
+	slogLogger := mySlog.NewSlogLogger(slog.NewJSONHandler(os.Stdout, nil))
+	slogLogger.Infof("this is slog: %s", "info")
+	slogLogger.Warnf("this is slog: %v", "warn")
+	slogLogger.Errorf("this is slog: %v", "error")
+	slogLogger.Debugf("this is slog: %v", "debug")
+
+	ctx = slogLogger.With(context.Background(), "[test] prefix=%s", "slogLogger")
+
+	slogLogger.Infoc(ctx, "this is slog context: %v, name=%s age=%d", "info", "super", 18)
+	slogLogger.Debugc(ctx, "this is slog context: %v, name=%s age=%d", "debug", "super", 18)
+	slogLogger.Errorc(ctx, "this is slog context: %v, name=%s age=%d", "error", "super", 18)
+	slogLogger.Warnc(ctx, "this is slog context: %v, name=%s age=%d", "warn", "super", 18)
+
+	//logLogger.Fatal("test")
 }
