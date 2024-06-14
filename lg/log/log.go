@@ -80,7 +80,7 @@ func New(options ...Option) *Logger {
 	var stderr io.Writer = os.Stderr
 
 	l := &Logger{
-		callDepth: 4,
+		callDepth: 3,
 	}
 	for _, opt := range options {
 		opt(l)
