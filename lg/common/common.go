@@ -14,7 +14,7 @@ func SliceClone(strSlice []string) []string {
 	return append(strSlice[:0:0], strSlice...)
 }
 
-func ParseFmtKeyValue(msg string, v ...any) (m string, keys, values []string, err error) {
+func ParseFmtKeyValue(msg string, v ...any) (m string, keys, values []string, remains []any, err error) {
 	/*
 		msg= hello a=%s world %d        v = &a, 1
 		hello world %d
@@ -28,7 +28,9 @@ func ParseFmtKeyValue(msg string, v ...any) (m string, keys, values []string, er
 	msgTmpl, isKv, keys, desc := ParseFmtStr(msg)
 	var msgV []any
 	var objV []any
+	var idx int
 	for i, kv := range isKv {
+		idx = i
 		var val any
 		if i >= len(v) {
 			val = "<Missing>"
@@ -42,17 +44,22 @@ func ParseFmtKeyValue(msg string, v ...any) (m string, keys, values []string, er
 			msgV = append(msgV, val)
 		}
 	}
+
+	if idx < len(v) {
+		remains = v[idx+1:]
+	}
+
 	msg = fmt.Sprintf(msgTmpl, msgV...)
 
 	if len(objV) != len(desc) {
-		return "", nil, nil, fmt.Errorf("Invalid numbers of keys and values")
+		return "", nil, nil, nil, fmt.Errorf("invalid numbers of keys and values")
 	}
 
 	for i := range desc {
 		values = append(values, fmt.Sprintf(desc[i], objV[i]))
 	}
 
-	return msg, keys, values, nil
+	return msg, keys, values, remains, nil
 }
 
 func ParseFmtStr(format string) (msg string, isKV []bool, keys, descs []string) {
