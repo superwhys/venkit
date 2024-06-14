@@ -28,9 +28,7 @@ func ParseFmtKeyValue(msg string, v ...any) (m string, keys, values []string, re
 	msgTmpl, isKv, keys, desc := ParseFmtStr(msg)
 	var msgV []any
 	var objV []any
-	var idx int
 	for i, kv := range isKv {
-		idx = i
 		var val any
 		if i >= len(v) {
 			val = "<Missing>"
@@ -44,9 +42,10 @@ func ParseFmtKeyValue(msg string, v ...any) (m string, keys, values []string, re
 			msgV = append(msgV, val)
 		}
 	}
+	// fmt.Println(isKv, keys, desc, v)
 
-	if idx < len(v) {
-		remains = v[idx+1:]
+	if len(isKv) < len(v) {
+		remains = v[len(isKv):]
 	}
 
 	msg = fmt.Sprintf(msgTmpl, msgV...)

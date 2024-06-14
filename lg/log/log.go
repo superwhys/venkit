@@ -230,6 +230,20 @@ func (l *Logger) logc(ctx context.Context, lb logable) {
 	}
 }
 
+const badKey = "!BADKEY"
+
+func getKVParis(kvs []any) (string, string, []any) {
+	switch x := kvs[0].(type) {
+	case string:
+		if len(kvs) == 1 {
+			return badKey, x, nil
+		}
+		return x, fmt.Sprintf("%v", kvs[1]), kvs[2:]
+	default:
+		return badKey, fmt.Sprintf("%v", x), kvs[1:]
+	}
+}
+
 func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
@@ -246,10 +260,17 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 
 	newLc := cloneLogContext(lc)
 
-	msg, keys, values, _, err := common.ParseFmtKeyValue(msg, v...)
+	msg, keys, values, remains, err := common.ParseFmtKeyValue(msg, v...)
 	if err != nil {
 		l.Errorf("%v", err.Error())
 		return ctx
+	}
+
+	var key, val string
+	for len(remains) > 0 {
+		key, val, remains = getKVParis(remains)
+		keys = append(keys, key)
+		values = append(values, val)
 	}
 
 	if msg != "" {
