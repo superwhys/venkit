@@ -5,7 +5,7 @@ import (
 
 	"github.com/superwhys/venkit/lg"
 	"github.com/superwhys/venkit/lg/log"
-	mySlog "github.com/superwhys/venkit/lg/slog"
+	"github.com/superwhys/venkit/lg/slog"
 )
 
 type Data struct {
@@ -21,6 +21,10 @@ func main() {
 	logLogger.EnableDebug()
 
 	ctx := context.Background()
+	lg.Infoc(ctx, "this is log: %v, name: %v, age=%v", "protocol", "super", 16, "protocol", 27)
+	lg.Infoc(ctx, "this is log: %v", "info")
+	lg.Infoc(ctx, "this is log: %v", "info", "badValue")
+	lg.Infoc(ctx, "this is log: %v", "info", "protocol", 27)
 	logLogger.Infoc(ctx, "this is log")
 	logLogger.Debugc(ctx, "this is log")
 	logLogger.Warnc(ctx, "this is log")
@@ -47,7 +51,7 @@ func main() {
 	logLogger.Debugc(ctx, lg.Jsonify(data))
 	logLogger.Errorc(ctx, lg.Jsonify(data))
 
-	slogLogger := mySlog.NewSlogLogger()
+	slogLogger := slog.NewSlogLogger()
 	slogLogger.EnableDebug()
 	slogLogger.Infof("this is slog: %s", "info", "city", "shenzhen")
 	slogLogger.Warnf("this is slog: %v", "warn")
