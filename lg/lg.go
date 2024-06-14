@@ -8,6 +8,7 @@ import (
 
 	"github.com/superwhys/venkit/lg/log"
 	"github.com/superwhys/venkit/lg/slog"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 var (
@@ -18,7 +19,6 @@ var (
 func init() {
 	logger = log.New()
 	Ctx = logger.With(context.Background(), "[Venkit]")
-
 }
 
 func SetSlog() {
@@ -35,6 +35,16 @@ func IsDebug() bool {
 
 func EnableDebug() {
 	logger.EnableDebug()
+}
+
+func FileLoggerWriter(filename string, maxSize, maxBackup, maxAge int, logCompress bool) *lumberjack.Logger {
+	return &lumberjack.Logger{
+		Filename:   filename,
+		MaxSize:    maxSize,
+		MaxBackups: maxBackup,
+		MaxAge:     maxAge,
+		Compress:   logCompress,
+	}
 }
 
 func salvageMsg(v ...any) (msg string, remain []any) {

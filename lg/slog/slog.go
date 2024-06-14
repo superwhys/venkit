@@ -3,6 +3,7 @@ package slog
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 
@@ -27,7 +28,7 @@ func NewSlogWithHandler(handler slog.Handler, lv *slog.LevelVar) *Logger {
 	}
 }
 
-func NewSlogTextLogger() *Logger {
+func NewSlogTextLogger(w ...io.Writer) *Logger {
 	lv := &slog.LevelVar{}
 	lv.Set(slog.LevelInfo)
 	opts := &slog.HandlerOptions{
@@ -35,7 +36,14 @@ func NewSlogTextLogger() *Logger {
 		Level:     lv,
 	}
 
-	handler := slog.NewTextHandler(os.Stdout, opts)
+	var writer io.Writer
+	if len(w) == 0 {
+		writer = os.Stdout
+	} else {
+		writer = w[0]
+	}
+
+	handler := slog.NewTextHandler(writer, opts)
 	return NewSlogWithHandler(handler, lv)
 }
 
