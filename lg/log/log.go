@@ -246,7 +246,7 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 
 	newLc := cloneLogContext(lc)
 
-	msg, keys, values, err := common.ParseFmtKeyValue(msg, v...)
+	msg, keys, values, _, err := common.ParseFmtKeyValue(msg, v...)
 	if err != nil {
 		l.Errorf("%v", err.Error())
 		return ctx
