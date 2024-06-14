@@ -49,17 +49,21 @@ func main() {
 
 	slogLogger := mySlog.NewSlogLogger()
 	slogLogger.EnableDebug()
-	slogLogger.Infof("this is slog: %s", "info")
+	slogLogger.Infof("this is slog: %s", "info", "city", "shenzhen")
 	slogLogger.Warnf("this is slog: %v", "warn")
 	slogLogger.Errorf("this is slog: %v", "error")
 	slogLogger.Debugf("this is slog: %v", "debug")
 
-	ctx = slogLogger.With(context.Background(), "[test] prefix=%s", "slogLogger")
+	ctx = slogLogger.With(context.Background(), "[test] prefix=%s city=%s", "slogLogger", "shenzhen", "ani", "dog")
 
 	slogLogger.Infoc(ctx, "this is slog context: %v, name=%s age=%d", "info", "super", 18)
 	slogLogger.Debugc(ctx, "this is slog context: %v, name=%s age=%d", "debug", "super", 18)
 	slogLogger.Errorc(ctx, "this is slog context: %v, name=%s age=%d", "error", "super", 18)
 	slogLogger.Warnc(ctx, "this is slog context: %v, name=%s age=%d", "warn", "super", 18)
+
+	ctx = slogLogger.With(ctx, "Group")
+
+	slogLogger.Infoc(ctx, "this is group msg, day: %v", 1, "province", "guangdond")
 
 	//logLogger.Fatal("test")
 }
