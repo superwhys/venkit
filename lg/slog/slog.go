@@ -6,6 +6,8 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/superwhys/venkit/lg/common"
 )
@@ -28,12 +30,23 @@ func NewSlogWithHandler(handler slog.Handler, lv *slog.LevelVar) *Logger {
 	}
 }
 
+func relativeToGOROOT(path string) string {
+	gopath := os.Getenv("GOPATH")
+	path, _ = filepath.Rel(gopath, path)
+	return path
+}
+
+func getSrouce() string {
+	_, file, _, _ := runtime.Caller(4)
+	return relativeToGOROOT(file)
+}
+
 func NewSlogTextLogger(w ...io.Writer) *Logger {
 	lv := &slog.LevelVar{}
 	lv.Set(slog.LevelInfo)
 	opts := &slog.HandlerOptions{
-		AddSource: true,
-		Level:     lv,
+		// AddSource: true,
+		Level: lv,
 	}
 
 	var writer io.Writer
@@ -77,23 +90,34 @@ func (sl *Logger) PanicError(err error, msg ...any) {
 }
 
 func (sl *Logger) Infof(msg string, v ...any) {
-	sl.Infoc(context.TODO(), msg, v...)
+	ctx := context.TODO()
+	cl := sl.currentLogger(ctx).InfoContext
+	sl.logc(ctx, cl, msg, v...)
 }
 
 func (sl *Logger) Debugf(msg string, v ...any) {
-	sl.Debugc(context.TODO(), msg, v...)
+	ctx := context.TODO()
+	cl := sl.currentLogger(ctx).DebugContext
+	sl.logc(ctx, cl, msg, v...)
 }
 
 func (sl *Logger) Warnf(msg string, v ...any) {
-	sl.Warnc(context.TODO(), msg, v...)
+	ctx := context.TODO()
+	cl := sl.currentLogger(ctx).WarnContext
+	sl.logc(ctx, cl, msg, v...)
 }
 
 func (sl *Logger) Errorf(msg string, v ...any) {
-	sl.Errorc(context.TODO(), msg, v...)
+	ctx := context.TODO()
+	cl := sl.currentLogger(ctx).ErrorContext
+	sl.logc(ctx, cl, msg, v...)
 }
 
 func (sl *Logger) Fatalf(msg string, v ...any) {
-	sl.Warnf(msg, v...)
+	ctx := context.TODO()
+	cl := sl.currentLogger(ctx).ErrorContext
+	sl.logc(ctx, cl, msg, v...)
+
 	os.Exit(1)
 }
 
@@ -187,7 +211,7 @@ func (sl *Logger) With(ctx context.Context, msg string, v ...any) context.Contex
 	return context.WithValue(ctx, slContextKey, newSc)
 }
 
-func (sl *Logger) Infoc(ctx context.Context, msg string, v ...any) {
+func (sl *Logger) logc(ctx context.Context, cl contextLogger, msg string, v ...any) {
 	// parse the msg and v, get the common msg and key-value pairs in msg or slog.Attr
 	m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
 	if err != nil {
@@ -196,7 +220,13 @@ func (sl *Logger) Infoc(ctx context.Context, msg string, v ...any) {
 	}
 
 	args := sl.fmtMsg(keys, values, attrs, remains)
-	sl.currentLogger(ctx).InfoContext(ctx, m, args...)
+
+	sl.contextLog(cl, ctx, m, args...)
+}
+
+func (sl *Logger) Infoc(ctx context.Context, msg string, v ...any) {
+	cl := sl.currentLogger(ctx).InfoContext
+	sl.logc(ctx, cl, msg, v...)
 }
 
 func (sl *Logger) Debugc(ctx context.Context, msg string, v ...any) {
@@ -204,34 +234,23 @@ func (sl *Logger) Debugc(ctx context.Context, msg string, v ...any) {
 		return
 	}
 
-	m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
-	if err != nil {
-		sl.Errorf("KV invalid: %v", err)
-		return
-	}
-
-	args := sl.fmtMsg(keys, values, attrs, remains)
-	sl.currentLogger(ctx).DebugContext(ctx, m, args...)
+	cl := sl.currentLogger(ctx).DebugContext
+	sl.logc(ctx, cl, msg, v...)
 }
 
 func (sl *Logger) Warnc(ctx context.Context, msg string, v ...any) {
-	m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
-	if err != nil {
-		sl.Errorf("KV invalid: %v", err)
-		return
-	}
-
-	args := sl.fmtMsg(keys, values, attrs, remains)
-	sl.currentLogger(ctx).WarnContext(ctx, m, args...)
+	cl := sl.currentLogger(ctx).WarnContext
+	sl.logc(ctx, cl, msg, v...)
 }
 
 func (sl *Logger) Errorc(ctx context.Context, msg string, v ...any) {
-	m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
-	if err != nil {
-		sl.Errorf("KV invalid: %v", err)
-		return
-	}
+	cl := sl.currentLogger(ctx).ErrorContext
+	sl.logc(ctx, cl, msg, v...)
+}
 
-	args := sl.fmtMsg(keys, values, attrs, remains)
-	sl.currentLogger(ctx).ErrorContext(ctx, m, args...)
+type contextLogger func(ctx context.Context, msg string, args ...any)
+
+func (sl *Logger) contextLog(cl contextLogger, ctx context.Context, msg string, args ...any) {
+	args = append(args, slog.String("source", getSrouce()))
+	cl(ctx, msg, args...)
 }
