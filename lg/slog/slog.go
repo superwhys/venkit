@@ -11,28 +11,44 @@ import (
 
 type Logger struct {
 	*slog.Logger
-	isDebug bool
+	lv *slog.LevelVar
 }
 
-func NewSlogLogger(handlers ...slog.Handler) *Logger {
-	var l *slog.Logger
-	if len(handlers) != 0 {
-		l = slog.New(handlers[0])
-	} else {
-		l = slog.Default()
+func NewSlogLogger() *Logger {
+	return &Logger{
+		Logger: slog.Default(),
+	}
+}
+
+func NewSlogWithHandler(handler slog.Handler, lv *slog.LevelVar) *Logger {
+	return &Logger{
+		Logger: slog.New(handler),
+		lv:     lv,
+	}
+}
+
+func NewSlogTextLogger() *Logger {
+	lv := &slog.LevelVar{}
+	lv.Set(slog.LevelInfo)
+	opts := &slog.HandlerOptions{
+		AddSource: true,
+		Level:     lv,
 	}
 
-	return &Logger{
-		Logger: l,
-	}
+	handler := slog.NewTextHandler(os.Stdout, opts)
+	return NewSlogWithHandler(handler, lv)
 }
 
 func (sl *Logger) EnableDebug() {
-	sl.isDebug = true
+	if sl.lv == nil {
+		slog.SetLogLoggerLevel(slog.LevelDebug)
+	} else {
+		sl.lv.Set(slog.LevelDebug)
+	}
 }
 
 func (sl *Logger) IsDebug() bool {
-	return sl.isDebug && sl.Logger.Handler().Enabled(context.TODO(), slog.LevelDebug)
+	return sl.Logger.Enabled(context.TODO(), slog.LevelDebug)
 }
 
 func (sl *Logger) ClearContext(ctx context.Context) context.Context {

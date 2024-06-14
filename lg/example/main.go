@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"log/slog"
-	"os"
 
 	"github.com/superwhys/venkit/lg"
 	"github.com/superwhys/venkit/lg/log"
@@ -49,7 +47,8 @@ func main() {
 	logLogger.Debugc(ctx, lg.Jsonify(data))
 	logLogger.Errorc(ctx, lg.Jsonify(data))
 
-	slogLogger := mySlog.NewSlogLogger(slog.NewJSONHandler(os.Stdout, nil))
+	slogLogger := mySlog.NewSlogLogger()
+	slogLogger.EnableDebug()
 	slogLogger.Infof("this is slog: %s", "info")
 	slogLogger.Warnf("this is slog: %v", "warn")
 	slogLogger.Errorf("this is slog: %v", "error")
