@@ -89,12 +89,27 @@ func (sl *Logger) Fatalf(msg string, v ...any) {
 	os.Exit(1)
 }
 
-func (sl *Logger) logc(ctx context.Context) (string, []any) {
-	sc := parseFromContext(ctx)
-	if sc == nil {
-		return "", nil
+func (sl *Logger) fmtMsg(keys []string, values []string, attrs []slog.Attr, v []any) []any {
+	if len(keys) != len(values) {
+		sl.Errorf("Invalid numbers of keys and values")
+		return nil
 	}
-	return sc.LogFmt()
+	var groupMses []any
+
+	if len(keys) == 0 {
+		// no keys, it can use as same as log/slog
+		groupMses = append(groupMses, v...)
+	} else {
+		for i, key := range keys {
+			groupMses = append(groupMses, key, values[i])
+		}
+
+		for _, attr := range attrs {
+			groupMses = append(groupMses, attr)
+		}
+	}
+
+	return groupMses
 }
 
 func (sl *Logger) currentLogger(ctx context.Context) *slog.Logger {
@@ -109,16 +124,16 @@ func (sl *Logger) currentLogger(ctx context.Context) *slog.Logger {
 // parseKVAndAttr  parse Infoc(ctx, "this is log, addr: %v, name=%v age=%v", addr, name, age, slog.String("city", city))
 // to `time=2024-06-13T21:01:46.131+08:00 level=INFO msg="this is log, addr: ..." name=aaa age=18 city=city`
 // keys=[name, age], values=[aaa, 18]
-func (sl *Logger) parseKVAndAttr(msg string, v ...any) (m string, keys, values []string, attrs []slog.Attr, err error) {
+func (sl *Logger) parseKVAndAttr(msg string, v ...any) (m string, keys, values []string, remains []any, attrs []slog.Attr, err error) {
 	for _, v := range v {
 		if a, ok := v.(slog.Attr); ok {
 			attrs = append(attrs, a)
 		}
 	}
 
-	m, keys, values, err = common.ParseFmtKeyValue(msg, v...)
+	m, keys, values, remains, err = common.ParseFmtKeyValue(msg, v...)
 	if err != nil {
-		return "", nil, nil, nil, err
+		return "", nil, nil, nil, nil, err
 	}
 	return
 }
@@ -139,31 +154,41 @@ func (sl *Logger) With(ctx context.Context, msg string, v ...any) context.Contex
 	}
 	newSc := cloneSlogContext(sc)
 
-	m, keys, values, attrs, err := sl.parseKVAndAttr(msg, v...)
-	if err != nil {
-		sl.Errorf("Error parsing message: %v", err)
-		return ctx
+	cl := sl.currentLogger(ctx)
+
+	var nl *slog.Logger
+
+	if len(v) == 0 {
+		// v is empty, it means that it need to create a new group
+		nl = cl.WithGroup(msg)
+	} else {
+		// v is not empty, this means that it need to put v into a group whose key is msg and create a child logger
+		m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
+		if err != nil {
+			sl.Errorf("Error parsing message: %v", err)
+			return ctx
+		}
+
+		as := sl.fmtMsg(keys, values, attrs, remains)
+
+		nl = cl.With(slog.Attr{Key: m, Value: slog.GroupValue(argsToAttrSlice(as)...)})
 	}
 
-	if m != "" {
-		newSc.msgs = append(newSc.msgs, m)
-	}
-	newSc.keys = append(newSc.keys, keys...)
-	newSc.values = append(newSc.values, values...)
-	newSc.attrs = append(newSc.attrs, attrs...)
-
-	//newSc.childLogger = sl.currentLogger(newSc).With(groupMses...)
+	newSc.childLogger = nl
 
 	return context.WithValue(ctx, slContextKey, newSc)
 }
 
 func (sl *Logger) Infoc(ctx context.Context, msg string, v ...any) {
-	if len(msg) > 0 || len(v) > 0 {
-		ctx = sl.With(ctx, msg, v...)
+	// parse the msg and v, get the common msg and key-value pairs in msg or slog.Attr
+	m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
+	if err != nil {
+		sl.Errorf("KV invalid: %v", err)
+		return
 	}
 
-	msg, args := sl.logc(ctx)
-	sl.currentLogger(ctx).InfoContext(ctx, msg, args...)
+	args := sl.fmtMsg(keys, values, attrs, remains)
+	sl.currentLogger(ctx).InfoContext(ctx, m, args...)
 }
 
 func (sl *Logger) Debugc(ctx context.Context, msg string, v ...any) {
@@ -171,28 +196,34 @@ func (sl *Logger) Debugc(ctx context.Context, msg string, v ...any) {
 		return
 	}
 
-	if len(msg) > 0 || len(v) > 0 {
-		ctx = sl.With(ctx, msg, v...)
+	m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
+	if err != nil {
+		sl.Errorf("KV invalid: %v", err)
+		return
 	}
 
-	msg, args := sl.logc(ctx)
-	sl.currentLogger(ctx).DebugContext(ctx, msg, args...)
+	args := sl.fmtMsg(keys, values, attrs, remains)
+	sl.currentLogger(ctx).DebugContext(ctx, m, args...)
 }
 
 func (sl *Logger) Warnc(ctx context.Context, msg string, v ...any) {
-	if len(msg) > 0 || len(v) > 0 {
-		ctx = sl.With(ctx, msg, v...)
+	m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
+	if err != nil {
+		sl.Errorf("KV invalid: %v", err)
+		return
 	}
 
-	msg, args := sl.logc(ctx)
-	sl.currentLogger(ctx).WarnContext(ctx, msg, args...)
+	args := sl.fmtMsg(keys, values, attrs, remains)
+	sl.currentLogger(ctx).WarnContext(ctx, m, args...)
 }
 
 func (sl *Logger) Errorc(ctx context.Context, msg string, v ...any) {
-	if len(msg) > 0 || len(v) > 0 {
-		ctx = sl.With(ctx, msg, v...)
+	m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
+	if err != nil {
+		sl.Errorf("KV invalid: %v", err)
+		return
 	}
 
-	msg, args := sl.logc(ctx)
-	sl.currentLogger(ctx).ErrorContext(ctx, msg, args...)
+	args := sl.fmtMsg(keys, values, attrs, remains)
+	sl.currentLogger(ctx).ErrorContext(ctx, m, args...)
 }
