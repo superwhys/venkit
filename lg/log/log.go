@@ -266,8 +266,6 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 		return ctx
 	}
 
-	fmt.Println(msg, keys, values, remains)
-
 	var key, val string
 
 	// l.With(ctx, "prefix", "logPrefix")
