@@ -17,12 +17,30 @@ func init() {
 }
 
 func main() {
+	ctx := context.Background()
+
 	lg.Error("test error")
 
 	logLogger := log.New()
 	logLogger.EnableDebug()
 
-	ctx := context.Background()
+	lg.Infoc(ctx, "========= %v ==========", "lg.With test")
+	ctx = logLogger.With(context.Background(), "province", "guangdong", "city", "shenzhen")
+	logLogger.Infoc(ctx, "this is log")
+
+	ctx = logLogger.With(context.Background(), "province", "guangdong")
+	logLogger.Infoc(ctx, "this is log")
+
+	ctx = logLogger.With(context.Background(), "prefix")
+	logLogger.Infoc(ctx, "this is log")
+
+	ctx = logLogger.With(context.Background(), "%s", "prefix")
+	logLogger.Infoc(ctx, "this is log")
+
+	ctx = logLogger.With(context.Background(), "%s", "prefix", "province", "guangdong", "city", "shenzhen")
+	logLogger.Infoc(ctx, "this is log")
+
+	ctx = context.Background()
 	lg.Infoc(ctx, "this is log: %v, name: %v, age=%v", "protocol", "super", 16, "protocol", 27)
 	lg.Infoc(ctx, "this is log: %v", "info")
 	lg.Infoc(ctx, "this is log: %v", "info", "badValue")
@@ -55,6 +73,34 @@ func main() {
 
 	slogLogger := slog.NewSlogLogger()
 	slogLogger.EnableDebug()
+
+	ctx = context.Background()
+	slogLogger.Infoc(ctx, "========= %v ==========", "slog.With test")
+	ctx = slogLogger.With(context.Background(), "province", "guangdong", "city", "shenzhen")
+	slogLogger.Infoc(ctx, "this is log")
+
+	ctx = slogLogger.With(context.Background(), "province", "guangdong")
+	slogLogger.Infoc(ctx, "this is log")
+
+	ctx = slogLogger.With(context.Background(), "prefix")
+	slogLogger.Infoc(ctx, "this is log")
+
+	ctx = slogLogger.With(context.Background(), "prefix", "name", "super")
+	slogLogger.Infoc(ctx, "this is log")
+
+	ctx = slogLogger.With(context.Background(), "%s", "prefix")
+	slogLogger.Infoc(ctx, "this is log")
+
+	ctx = slogLogger.With(context.Background(), "%s", "group", "name", "super")
+	slogLogger.Infoc(ctx, "this is log")
+
+	ctx = slogLogger.With(context.Background(), "%s", "prefix", "province", "guangdong", "city", "shenzhen")
+	slogLogger.Infoc(ctx, "this is log")
+
+	ctx = context.Background()
+
+	slogLogger.Infoc(ctx, "=========== test other ==============")
+
 	slogLogger.Infof("this is slog: %s", "info", "city", "shenzhen")
 	slogLogger.Warnf("this is slog: %v", "warn")
 	slogLogger.Errorf("this is slog: %v", "error")

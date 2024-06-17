@@ -14,20 +14,51 @@ import (
 
 type Logger struct {
 	*slog.Logger
-	lv *slog.LevelVar
+	callDepth  int
+	withSource bool
+	lv         *slog.LevelVar
 }
 
-func NewSlogLogger() *Logger {
-	return &Logger{
-		Logger: slog.Default(),
+type Opt func(*Logger)
+
+func WithCallDepth(callDepth int) Opt {
+	return func(l *Logger) {
+		l.callDepth = callDepth
 	}
 }
 
-func NewSlogWithHandler(handler slog.Handler, lv *slog.LevelVar) *Logger {
-	return &Logger{
-		Logger: slog.New(handler),
-		lv:     lv,
+func WithSource() Opt {
+	return func(l *Logger) {
+		l.withSource = true
 	}
+}
+
+func NewSlogLogger(opts ...Opt) *Logger {
+	l := &Logger{
+		Logger:    slog.Default(),
+		callDepth: 4,
+	}
+
+	for _, opt := range opts {
+		opt(l)
+	}
+
+	return l
+}
+
+func NewSlogWithHandler(handler slog.Handler, lv *slog.LevelVar, opts ...Opt) *Logger {
+	l := &Logger{
+		Logger:    slog.New(handler),
+		lv:        lv,
+		callDepth: 4,
+	}
+
+	for _, opt := range opts {
+		opt(l)
+	}
+
+	return l
+
 }
 
 func relativeToGOROOT(path string) string {
@@ -36,28 +67,23 @@ func relativeToGOROOT(path string) string {
 	return path
 }
 
-func getSrouce() string {
-	_, file, _, _ := runtime.Caller(4)
+func (sl *Logger) getSrouce() string {
+	_, file, _, _ := runtime.Caller(sl.callDepth)
 	return relativeToGOROOT(file)
 }
 
-func NewSlogTextLogger(w ...io.Writer) *Logger {
+func NewSlogTextLogger(w io.Writer, opts ...Opt) *Logger {
 	lv := &slog.LevelVar{}
 	lv.Set(slog.LevelInfo)
-	opts := &slog.HandlerOptions{
-		// AddSource: true,
+	slogOpts := &slog.HandlerOptions{
 		Level: lv,
 	}
 
-	var writer io.Writer
-	if len(w) == 0 {
-		writer = os.Stdout
-	} else {
-		writer = w[0]
+	if w == nil {
+		w = os.Stdout
 	}
-
-	handler := slog.NewTextHandler(writer, opts)
-	return NewSlogWithHandler(handler, lv)
+	handler := slog.NewTextHandler(w, slogOpts)
+	return NewSlogWithHandler(handler, lv, opts...)
 }
 
 func (sl *Logger) EnableDebug() {
@@ -139,6 +165,7 @@ func (sl *Logger) fmtMsg(keys []string, values []string, attrs []slog.Attr, v []
 		for _, attr := range attrs {
 			groupMses = append(groupMses, attr)
 		}
+		groupMses = append(groupMses, v...)
 	}
 
 	return groupMses
@@ -190,24 +217,24 @@ func (sl *Logger) With(ctx context.Context, msg string, v ...any) context.Contex
 
 	var nl *slog.Logger
 
-	if len(v) == 0 {
-		// v is empty, it means that it need to create a new group
-		nl = cl.WithGroup(msg)
-	} else if len(v) == 1 {
-		// v has only one data, it need to use msg for key and v[0] for value
-		nl = cl.With(slog.Any(msg, v[0]))
+	m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
+	if err != nil {
+		sl.Errorf("Error parsing message: %v", err)
+		return ctx
+	}
+
+	if len(v) == 0 || len(attrs)+len(remains)+len(keys) == 0 {
+		nl = cl.WithGroup(m)
 	} else {
-		// v is not empty, this means that it need to put v into a group whose key is msg and create a child logger
-		m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
-		if err != nil {
-			sl.Errorf("Error parsing message: %v", err)
-			return ctx
+		var as []any
+		if len(remains)%2 == 0 {
+			as = append(as, sl.fmtMsg(keys, values, attrs, remains)...)
+			nl = cl.With(slog.Attr{Key: m, Value: slog.GroupValue(argsToAttrSlice(as)...)})
+		} else {
+			as = []any{m, remains[0]}
+			as = append(as, sl.fmtMsg(keys, values, attrs, remains[1:])...)
+			nl = cl.With(as...)
 		}
-
-		as := sl.fmtMsg(keys, values, attrs, remains)
-
-		nl = cl.With(slog.Attr{Key: m, Value: slog.GroupValue(argsToAttrSlice(as)...)})
-
 	}
 
 	newSc.childLogger = nl
@@ -255,6 +282,8 @@ func (sl *Logger) Errorc(ctx context.Context, msg string, v ...any) {
 type contextLogger func(ctx context.Context, msg string, args ...any)
 
 func (sl *Logger) contextLog(cl contextLogger, ctx context.Context, msg string, args ...any) {
-	args = append(args, slog.String("source", getSrouce()))
+	if sl.withSource {
+		args = append(args, slog.String("source", sl.getSrouce()))
+	}
 	cl(ctx, msg, args...)
 }

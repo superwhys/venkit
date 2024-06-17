@@ -266,19 +266,36 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 		return ctx
 	}
 
-	var key, val string
-
-	// l.With(ctx, "prefix", "logPrefix")
-	// output: "[INFO] this is a log prefix=logPrefix"
-	if len(keys) == 0 && len(remains) == 1 && len(v) == 1 {
-		keys = append(keys, msg)
-		values = append(values, fmt.Sprintf("%v", v[0]))
-	} else {
+	remainsParser := func(remains []any) {
+		var key, val string
 		for len(remains) > 0 {
 			key, val, remains = getKVParis(remains)
 			keys = append(keys, key)
 			values = append(values, val)
 		}
+	}
+
+	// l.With(ctx, "prefix", "logPrefix")
+	// output: "[INFO] this is a log prefix=logPrefix"
+	if len(remains) == len(v) {
+		// This means that msg does not have any formatting symbols
+		if len(v) == 1 {
+			// This means it use msg for key and v[0] for value
+			keys = append(keys, msg)
+			values = append(values, fmt.Sprintf("%v", v[0]))
+		} else if len(v)%2 == 0 {
+			// This means that v is made up of key-value pairs
+			remainsParser(remains)
+		} else {
+			keys = append(keys, msg)
+			values = append(values, fmt.Sprintf("%v", v[0]))
+
+			remainsParser(remains[1:])
+		}
+	} else {
+		// This means that msg has some formatting symbols like `%v`
+		// We just need to worry about the remaining key-value pairs in remains
+		remainsParser(remains)
 	}
 
 	if msg != "" {

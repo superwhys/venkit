@@ -19,10 +19,11 @@ var (
 func init() {
 	logger = log.New(log.WithCalldepth(4))
 	Ctx = logger.With(context.Background(), "[Venkit]")
+	SetSlog()
 }
 
 func SetSlog() {
-	logger = slog.NewSlogLogger()
+	logger = slog.NewSlogLogger(slog.WithCallDepth(5))
 }
 
 func SetLogger(l Logger) {
