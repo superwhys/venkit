@@ -17,7 +17,7 @@ var (
 )
 
 func init() {
-	logger = log.New()
+	logger = log.New(log.WithCalldepth(4))
 	Ctx = logger.With(context.Background(), "[Venkit]")
 }
 

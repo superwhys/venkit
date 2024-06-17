@@ -17,6 +17,8 @@ func init() {
 }
 
 func main() {
+	lg.Error("test error")
+
 	logLogger := log.New()
 	logLogger.EnableDebug()
 
