@@ -57,7 +57,7 @@ type ServiceOption func(*VkService)
 
 func NewVkService(opts ...ServiceOption) *VkService {
 	s := &VkService{
-		ctx:     lg.With(context.Background(), "[Venkit]"),
+		ctx:     lg.With(context.Background(), "Framework", "Venkit"),
 		httpMux: http.NewServeMux(),
 	}
 	s.httpHandler = s.httpMux
@@ -124,7 +124,7 @@ func waitContext(ctx context.Context, fn func() error) error {
 func (vs *VkService) mountWorker(worker *worker) mountFn {
 	return func(ctx context.Context) error {
 		if worker.isWithName {
-			ctx = lg.With(ctx, "[%v]", worker.name)
+			ctx = lg.With(ctx, "Worker", worker.name)
 		}
 
 		if err := worker.fn(ctx); err != nil {

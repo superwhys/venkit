@@ -275,6 +275,8 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 		}
 	}
 
+	var msgPrefix bool
+
 	// l.With(ctx, "prefix", "logPrefix")
 	// output: "[INFO] this is a log prefix=logPrefix"
 	if len(remains) == len(v) {
@@ -285,6 +287,7 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 			values = append(values, fmt.Sprintf("%v", v[0]))
 		} else if len(v)%2 == 0 {
 			// This means that v is made up of key-value pairs
+			msgPrefix = true
 			remainsParser(remains)
 		} else {
 			keys = append(keys, msg)
@@ -295,10 +298,11 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 	} else {
 		// This means that msg has some formatting symbols like `%v`
 		// We just need to worry about the remaining key-value pairs in remains
+		msgPrefix = true
 		remainsParser(remains)
 	}
 
-	if msg != "" {
+	if msg != "" && msgPrefix {
 		newLc.msg = append(newLc.msg, msg)
 	}
 
