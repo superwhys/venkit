@@ -270,7 +270,7 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 
 	// l.With(ctx, "prefix", "logPrefix")
 	// output: "[INFO] this is a log prefix=logPrefix"
-	if len(v) == 1 && len(keys) == 0 {
+	if len(keys) == 0 && len(remains) == 1 && len(v) == 1 {
 		keys = append(keys, msg)
 		values = append(values, fmt.Sprintf("%v", v[0]))
 	} else {
