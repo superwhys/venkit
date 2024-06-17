@@ -266,11 +266,21 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 		return ctx
 	}
 
+	fmt.Println(msg, keys, values, remains)
+
 	var key, val string
-	for len(remains) > 0 {
-		key, val, remains = getKVParis(remains)
-		keys = append(keys, key)
-		values = append(values, val)
+
+	// l.With(ctx, "prefix", "logPrefix")
+	// output: "[INFO] this is a log prefix=logPrefix"
+	if len(v) == 1 && len(keys) == 0 {
+		keys = append(keys, msg)
+		values = append(values, fmt.Sprintf("%v", v[0]))
+	} else {
+		for len(remains) > 0 {
+			key, val, remains = getKVParis(remains)
+			keys = append(keys, key)
+			values = append(values, val)
+		}
 	}
 
 	if msg != "" {

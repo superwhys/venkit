@@ -193,6 +193,9 @@ func (sl *Logger) With(ctx context.Context, msg string, v ...any) context.Contex
 	if len(v) == 0 {
 		// v is empty, it means that it need to create a new group
 		nl = cl.WithGroup(msg)
+	} else if len(v) == 1 {
+		// v has only one data, it need to use msg for key and v[0] for value
+		nl = cl.With(slog.Any(msg, v[0]))
 	} else {
 		// v is not empty, this means that it need to put v into a group whose key is msg and create a child logger
 		m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
@@ -204,6 +207,7 @@ func (sl *Logger) With(ctx context.Context, msg string, v ...any) context.Contex
 		as := sl.fmtMsg(keys, values, attrs, remains)
 
 		nl = cl.With(slog.Attr{Key: m, Value: slog.GroupValue(argsToAttrSlice(as)...)})
+
 	}
 
 	newSc.childLogger = nl

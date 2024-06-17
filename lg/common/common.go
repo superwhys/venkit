@@ -42,7 +42,6 @@ func ParseFmtKeyValue(msg string, v ...any) (m string, keys, values []string, re
 			msgV = append(msgV, val)
 		}
 	}
-	// fmt.Println(isKv, keys, desc, v)
 
 	if len(isKv) < len(v) {
 		remains = v[len(isKv):]
