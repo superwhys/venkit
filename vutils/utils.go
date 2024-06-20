@@ -107,3 +107,16 @@ func Zip[T1 any, T2 any](arr1 []T1, arr2 []T2) [][2]any {
 	}
 	return result
 }
+
+// Partition divides a slice into two slices based on a predicate function
+func Partition[T any](arr []T, predicate func(T) bool) ([]T, []T) {
+	var trueSlice, falseSlice []T
+	for _, v := range arr {
+		if predicate(v) {
+			trueSlice = append(trueSlice, v)
+		} else {
+			falseSlice = append(falseSlice, v)
+		}
+	}
+	return trueSlice, falseSlice
+}
