@@ -1,56 +1,44 @@
 package slices
 
 import (
-	"fmt"
 	"math/rand"
-	"reflect"
 )
 
-func CombinationsSlice(list interface{}, n int) [][]interface{} {
-	listValue := reflect.ValueOf(list)
-	if listValue.Kind() != reflect.Slice {
-		panic("Input must be a slice")
-	}
-
+func CombinationsSlice[T any](list []T, n int) [][]T {
 	if n == 1 {
-		result := make([][]interface{}, 0)
-		for i := 0; i < listValue.Len(); i++ {
-			result = append(result, []interface{}{listValue.Index(i).Interface()})
+		result := make([][]T, 0)
+		for i := 0; i < len(list); i++ {
+			result = append(result, []T{list[i]})
 		}
 		return result
 	}
 
-	result := make([][]interface{}, 0)
-	for i := 0; i < listValue.Len()-n+1; i++ {
-		for _, c := range CombinationsSlice(listValue.Slice(i+1, listValue.Len()).Interface(), n-1) {
-			result = append(result, append([]interface{}{listValue.Index(i).Interface()}, c...))
+	result := make([][]T, 0)
+	for i := 0; i < len(list)-n+1; i++ {
+		for _, c := range CombinationsSlice(list[i+1:], n-1) {
+			result = append(result, append([]T{list[i]}, c...))
 		}
 	}
 	return result
 }
 
-func RandomSelect(source interface{}, count int) (interface{}, error) {
-	sliceValue := reflect.ValueOf(source)
-	if sliceValue.Kind() != reflect.Slice {
-		return nil, fmt.Errorf("Input must be a slice")
-	}
+func RandomSelect[T any](source []T, count int) ([]T, error) {
+	n := len(source)
 
-	n := sliceValue.Len()
-
-	shuffled := reflect.MakeSlice(sliceValue.Type(), n, n)
+	shuffled := make([]T, n)
 	indexes := rand.Perm(n)
 
 	for i, j := range indexes {
-		shuffled.Index(i).Set(sliceValue.Index(j))
+		shuffled[i] = source[j]
 	}
 
 	if count > n {
 		// the count is greater than the length of the slice
 		// so we need to append some random elements
 		for i := 0; i < count-n; i++ {
-			shuffled = reflect.Append(shuffled, sliceValue.Index(rand.Intn(n)))
+			shuffled = append(shuffled, source[rand.Intn(n)])
 		}
 	}
 
-	return shuffled.Slice(0, count).Interface(), nil
+	return shuffled[0:count], nil
 }

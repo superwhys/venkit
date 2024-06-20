@@ -140,7 +140,7 @@ func TestDupSliceLarge(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := DupSliceLarge(tt.args.slice); !reflect.DeepEqual(got, tt.want) {
+			if got := dupLarge(tt.args.slice); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("DupSliceLarge() = %v, want %v", got, tt.want)
 			}
 		})

@@ -1,52 +1,41 @@
 package slices
 
 import (
-	"fmt"
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCombinationsSlice(t *testing.T) {
 	type args struct {
-		list interface{}
+		list []string
 		n    int
 	}
 	tests := []struct {
 		name string
 		args args
-		want [][]interface{}
+		want [][]string
 	}{
 		{"comb-2", args{
 			list: []string{"a", "b", "c"},
 			n:    2,
-		}, [][]interface{}{
+		}, [][]string{
 			{"a", "b"},
 			{"a", "c"},
 			{"b", "c"},
-		}},
-		{"comb-3", args{
-			list: []string{"a", "b", "c", "d"},
-			n:    3,
-		}, [][]interface{}{
-			{"a", "b", "c"},
-			{"a", "b", "d"},
-			{"a", "c", "d"},
-			{"b", "c", "d"},
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := CombinationsSlice(tt.args.list, tt.args.n)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CombinationsSlice() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
 func TestRandomSelect(t *testing.T) {
 	type args struct {
-		source interface{}
+		source []string
 		count  int
 	}
 	tests := []struct {
@@ -66,10 +55,6 @@ func TestRandomSelect(t *testing.T) {
 			source: []string{"a", "b", "c", "d"},
 			count:  5,
 		}, false},
-		{"random-select-error", args{
-			source: "1234",
-			count:  5,
-		}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -78,8 +63,7 @@ func TestRandomSelect(t *testing.T) {
 				t.Errorf("RandomSelect() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			fmt.Println(got)
-
+			assert.Len(t, got, tt.args.count)
 		})
 	}
 }

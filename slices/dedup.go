@@ -1,30 +1,61 @@
 package slices
 
-import (
-	"errors"
-	"reflect"
-)
-
-func DeDup(slice interface{}, keyF func(idx int) string) (interface{}, error) {
-	v := reflect.ValueOf(slice)
-	if v.Kind() != reflect.Slice {
-		return nil, errors.New("not slice")
-	}
-
+func DeDup[T any](slice []T, keyF func(idx int) string) ([]T, error) {
 	m := map[string]struct{}{}
 	idx := 0
 
-	for i := 0; i < v.Len(); i++ {
+	for i := 0; i < len(slice); i++ {
 		key := keyF(i)
 		if _, hit := m[key]; hit {
 			continue
-		} else {
-			m[key] = struct{}{}
-			v.Index(idx).Set(v.Index(i))
+		}
+
+		m[key] = struct{}{}
+		slice[idx] = slice[i]
+		idx++
+	}
+
+	return slice[0:idx], nil
+}
+
+func DupBasic[T comparable](slice []T) []T {
+	if len(slice) <= 50 {
+		return dupSmall(slice)
+	}
+	return dupLarge(slice)
+}
+
+func dupSmall[T comparable](slice []T) []T {
+	idx := 0
+	for _, s := range slice {
+		var j int
+		for j = 0; j < idx; j++ {
+			if slice[j] == s {
+				break
+			}
+		}
+		if j >= idx {
+			slice[idx] = s
 			idx++
 		}
 	}
-	return v.Slice(0, idx).Interface(), nil
+	return slice[:idx]
+}
+
+// dupLarge is the hashmap version of DupStrings with O(n) algorithm.
+func dupLarge[T comparable](slice []T) []T {
+	m := map[T]struct{}{}
+	idx := 0
+	for i, s := range slice {
+		if _, hit := m[s]; hit {
+			continue
+		} else {
+			m[s] = struct{}{}
+			slice[idx] = slice[i]
+			idx++
+		}
+	}
+	return slice[:idx]
 }
 
 // DupStrings remove duplicated strings in slice.
