@@ -30,8 +30,13 @@ func (vs *VkService) beginGrpc() {
 }
 
 func (vs *VkService) listenGrpcServer(lis net.Listener) mountFn {
-	return func(ctx context.Context) error {
-		return vs.grpcServer.Serve(lis)
+	return mountFn{
+		baseMount: baseMount{
+			fn: func(ctx context.Context) error {
+				return vs.grpcServer.Serve(lis)
+			},
+		},
+		daemon: true,
 	}
 }
 
@@ -60,7 +65,7 @@ func (vs *VkService) enableGrpcUI() {
 		return
 	}
 
-	mountFn := func(ctx context.Context) error {
+	fn := func(ctx context.Context) error {
 		handler, err := standalone.HandlerViaReflection(ctx, vs.grpcSelfConn, vs.serviceName)
 		if err != nil {
 			return errors.Wrap(err, "start grpcUI")
@@ -71,5 +76,10 @@ func (vs *VkService) enableGrpcUI() {
 		return nil
 	}
 
-	vs.mounts = append(vs.mounts, mountFn)
+	vs.mounts = append(vs.mounts, mountFn{
+		baseMount: baseMount{
+			fn: fn,
+		},
+		daemon: true,
+	})
 }

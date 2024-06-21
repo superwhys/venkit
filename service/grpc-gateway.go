@@ -49,7 +49,7 @@ func (vs *VkService) mountGRPCRestfulGateway() {
 		})
 	}
 
-	mountFn := func(ctx context.Context) error {
+	fn := func(ctx context.Context) error {
 		opts := []gwRuntime.ServeMuxOption{
 			gwRuntime.WithIncomingHeaderMatcher(vs.httpIncomingHeaderMatcher),
 			gwRuntime.WithOutgoingHeaderMatcher(vs.httpOutgoingHeaderMatcher),
@@ -70,5 +70,10 @@ func (vs *VkService) mountGRPCRestfulGateway() {
 		return nil
 	}
 
-	vs.mounts = append(vs.mounts, mountFn)
+	vs.mounts = append(vs.mounts, mountFn{
+		baseMount: baseMount{
+			fn: fn,
+		},
+		daemon: true,
+	})
 }

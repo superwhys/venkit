@@ -17,7 +17,7 @@ func (vs *VkService) registerIntoConsul(listener net.Listener) {
 		return
 	}
 
-	mountFn := func(ctx context.Context) error {
+	fn := func(ctx context.Context) error {
 		addr := listener.Addr().String()
 		if len(vs.tags) == 0 {
 			vs.tags = append(vs.tags, "dev")
@@ -50,7 +50,12 @@ func (vs *VkService) registerIntoConsul(listener net.Listener) {
 		return nil
 	}
 
-	vs.mounts = append(vs.mounts, mountFn)
+	vs.mounts = append(vs.mounts, mountFn{
+		baseMount: baseMount{
+			fn: fn,
+		},
+		daemon: true,
+	})
 }
 
 func DiscoverServiceWithTag(service, tag string) string {

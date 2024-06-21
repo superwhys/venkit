@@ -10,8 +10,13 @@ import (
 )
 
 func (vs *VkService) listenHttpServer(lis net.Listener) mountFn {
-	return func(ctx context.Context) error {
-		return http.Serve(lis, vs.httpHandler)
+	return mountFn{
+		baseMount: baseMount{
+			fn: func(ctx context.Context) error {
+				return http.Serve(lis, vs.httpHandler)
+			},
+		},
+		daemon: true,
 	}
 }
 
