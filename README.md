@@ -30,5 +30,5 @@ And a simple service framework:
 - discover
 - vflags
 
-For the usage of each package component, see 'example' or 'example' under the component directory
+For the usage of each package component, see `example` or `xxxx_test.go` under the component directory
 
