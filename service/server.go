@@ -134,44 +134,43 @@ func (vs *VkService) runFinalMount() error {
 	}
 
 	// run cron worker
-	grp.Go(func() error {
-		c := cron.New()
+	if len(vs.cronMounts) != 0 {
+		grp.Go(func() error {
+			c := cron.New()
 
-		for _, cw := range vs.cronMounts {
-			cw := cw
-			runFn := func() {
-				defer lg.Debugc(ctx, "Cron Worker: %v Next scheduler time: %v", cw.name, cw.sched.Next(time.Now()))
+			for _, cw := range vs.cronMounts {
+				cw := cw
+				runFn := func() {
+					defer lg.Debugc(ctx, "Cron Worker: %v Next scheduler time: %v", cw.name, cw.sched.Next(time.Now()))
+					err := waitContext(ctx, func() error {
+						if cw.running {
+							return errors.New("job still running")
+						}
+						cw.running = true
+						defer func() { cw.running = false }()
 
-				err := waitContext(ctx, func() error {
-					if cw.running {
-						return errors.New("job still running")
+						return cw.fn(ctx)
+					})
+					if err != nil {
+						lg.Errorc(ctx, "Run cron worker: %v error: %v", cw.name, err)
+						return
 					}
-					cw.running = true
-					defer func() { cw.running = false }()
-
-					return cw.fn(ctx)
-				})
-				if err != nil {
-					lg.Errorc(ctx, "Run cron worker: %v error: %v", cw.name, err)
-					return
 				}
+				c.AddFunc(cw.cron, runFn)
 			}
 
-			c.AddFunc(cw.cron, runFn)
-		}
+			err := waitContext(ctx, func() error {
+				c.Run()
+				return nil
+			})
 
-		err := waitContext(ctx, func() error {
-			c.Run()
+			if err != nil {
+				c.Stop()
+				lg.Errorc(ctx, "Run cron error: %v", err)
+			}
 			return nil
 		})
-
-		if err != nil {
-			c.Stop()
-			lg.Errorc(ctx, "Run cron error: %v", err)
-		}
-
-		return nil
-	})
+	}
 
 	return grp.Wait()
 }
