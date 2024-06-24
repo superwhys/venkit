@@ -17,6 +17,7 @@ var (
 )
 
 func init() {
+	time.Local = time.FixedZone("CST", 8*3600)
 	logger = log.New(log.WithCalldepth(4))
 	Ctx = logger.With(context.Background(), "service", "Venkit")
 }

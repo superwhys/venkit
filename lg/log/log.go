@@ -106,23 +106,23 @@ func formatPrefix(prefix string) string {
 
 func (l *Logger) defaultFlag() {
 	if l.infoFlag == 0 {
-		l.infoFlag = log.LstdFlags | log.LUTC
+		l.infoFlag = log.LstdFlags | log.Ldate | log.Ltime
 	}
 
 	if l.debugFlag == 0 {
-		l.debugFlag = log.LstdFlags | log.LUTC | log.Lshortfile
+		l.debugFlag = log.LstdFlags | log.Ldate | log.Ltime | log.Lshortfile
 	}
 
 	if l.errorFlag == 0 {
-		l.errorFlag = log.LstdFlags | log.LUTC | log.Lshortfile
+		l.errorFlag = log.LstdFlags | log.Ldate | log.Ltime | log.Lshortfile
 	}
 
 	if l.warnFlag == 0 {
-		l.warnFlag = log.LstdFlags | log.LUTC
+		l.warnFlag = log.LstdFlags | log.Ldate | log.Ltime
 	}
 
 	if l.fatalFlag == 0 {
-		l.fatalFlag = log.LstdFlags | log.Llongfile | log.LUTC
+		l.fatalFlag = log.LstdFlags | log.Llongfile | log.Ldate | log.Ltime
 	}
 }
 
