@@ -30,7 +30,7 @@ func Struct(key string, defaultVal any, usage string) func(out any) error {
 			lg.Errorf("Bind struct flags error: %v", err)
 			lg.PanicError(err)
 		}
-		lg.Warnf("it won't display `%v` desciption with not struct default val", key)
+		lg.Debugf("it won't display `%v` desciption with not struct default val", key)
 	}
 	v.SetDefault(key, defaultVal)
 	return func(out any) error {
