@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gorilla/mux"
 	gwRuntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
@@ -47,7 +48,7 @@ type VkService struct {
 	grpcLst net.Listener
 
 	httpCORS    bool
-	httpMux     *http.ServeMux
+	httpMux     *mux.Router
 	httpHandler http.Handler
 
 	grpcUI                bool
@@ -75,7 +76,7 @@ type ServiceOption func(*VkService)
 func NewVkService(opts ...ServiceOption) *VkService {
 	s := &VkService{
 		ctx:     lg.With(context.Background(), "Framework", "Venkit"),
-		httpMux: http.NewServeMux(),
+		httpMux: mux.NewRouter(),
 	}
 	s.httpHandler = s.httpMux
 
