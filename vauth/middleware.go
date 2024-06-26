@@ -7,7 +7,6 @@ import (
 	
 	"github.com/gin-gonic/gin"
 	"github.com/superwhys/venkit/lg/v2"
-	"github.com/superwhys/venkit/vgin/v2"
 )
 
 const (
@@ -71,7 +70,7 @@ func TokenRequiredMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := GetToken(c)
 		if token == nil {
-			vgin.AbortWithError(c, http.StatusUnauthorized, "token required")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, "token required")
 			return
 		}
 		c.Next()

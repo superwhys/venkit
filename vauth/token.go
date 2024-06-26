@@ -11,7 +11,7 @@ const (
 	defaultTTL = 3600 * time.Second
 )
 
-type TokenStorager interface {
+type TokenStorage interface {
 	SetWithTTL(key string, value any, ttl time.Duration) error
 	Get(key string, out any) error
 	Delete(key string) error
@@ -22,7 +22,7 @@ type Token interface {
 }
 
 type TokenManager struct {
-	storager    TokenStorager
+	storage     TokenStorage
 	cachePrefix string
 	cacheTTL    time.Duration
 }
@@ -41,9 +41,9 @@ func WithCacheTTL(ttl time.Duration) TokenManagerOption {
 	}
 }
 
-func NewTokenManager(storager TokenStorager, opts ...TokenManagerOption) *TokenManager {
+func NewTokenManager(storage TokenStorage, opts ...TokenManagerOption) *TokenManager {
 	tm := &TokenManager{
-		storager: storager,
+		storage:  storage,
 		cacheTTL: defaultTTL,
 	}
 	
@@ -67,14 +67,14 @@ func (tm *TokenManager) getKeyWithKeyId(id string, t Token) string {
 }
 
 func (tm *TokenManager) Save(t Token) error {
-	return tm.storager.SetWithTTL(tm.getKey(t), t, tm.cacheTTL)
+	return tm.storage.SetWithTTL(tm.getKey(t), t, tm.cacheTTL)
 }
 
 func (tm *TokenManager) Read(key string, t Token) error {
 	key = tm.getKeyWithKeyId(key, t)
-	return tm.storager.Get(key, t)
+	return tm.storage.Get(key, t)
 }
 
 func (tm *TokenManager) Remove(t Token) error {
-	return tm.storager.Delete(tm.getKey(t))
+	return tm.storage.Delete(tm.getKey(t))
 }
