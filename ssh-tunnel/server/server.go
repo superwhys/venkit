@@ -8,9 +8,9 @@ import (
 	
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/v2/lg"
-	sshtunnel "github.com/superwhys/venkit/v2/ssh-tunnel"
-	"github.com/superwhys/venkit/v2/ssh-tunnel/sshtunnelpb"
+	sshtunnel "github.com/superwhys/venkit/ssh-tunnel/v2"
+	"github.com/superwhys/venkit/ssh-tunnel/v2/sshtunnelpb"
+	"github.com/superwhys/venkit/lg/v2"
 )
 
 var _ sshtunnelpb.SshTunnelServer = (*Server)(nil)

@@ -16,7 +16,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"github.com/rs/cors"
 	"github.com/soheilhy/cmux"
-	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/lg/v2"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 )

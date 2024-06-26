@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 	
-	"github.com/superwhys/venkit/v2/lg/log"
-	"github.com/superwhys/venkit/v2/lg/slog"
+	"github.com/superwhys/venkit/lg/v2/log"
+	"github.com/superwhys/venkit/lg/v2/slog"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 

@@ -6,8 +6,8 @@ import (
 	"sort"
 	
 	"github.com/olekukonko/tablewriter"
-	"github.com/superwhys/venkit/v2/lg"
-	sshtunnel "github.com/superwhys/venkit/v2/ssh-tunnel"
+	sshtunnel "github.com/superwhys/venkit/ssh-tunnel/v2"
+	"github.com/superwhys/venkit/lg/v2"
 	"github.com/superwhys/venkit/v2/vflags"
 )
 

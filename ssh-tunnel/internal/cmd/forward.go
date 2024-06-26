@@ -9,10 +9,10 @@ import (
 	"strings"
 	
 	"github.com/spf13/cobra"
-	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/ssh-tunnel/v2/server"
+	"github.com/superwhys/venkit/ssh-tunnel/v2/sshtunnelpb"
+	"github.com/superwhys/venkit/lg/v2"
 	"github.com/superwhys/venkit/v2/service"
-	"github.com/superwhys/venkit/v2/ssh-tunnel/server"
-	"github.com/superwhys/venkit/v2/ssh-tunnel/sshtunnelpb"
 	"github.com/superwhys/venkit/v2/vflags"
 	"google.golang.org/grpc"
 )

@@ -7,7 +7,7 @@ import (
 	"strings"
 	
 	"github.com/lukesampson/figlet/figletlib"
-	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/lg/v2"
 )
 
 //go:embed fonts/standard.flf

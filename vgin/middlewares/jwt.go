@@ -9,8 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/v2/lg"
-	"github.com/superwhys/venkit/v2/vgin"
+	"github.com/superwhys/venkit/lg/v2"
+	"github.com/superwhys/venkit/vgin/v2"
 )
 
 const (

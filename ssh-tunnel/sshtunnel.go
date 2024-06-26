@@ -10,7 +10,7 @@ import (
 	"time"
 	
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/lg/v2"
 	"golang.org/x/crypto/ssh"
 )
 

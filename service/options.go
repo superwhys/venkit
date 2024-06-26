@@ -4,7 +4,7 @@ import (
 	"strings"
 	
 	gwRuntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/lg/v2"
 	"google.golang.org/grpc"
 )
 

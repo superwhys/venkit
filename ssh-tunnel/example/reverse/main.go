@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	
-	sshtunnel "github.com/superwhys/venkit/v2/ssh-tunnel"
+	sshtunnel "github.com/superwhys/venkit/ssh-tunnel/v2"
 	"github.com/superwhys/venkit/v2/vflags"
 )
 

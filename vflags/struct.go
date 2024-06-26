@@ -8,7 +8,7 @@ import (
 	"time"
 	
 	"github.com/spf13/pflag"
-	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/lg/v2"
 )
 
 var (

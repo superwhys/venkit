@@ -4,8 +4,7 @@ import (
 	"context"
 	
 	"github.com/gin-gonic/gin"
-	"github.com/superwhys/venkit/v2/lg"
-	"github.com/superwhys/venkit/v2/vgin"
+	"github.com/superwhys/venkit/vgin/v2"
 )
 
 type User struct {

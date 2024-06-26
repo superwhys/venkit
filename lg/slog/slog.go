@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	
-	"github.com/superwhys/venkit/v2/lg/common"
+	"github.com/superwhys/venkit/lg/v2/common"
 )
 
 type Logger struct {

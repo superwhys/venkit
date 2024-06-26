@@ -8,7 +8,7 @@ import (
 	
 	"github.com/fatih/color"
 	"github.com/go-logfmt/logfmt"
-	"github.com/superwhys/venkit/v2/lg/common"
+	"github.com/superwhys/venkit/lg/v2/common"
 )
 
 type logable interface {

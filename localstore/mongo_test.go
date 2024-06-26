@@ -6,8 +6,8 @@ import (
 	"sync"
 	"testing"
 	
-	"github.com/superwhys/venkit/v2/lg"
-	"github.com/superwhys/venkit/v2/qmgoutil"
+	"github.com/superwhys/venkit/qmgoutil/v2"
+	"github.com/superwhys/venkit/lg/v2"
 )
 
 var (

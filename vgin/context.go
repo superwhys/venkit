@@ -3,10 +3,10 @@ package vgin
 import (
 	"encoding/json"
 	"net/http"
-	
+
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/lg/v2"
 )
 
 type Data gin.H

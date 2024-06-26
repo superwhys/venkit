@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 	
-	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/lg/v2"
 )
 
 func (vs *VkService) listenHttpServer(lis net.Listener) mountFn {

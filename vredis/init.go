@@ -3,8 +3,8 @@ package vredis
 import (
 	"os"
 	
+	"github.com/superwhys/venkit/lg/v2"
 	"github.com/superwhys/venkit/v2/dialer"
-	"github.com/superwhys/venkit/v2/lg"
 	"github.com/superwhys/venkit/v2/vflags"
 )
 

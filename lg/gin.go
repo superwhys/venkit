@@ -6,7 +6,7 @@ import (
 	"time"
 	
 	"github.com/gin-gonic/gin"
-	log2 "github.com/superwhys/venkit/v2/lg/log"
+	log2 "github.com/superwhys/venkit/lg/v2/log"
 )
 
 const (

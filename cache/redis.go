@@ -7,6 +7,7 @@ import (
 	
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
+	"github.com/superwhys/venkit/vredis/v2"
 )
 
 var _ Cache = (*RedisCache)(nil)

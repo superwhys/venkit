@@ -4,10 +4,10 @@ import (
 	"errors"
 	"net/http"
 	"reflect"
-	
+
 	"github.com/gin-gonic/gin"
-	"github.com/superwhys/venkit/v2/lg"
-	"github.com/superwhys/venkit/v2/vgin"
+	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/vgin/v2"
 )
 
 const (
@@ -31,9 +31,9 @@ func TokenManagerMiddleware(tokenTmpl Token, tokenManager *TokenManager) gin.Han
 	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Struct {
 		lg.Fatal("TokenManagerMiddleware: token template should be ptr to struct")
 	}
-	
+
 	t = t.Elem()
-	
+
 	return func(c *gin.Context) {
 		tokenCtx := &tokenContext{
 			tokenManager: tokenManager,
@@ -57,12 +57,12 @@ func CurrentTokenMiddleware() gin.HandlerFunc {
 		if newToken == nil {
 			return
 		}
-		
+
 		if err := tokenCtx.TokenManager().Read(tokenStr, newToken); err != nil {
 			lg.Errorf("token manager read token: %v error: %v", tokenStr, err)
 			return
 		}
-		
+
 		SetToken(c, newToken)
 	}
 }
@@ -83,7 +83,7 @@ func SaveToken(c *gin.Context, token Token) error {
 	if !exists {
 		return errors.New("token manager not init")
 	}
-	
+
 	ctx := m.(*tokenContext)
 	return ctx.tokenManager.Save(token)
 }
@@ -93,7 +93,7 @@ func GetToken(c *gin.Context) Token {
 	if !exists {
 		return nil
 	}
-	
+
 	return val.(Token)
 }
 
@@ -106,7 +106,7 @@ func getTokenContext(c *gin.Context) *tokenContext {
 	if !exists {
 		return nil
 	}
-	
+
 	return tc.(*tokenContext)
 }
 

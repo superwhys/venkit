@@ -5,7 +5,7 @@ import (
 	"time"
 	
 	"github.com/superwhys/venkit/v2/discover"
-	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/lg/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

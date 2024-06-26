@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 	
-	"github.com/superwhys/venkit/v2/lg"
-	"github.com/superwhys/venkit/v2/lg/log"
+	"github.com/superwhys/venkit/lg/v2"
+	"github.com/superwhys/venkit/lg/v2/log"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
 )

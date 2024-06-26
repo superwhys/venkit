@@ -11,9 +11,9 @@ import (
 	
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/v2/lg"
-	"github.com/superwhys/venkit/v2/slices"
-	v1Vgin "github.com/superwhys/venkit/v2/vgin"
+	"github.com/superwhys/venkit/slices/v2"
+	"github.com/superwhys/venkit/lg/v2"
+	v1Vgin "github.com/superwhys/venkit/vgin"
 )
 
 const (

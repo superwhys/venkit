@@ -9,7 +9,8 @@ import (
 	"strings"
 	
 	"github.com/fatih/color"
-	"github.com/superwhys/venkit/v2/lg/common"
+	"github.com/superwhys/venkit/lg/v2/common"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type Logger struct {

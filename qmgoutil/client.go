@@ -10,7 +10,7 @@ import (
 	
 	"github.com/qiniu/qmgo"
 	qoptions "github.com/qiniu/qmgo/options"
-	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/lg/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/mongo/options"

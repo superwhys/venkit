@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/consul/api"
 	"github.com/pkg/errors"
 	"github.com/superwhys/venkit/v2/internal/shared"
-	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/lg/v2"
 	"golang.org/x/sync/singleflight"
 	"gopkg.in/mgo.v2/bson"
 )

@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	
-	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/lg/v2"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
