@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	
+
 	"github.com/superwhys/venkit/lg/v2/common"
 )
 
@@ -38,11 +38,11 @@ func NewSlogLogger(opts ...Opt) *Logger {
 		Logger:    slog.Default(),
 		callDepth: 4,
 	}
-	
+
 	for _, opt := range opts {
 		opt(l)
 	}
-	
+
 	return l
 }
 
@@ -52,13 +52,13 @@ func NewSlogWithHandler(handler slog.Handler, lv *slog.LevelVar, opts ...Opt) *L
 		lv:        lv,
 		callDepth: 4,
 	}
-	
+
 	for _, opt := range opts {
 		opt(l)
 	}
-	
+
 	return l
-	
+
 }
 
 func relativeToGOROOT(path string) string {
@@ -78,7 +78,7 @@ func NewSlogTextLogger(w io.Writer, opts ...Opt) *Logger {
 	slogOpts := &slog.HandlerOptions{
 		Level: lv,
 	}
-	
+
 	if w == nil {
 		w = os.Stdout
 	}
@@ -143,7 +143,7 @@ func (sl *Logger) Fatalf(msg string, v ...any) {
 	ctx := context.TODO()
 	cl := sl.currentLogger(ctx).ErrorContext
 	sl.logc(ctx, cl, msg, v...)
-	
+
 	os.Exit(1)
 }
 
@@ -153,7 +153,7 @@ func (sl *Logger) fmtMsg(keys []string, values []string, attrs []slog.Attr, v []
 		return nil
 	}
 	var groupMses []any
-	
+
 	if len(keys) == 0 {
 		// no keys, it can use as same as log/slog
 		groupMses = append(groupMses, v...)
@@ -161,13 +161,13 @@ func (sl *Logger) fmtMsg(keys []string, values []string, attrs []slog.Attr, v []
 		for i, key := range keys {
 			groupMses = append(groupMses, key, values[i])
 		}
-		
+
 		for _, attr := range attrs {
 			groupMses = append(groupMses, attr)
 		}
 		groupMses = append(groupMses, v...)
 	}
-	
+
 	return groupMses
 }
 
@@ -176,7 +176,7 @@ func (sl *Logger) currentLogger(ctx context.Context) *slog.Logger {
 	if sc == nil || sc.childLogger == nil {
 		return sl.Logger
 	}
-	
+
 	return sc.childLogger
 }
 
@@ -189,7 +189,7 @@ func (sl *Logger) parseKVAndAttr(msg string, v ...any) (m string, keys, values [
 			attrs = append(attrs, a)
 		}
 	}
-	
+
 	m, keys, values, remains, err = common.ParseFmtKeyValue(msg, v...)
 	if err != nil {
 		return "", nil, nil, nil, nil, err
@@ -201,28 +201,28 @@ func (sl *Logger) With(ctx context.Context, msg string, v ...any) context.Contex
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	
+
 	if len(msg) == 0 && len(v) == 0 {
 		return ctx
 	}
-	
+
 	sc := parseFromContext(ctx)
-	
+
 	if sc == nil {
 		sc = &SlContext{}
 	}
 	newSc := cloneSlogContext(sc)
-	
+
 	cl := sl.currentLogger(ctx)
-	
+
 	var nl *slog.Logger
-	
+
 	m, keys, values, remains, attrs, err := sl.parseKVAndAttr(msg, v...)
 	if err != nil {
 		sl.Errorf("Error parsing message: %v", err)
 		return ctx
 	}
-	
+
 	if len(v) == 0 || len(attrs)+len(remains)+len(keys) == 0 {
 		nl = cl.WithGroup(m)
 	} else {
@@ -236,9 +236,9 @@ func (sl *Logger) With(ctx context.Context, msg string, v ...any) context.Contex
 			nl = cl.With(as...)
 		}
 	}
-	
+
 	newSc.childLogger = nl
-	
+
 	return context.WithValue(ctx, slContextKey, newSc)
 }
 
@@ -249,9 +249,9 @@ func (sl *Logger) logc(ctx context.Context, cl contextLogger, msg string, v ...a
 		sl.Errorf("KV invalid: %v", err)
 		return
 	}
-	
+
 	args := sl.fmtMsg(keys, values, attrs, remains)
-	
+
 	sl.contextLog(cl, ctx, m, args...)
 }
 
@@ -264,7 +264,7 @@ func (sl *Logger) Debugc(ctx context.Context, msg string, v ...any) {
 	if !sl.IsDebug() {
 		return
 	}
-	
+
 	cl := sl.currentLogger(ctx).DebugContext
 	sl.logc(ctx, cl, msg, v...)
 }

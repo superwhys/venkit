@@ -70,69 +70,28 @@ func PanicError(err error, msg ...any) {
 	logger.PanicError(err, msg...)
 }
 
-func Error(v ...any) {
-	if len(v) == 0 {
-		return
-	}
-
-	msg, remain := salvageMsg(v...)
-	if len(remain) == 0 {
-		logger.Errorf(msg)
-	} else {
-		logger.Errorf(msg, remain...)
-	}
+func Error(msg string, v ...any) {
+	logger.Errorf(msg, v...)
 }
 
-func Warn(v ...any) {
-	if len(v) == 0 {
-		return
-	}
-
-	msg, remain := salvageMsg(v...)
-	if len(remain) == 0 {
-		logger.Errorf(msg)
-	} else {
-		logger.Errorf(msg, remain...)
-	}
+func Warn(msg string, v ...any) {
+	logger.Errorf(msg, v...)
 }
 
-func Info(v ...any) {
-	if len(v) == 0 {
-		return
-	}
-
-	msg, remain := salvageMsg(v...)
-	if len(remain) == 0 {
-		logger.Infof(msg)
-	} else {
-		logger.Infof(msg, remain...)
-	}
+func Info(msg string, v ...any) {
+	logger.Infof(msg, v...)
 }
 
-func Debug(v ...any) {
-	if len(v) == 0 {
-		return
-	}
-
-	msg, remain := salvageMsg(v...)
-	if len(remain) == 0 {
-		logger.Debugf(msg)
-	} else {
-		logger.Debugf(msg, remain...)
-	}
+func Debug(msg string, v ...any) {
+	logger.Debugf(msg, v...)
 }
 
-func Fatal(v ...any) {
-	if len(v) == 0 {
-		return
+func Fatal(msg string, v ...any) {
+	if msg == "" {
+		msg = "Unknown fatal"
 	}
 
-	msg, remain := salvageMsg(v...)
-	if len(remain) == 0 {
-		logger.Fatalf(msg)
-	} else {
-		logger.Fatalf(msg, remain...)
-	}
+	logger.Fatalf(msg, v...)
 }
 
 func Fatalf(msg string, v ...any) {
