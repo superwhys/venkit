@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/qiniu/qmgo v1.1.8
-	github.com/superwhys/venkit/lg/v2 v2.1.0-alpha.1.1
+	github.com/superwhys/venkit/lg/v2 v2.2.0
 	go.mongodb.org/mongo-driver v1.15.1
 )
 
@@ -51,5 +51,3 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/superwhys/venkit/lg/v2 v2.1.0-alpha.1.1 => /Users/yong/programes/go/src/github.com/superwhys/venkit/lg

@@ -333,6 +333,10 @@ github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsT
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/subosito/gotenv v1.6.0 h1:9NlTDc1FTs4qu0DDq7AEtTPNw6SVm7uBMsUCUjABIf8=
 github.com/subosito/gotenv v1.6.0/go.mod h1:Dk4QP5c2W3ibzajGcXpNraDfq2IrhjMIvMSWPKKo0FU=
+github.com/superwhys/venkit/lg/v2 v2.2.0 h1:r0Cv7jyLPilsyoIr4+10fb7wgp8tQZKz9Rp7WqM7yjM=
+github.com/superwhys/venkit/lg/v2 v2.2.0/go.mod h1:9ssukrqES8JSTXYqPKuthl3qW+rzmtKVmv+FJ/+tFxM=
+github.com/superwhys/venkit/slices/v2 v2.2.0 h1:K2LYO5ULS6+UoC5uKk0rL2HDpVLreH6ji4HsLVTOdwI=
+github.com/superwhys/venkit/slices/v2 v2.2.0/go.mod h1:k1gIqaHRpz8JgnKQid9GZjGe2KjSGnOLpDr8N97H+Uk=
 github.com/superwhys/venkit/v2 v2.1.0 h1:w2t1t2ZjmkHEXPlC8wMAHwSb123q+mbsqKZDXQ/h89g=
 github.com/superwhys/venkit/v2 v2.1.0/go.mod h1:zKFg+EOUlW9XG04RVugeFbCO8TNkjFH2j7ENbjE9elw=
 github.com/superwhys/venkit/v2/dialer v0.0.0-20240626013432-4fd2f775ef62 h1:7+bGi/LEFVljcEo9lY3+1dwEbF16XpH82RqK6F+i2QA=

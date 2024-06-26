@@ -21,7 +21,7 @@ require (
 	github.com/spf13/viper v1.20.0-alpha.4
 	github.com/spf13/viper/remote v1.20.0-alpha.4
 	github.com/stretchr/testify v1.9.0
-	github.com/superwhys/venkit v1.1.17
+	github.com/superwhys/venkit/v2 v2.2.1
 	github.com/superwhys/venkit/cache/v2 v2.2.0
 	github.com/superwhys/venkit/lg/v2 v2.2.0
 	github.com/superwhys/venkit/vgin/v2 v2.2.0

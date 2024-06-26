@@ -1,5 +1,5 @@
 package service
 
 const (
-	version = "v1.0.0"
+	version = "v2.2.1"
 )

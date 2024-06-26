@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/stretchr/testify v1.9.0
-	github.com/superwhys/venkit/lg/v2 v2.1.0-alpha.1.1
+	github.com/superwhys/venkit/lg/v2 v2.2.0
 )
 
 require (
@@ -44,5 +44,3 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/superwhys/venkit/lg/v2 v2.1.0-alpha.1.1 => /Users/yong/programes/go/src/github.com/superwhys/venkit/lg

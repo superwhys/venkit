@@ -90,6 +90,10 @@ github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
+github.com/superwhys/venkit/lg/v2 v2.2.0 h1:r0Cv7jyLPilsyoIr4+10fb7wgp8tQZKz9Rp7WqM7yjM=
+github.com/superwhys/venkit/lg/v2 v2.2.0/go.mod h1:9ssukrqES8JSTXYqPKuthl3qW+rzmtKVmv+FJ/+tFxM=
+github.com/superwhys/venkit/qmgoutil/v2 v2.2.0 h1:PFksIzqX+zyczwM2C7+KayjQkGAxoiid5ZP82meVJTw=
+github.com/superwhys/venkit/qmgoutil/v2 v2.2.0/go.mod h1:nu6xbpbaOWWCbCsctam1VEm1kKVLhKe2N/rV5WVel9o=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=

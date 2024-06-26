@@ -5,10 +5,10 @@ go 1.22.0
 require (
 	github.com/gomodule/redigo v1.9.2
 	github.com/pkg/errors v0.9.1
-	github.com/superwhys/venkit/lg/v2 v2.1.0-alpha.1.1
-	github.com/superwhys/venkit/slices/v2 v2.1.0-alpha.1.1
-	github.com/superwhys/venkit/v2 v2.1.0
-	github.com/superwhys/venkit/v2/dialer v0.0.0-20240626013432-4fd2f775ef62
+	github.com/superwhys/venkit/lg/v2 v2.2.0
+	github.com/superwhys/venkit/slices/v2 v2.2.0
+	github.com/superwhys/venkit/v2 v2.2.1
+	github.com/superwhys/venkit/v2 v2.2.1
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.2
 )
 
@@ -84,7 +84,6 @@ require (
 	github.com/spf13/viper v1.20.0-alpha.4 // indirect
 	github.com/spf13/viper/remote v1.20.0-alpha.4 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/superwhys/venkit/v2/snail v0.0.0-20240626013432-4fd2f775ef62 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.14 // indirect
@@ -123,7 +122,3 @@ require (
 	gorm.io/driver/sqlite v1.5.6 // indirect
 	gorm.io/gorm v1.25.10 // indirect
 )
-
-replace github.com/superwhys/venkit/slices/v2 v2.1.0-alpha.1.1 => /Users/yong/programes/go/src/github.com/superwhys/venkit/slices
-
-replace github.com/superwhys/venkit/lg/v2 v2.1.0-alpha.1.1 => /Users/yong/programes/go/src/github.com/superwhys/venkit/lg

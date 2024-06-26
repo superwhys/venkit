@@ -2,11 +2,9 @@ module github.com/superwhys/venkit/localstore/v2
 
 go 1.22.0
 
-replace github.com/superwhys/venkit/qmgoutil/v2 v2.1.0-alpha.1.0 => /Users/yong/programes/go/src/github.com/superwhys/venkit/qmgoutil
-
 require (
-	github.com/superwhys/venkit/lg/v2 v2.1.0-alpha.1.1
-	github.com/superwhys/venkit/qmgoutil/v2 v2.1.0-alpha.1.0
+	github.com/superwhys/venkit/lg/v2 v2.2.0
+	github.com/superwhys/venkit/qmgoutil/v2 v2.2.0
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )
 
@@ -57,5 +55,3 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/superwhys/venkit/lg/v2 v2.1.0-alpha.1.1 => /Users/yong/programes/go/src/github.com/superwhys/venkit/lg
