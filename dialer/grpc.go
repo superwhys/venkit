@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 	
-	"github.com/superwhys/venkit/v2/discover"
 	"github.com/superwhys/venkit/lg/v2"
+	"github.com/superwhys/venkit/v2/discover"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

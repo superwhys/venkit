@@ -7,8 +7,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/v2/discover"
 	"github.com/superwhys/venkit/lg/v2"
+	"github.com/superwhys/venkit/v2/discover"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

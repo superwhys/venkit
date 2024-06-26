@@ -21,7 +21,6 @@ require (
 	github.com/spf13/viper v1.20.0-alpha.4
 	github.com/spf13/viper/remote v1.20.0-alpha.4
 	github.com/stretchr/testify v1.9.0
-	github.com/superwhys/venkit/v2 v2.2.1
 	github.com/superwhys/venkit/cache/v2 v2.2.0
 	github.com/superwhys/venkit/lg/v2 v2.2.0
 	github.com/superwhys/venkit/vgin/v2 v2.2.0
@@ -115,6 +114,7 @@ require (
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/superwhys/venkit v1.1.17 // indirect
 	github.com/superwhys/venkit/slices/v2 v2.2.0 // indirect
 	github.com/superwhys/venkit/vredis/v2 v2.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

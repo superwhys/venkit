@@ -7,9 +7,9 @@ import (
 	"strings"
 	
 	"github.com/pkg/errors"
+	"github.com/superwhys/venkit/lg/v2"
 	"github.com/superwhys/venkit/v2/discover"
 	"github.com/superwhys/venkit/v2/internal/shared"
-	"github.com/superwhys/venkit/lg/v2"
 )
 
 func (vs *VkService) registerIntoConsul(listener net.Listener) {

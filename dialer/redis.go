@@ -4,8 +4,8 @@ import (
 	"time"
 	
 	"github.com/gomodule/redigo/redis"
-	"github.com/superwhys/venkit/v2/discover"
 	"github.com/superwhys/venkit/lg/v2"
+	"github.com/superwhys/venkit/v2/discover"
 )
 
 func DialRedisPool(addr string, db int, maxIdle int, password ...string) *redis.Pool {

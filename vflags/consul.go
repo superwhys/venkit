@@ -7,8 +7,8 @@ import (
 	
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/api/watch"
-	"github.com/superwhys/venkit/v2/internal/shared"
 	"github.com/superwhys/venkit/lg/v2"
+	"github.com/superwhys/venkit/v2/internal/shared"
 )
 
 func watchCnosulConfigChange(path string) {

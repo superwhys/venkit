@@ -13,7 +13,7 @@ require (
 	github.com/superwhys/venkit v1.1.17
 	github.com/superwhys/venkit/lg/v2 v2.2.0
 	github.com/superwhys/venkit/slices/v2 v2.2.0
-	github.com/superwhys/venkit/v2 v2.2.1
+	github.com/superwhys/venkit/v2 v2.2.2
 )
 
 require (
