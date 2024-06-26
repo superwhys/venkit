@@ -9,9 +9,7 @@ import (
 	"strings"
 	
 	"github.com/fatih/color"
-	"github.com/superwhys/venkit/v2/internal/shared"
 	"github.com/superwhys/venkit/v2/lg/common"
-	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type Logger struct {
@@ -138,8 +136,7 @@ func (l *Logger) SetDefaultLoggerOutput(stdout, stderr io.Writer) {
 	l.SetLoggerOutput(stdout, stderr)
 }
 
-func (l *Logger) EnableLogToFile(logConf *shared.LogConfig) {
-	shared.PtrLogConfig = logConf
+func (l *Logger) EnableLogToFile(logConf *common.LogConfig) {
 	jackLogger := &lumberjack.Logger{
 		Filename:   logConf.FileName,
 		MaxSize:    logConf.MaxSize,

@@ -1,4 +1,4 @@
-package shared
+package common
 
 type LogConfig struct {
 	FileName  string `desc:"output filename (default runlog.log)"`
@@ -8,18 +8,10 @@ type LogConfig struct {
 	Compress  bool   `desc:"whether to use compress (default false)"`
 }
 
-var (
-	PtrLogConfig *LogConfig
-)
-
 func (l *LogConfig) SetDefault() {
 	l.FileName = "runlog.log"
 	l.MaxSize = 3
 	l.MaxBackup = 3
 	l.MaxAge = 30
 	l.Compress = false
-}
-
-func GetLogConfig() *LogConfig {
-	return PtrLogConfig
 }
