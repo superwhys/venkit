@@ -1,0 +1,7 @@
+conf2: 11
+
+structConf1:
+  addr: localhost:1
+
+structConf2:
+  addr: localhost:8080

@@ -3,16 +3,16 @@ package vgin
 import (
 	"encoding/gob"
 	"net/url"
-
+	
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-contrib/sessions/memstore"
 	"github.com/gin-contrib/sessions/redis"
 	redisgo "github.com/gomodule/redigo/redis"
-
+	
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/dialer"
+	"github.com/superwhys/venkit/v2/dialer"
 )
 
 func init() {
@@ -74,11 +74,11 @@ func NewCookieSessionStore(keyPairs ...string) sessions.Store {
 
 func NewRedisSessionStore(service string, opts ...RedisStoreOptionFunc) (redis.Store, error) {
 	opt := &RedisStoreOptions{}
-
+	
 	for _, o := range opts {
 		o(opt)
 	}
-
+	
 	redisPool := dialer.DialRedisPool(service, opt.db, 100, opt.password)
 	return NewRedisSessionStoreWithRedisPool(redisPool, opt.keyPairs)
 }
@@ -109,7 +109,7 @@ type Token interface {
 
 func SetSessionToken(c *gin.Context, t Token) error {
 	session := sessions.Default(c)
-
+	
 	s, err := t.Marshal()
 	if err != nil {
 		return errors.Wrap(err, "tokenMarshal")
@@ -118,23 +118,23 @@ func SetSessionToken(c *gin.Context, t Token) error {
 	if err := session.Save(); err != nil {
 		return errors.Wrap(err, "saveSession")
 	}
-
+	
 	return nil
 }
 
 func GetSessionToken(c *gin.Context, t Token) error {
 	session := sessions.Default(c)
-
+	
 	val := session.Get(t.GetKey())
 	if val == nil {
 		return ErrorTokenNotFound
 	}
-
+	
 	tokenStr, ok := val.(string)
 	if !ok {
 		return ErrorTokenNotFound
 	}
-
+	
 	if err := t.UnMarshal(tokenStr); err != nil {
 		return errors.Wrap(err, "decode token")
 	}

@@ -5,9 +5,9 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-
+	
 	"github.com/gin-gonic/gin"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 func init() {
@@ -36,13 +36,13 @@ func JsonHandler(ctx context.Context, c *Context, data *JsonHandlerData) HandleR
 
 func BenchmarkVginOneQuery(b *testing.B) {
 	r := NewWithEngine(gin.New(), gin.Recovery())
-
+	
 	r.POST("/user", UserHandler)
-
+	
 	for i := 0; i < b.N; i++ {
 		req := httptest.NewRequest("POST", "/user?user=hoven", nil)
 		req.Header.Set("Content-Type", "application/json")
-
+		
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
 	}
@@ -51,7 +51,7 @@ func BenchmarkVginOneQuery(b *testing.B) {
 func BenchmarkGinOneQuery(b *testing.B) {
 	r := gin.New()
 	r.Use(gin.Recovery())
-
+	
 	r.POST("/user", func(ctx *gin.Context) {
 		data := new(OneQueryData)
 		if err := ctx.ShouldBind(data); err != nil {
@@ -60,11 +60,11 @@ func BenchmarkGinOneQuery(b *testing.B) {
 		}
 		ctx.JSON(200, data)
 	})
-
+	
 	for i := 0; i < b.N; i++ {
 		req := httptest.NewRequest("POST", "/user?user=hoven", nil)
 		req.Header.Set("Content-Type", "application/json")
-
+		
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
 	}
@@ -73,13 +73,13 @@ func BenchmarkGinOneQuery(b *testing.B) {
 func BenchmarkVgin(b *testing.B) {
 	r := NewWithEngine(gin.New(), gin.Recovery())
 	r.POST("/ping", JsonHandler)
-
+	
 	// 运行基准测试
 	for i := 0; i < b.N; i++ {
 		reqBody := `{"name": "John Doe", "age": 18, "money": 100, "address": "asdadad", "city": "city"}`
 		req := httptest.NewRequest("POST", "/ping", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
-
+		
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
 	}
@@ -96,12 +96,12 @@ func BenchmarkOriginGin(b *testing.B) {
 			return
 		}
 	})
-
+	
 	for i := 0; i < b.N; i++ {
 		reqBody := `{"name": "John Doe", "age": 18, "money": 100, "address": "asdadad", "city": "city"}`
 		req := httptest.NewRequest("POST", "/ping", strings.NewReader(reqBody))
 		req.Header.Set("Content-Type", "application/json")
-
+		
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
 	}
