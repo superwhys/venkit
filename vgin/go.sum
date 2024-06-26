@@ -92,8 +92,6 @@ github.com/gorilla/securecookie v1.1.2/go.mod h1:NfCASbcHqRSY+3a8tlWJwsQap2VX5pw
 github.com/gorilla/sessions v1.1.1/go.mod h1:8KCfur6+4Mqcc6S0FEfKuN15Vl5MgXW92AE8ovaJD0w=
 github.com/gorilla/sessions v1.2.2 h1:lqzMYz6bOfvn2WriPUjNByzeXIlVzURcPmgMczkmTjY=
 github.com/gorilla/sessions v1.2.2/go.mod h1:ePLdVu+jbEgHH+KWw8I1z2wqd0BAdAQh/8LRvBeoNcQ=
-github.com/gorilla/websocket v1.5.1 h1:gmztn0JnHVt9JZquRuzLw3g4wouNVzKL15iLr/zn/QY=
-github.com/gorilla/websocket v1.5.1/go.mod h1:x3kM2JMyaluk02fnUJpQuwD2dCS5NDG2ZHL0uE0tcaY=
 github.com/hashicorp/consul/api v1.29.1 h1:UEwOjYJrd3lG1x5w7HxDRMGiAUPrb3f103EoeKuuEcc=
 github.com/hashicorp/consul/api v1.29.1/go.mod h1:lumfRkY/coLuqMICkI7Fh3ylMG31mQSRZyef2c5YvJI=
 github.com/hashicorp/consul/proto-public v0.6.1 h1:+uzH3olCrksXYWAYHKqK782CtK9scfqH+Unlw3UHhCg=
@@ -250,14 +248,12 @@ github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-github.com/superwhys/venkit v1.1.17 h1:IeuL646TJrKImpb498n3+8OOZBv6AqOfove5r6bYzcI=
-github.com/superwhys/venkit v1.1.17/go.mod h1:+NH6DhlVKZnWjjQYAwCoNInOXCczhUcgUXdubkq6oYg=
 github.com/superwhys/venkit/lg/v2 v2.2.0 h1:r0Cv7jyLPilsyoIr4+10fb7wgp8tQZKz9Rp7WqM7yjM=
 github.com/superwhys/venkit/lg/v2 v2.2.0/go.mod h1:9ssukrqES8JSTXYqPKuthl3qW+rzmtKVmv+FJ/+tFxM=
 github.com/superwhys/venkit/slices/v2 v2.2.0 h1:K2LYO5ULS6+UoC5uKk0rL2HDpVLreH6ji4HsLVTOdwI=
 github.com/superwhys/venkit/slices/v2 v2.2.0/go.mod h1:k1gIqaHRpz8JgnKQid9GZjGe2KjSGnOLpDr8N97H+Uk=
-github.com/superwhys/venkit/v2 v2.2.2 h1:XULvHQ0vi+jZ5zSykpBC63/2qUCTsyfOq0cz3bVFuaA=
-github.com/superwhys/venkit/v2 v2.2.2/go.mod h1:eqK/W7W2E92gyqq3zO7cXp1900B33iTkkH8zJC92RP8=
+github.com/superwhys/venkit/v2 v2.2.3 h1:Gd5jcJLEhKiG3QR3BaNCR3efZDxsQbkP1y4+dRkbe44=
+github.com/superwhys/venkit/v2 v2.2.3/go.mod h1:32mqit6t5HCTP1RzNsqwkLnz0ewDKJXv/1DqgBP0GOE=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=

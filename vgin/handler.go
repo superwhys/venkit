@@ -13,7 +13,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/superwhys/venkit/lg/v2"
 	"github.com/superwhys/venkit/slices/v2"
-	v1Vgin "github.com/superwhys/venkit/vgin"
 )
 
 const (
@@ -35,8 +34,8 @@ func WrapHandler(ctx context.Context, handlers ...Handler) []gin.HandlerFunc {
 			handlerFuncs = append(handlerFuncs, h)
 		case func(*gin.Context):
 			handlerFuncs = append(handlerFuncs, h)
-		case v1Vgin.Handler:
-			handlerFuncs = append(handlerFuncs, v1Vgin.WrapHandler(ctx, h)...)
+		// case v1Vgin.Handler:
+		// 	handlerFuncs = append(handlerFuncs, v1Vgin.WrapHandler(ctx, h)...)
 		default:
 			handlerFuncs = append(handlerFuncs, wrapHandler(ctx, h))
 		}

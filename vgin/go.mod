@@ -10,10 +10,9 @@ require (
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
-	github.com/superwhys/venkit v1.1.17
 	github.com/superwhys/venkit/lg/v2 v2.2.0
 	github.com/superwhys/venkit/slices/v2 v2.2.0
-	github.com/superwhys/venkit/v2 v2.2.2
+	github.com/superwhys/venkit/v2 v2.2.3
 )
 
 require (
@@ -36,7 +35,6 @@ require (
 	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/gorilla/sessions v1.2.2 // indirect
-	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/hashicorp/consul/api v1.29.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
