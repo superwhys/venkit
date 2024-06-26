@@ -5,7 +5,7 @@ import (
 	
 	"github.com/gin-gonic/gin"
 	"github.com/superwhys/venkit/v2/lg"
-	"github.com/superwhys/venkit/v2/v2/vgin"
+	"github.com/superwhys/venkit/v2/vgin"
 )
 
 type User struct {
