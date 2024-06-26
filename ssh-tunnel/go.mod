@@ -9,7 +9,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/superwhys/venkit/lg/v2 v2.2.0
-	github.com/superwhys/venkit/v2 v2.2.2
+	github.com/superwhys/venkit/v2 v2.2.3
 	golang.org/x/crypto v0.24.0
 	google.golang.org/grpc v1.64.0
 	google.golang.org/protobuf v1.34.2
