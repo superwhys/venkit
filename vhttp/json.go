@@ -2,8 +2,8 @@ package vhttp
 
 import (
 	"encoding/json"
-
-	"github.com/superwhys/venkit/lg"
+	
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 type JsonBody map[string]any
@@ -26,6 +26,6 @@ func (j JsonBody) Encode() []byte {
 		lg.Errorf("json body encode error: %v", err)
 		return nil
 	}
-
+	
 	return b
 }

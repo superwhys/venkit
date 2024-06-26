@@ -5,16 +5,16 @@ import (
 	"os"
 	"strings"
 	"time"
-
+	
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	_ "github.com/spf13/viper/remote"
-	"github.com/superwhys/venkit/discover"
-	"github.com/superwhys/venkit/internal/shared"
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/snail"
-	venkitUtils "github.com/superwhys/venkit/utils"
+	"github.com/superwhys/venkit/v2/discover"
+	"github.com/superwhys/venkit/v2/internal/shared"
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/snail"
+	venkitUtils "github.com/superwhys/venkit/v2/utils"
 )
 
 var (
@@ -69,7 +69,7 @@ func initVFlags() {
 	v.AddConfigPath("./configs")
 	v.AddConfigPath("./tmp/config/")
 	v.SetConfigFile("config.yaml")
-
+	
 	declareDefaultFlags()
 	if err := v.BindPFlags(pflag.CommandLine); err != nil {
 		lg.Fatal("BindPFlags error: %v", err)
@@ -105,14 +105,14 @@ func Parse(opts ...VflagOptionFunc) {
 	o := &VflagOption{
 		autoParseConfig: true,
 	}
-
+	
 	for _, opt := range opts {
 		opt(o)
 	}
-
+	
 	initVFlags()
 	pflag.Parse()
-
+	
 	injectNestedKey()
 	readConfig(o)
 	checkFlagKey()
@@ -124,7 +124,7 @@ func optionInit() {
 	if debug() {
 		lg.EnableDebug()
 	}
-
+	
 	if shared.GetIsUseConsul() {
 		discover.SetConsulFinderToDefault()
 	}

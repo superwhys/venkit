@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"sync"
 	"testing"
-
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/qmgoutil"
+	
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/qmgoutil"
 )
 
 var (
@@ -48,7 +48,7 @@ func init() {
 }
 
 func TestQmgoDataStore_ReloadEntries(t *testing.T) {
-
+	
 	type args struct {
 		ctx context.Context
 		ch  chan HashData
@@ -63,7 +63,7 @@ func TestQmgoDataStore_ReloadEntries(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			qds := qmgoStore
-
+			
 			wg := sync.WaitGroup{}
 			wg.Add(1)
 			go func() {
@@ -72,7 +72,7 @@ func TestQmgoDataStore_ReloadEntries(t *testing.T) {
 					fmt.Println(lg.Jsonify(data))
 				}
 			}()
-
+			
 			if err := qds.ReloadEntries(tt.args.ctx, tt.args.ch); (err != nil) != tt.wantErr {
 				t.Errorf("QmgoDataStore.ReloadEntries() error = %v, wantErr %v", err, tt.wantErr)
 			}

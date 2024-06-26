@@ -7,10 +7,10 @@ import (
 	"log"
 	"os"
 	"strings"
-
+	
 	"github.com/fatih/color"
-	"github.com/superwhys/venkit/internal/shared"
-	"github.com/superwhys/venkit/lg/common"
+	"github.com/superwhys/venkit/v2/internal/shared"
+	"github.com/superwhys/venkit/v2/lg/common"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -22,7 +22,7 @@ type Logger struct {
 	warnLog     *log.Logger
 	errLog      *log.Logger
 	fatalLog    *log.Logger
-
+	
 	infoFlag  int
 	debugFlag int
 	warnFlag  int
@@ -78,7 +78,7 @@ func WithErrorFlag(flag int) Option {
 func New(options ...Option) *Logger {
 	var stdout io.Writer = os.Stdout
 	var stderr io.Writer = os.Stderr
-
+	
 	l := &Logger{
 		callDepth: 3,
 	}
@@ -86,13 +86,13 @@ func New(options ...Option) *Logger {
 		opt(l)
 	}
 	l.defaultFlag()
-
+	
 	l.infoLog = log.New(stdout, colorString(color.FgCyan, formatPrefix("[INFO]")), l.infoFlag)
 	l.debugLog = log.New(stdout, colorString(color.FgWhite, formatPrefix("[DEBUG]")), l.debugFlag)
 	l.errLog = log.New(stderr, colorString(color.FgRed, formatPrefix("[ERROR]")), l.errorFlag)
 	l.warnLog = log.New(stdout, colorString(color.FgYellow, formatPrefix("[WARN]")), l.warnFlag)
 	l.fatalLog = log.New(stderr, colorString(color.FgRed, formatPrefix("[FATAL]")), l.fatalFlag)
-
+	
 	return l
 }
 
@@ -108,19 +108,19 @@ func (l *Logger) defaultFlag() {
 	if l.infoFlag == 0 {
 		l.infoFlag = log.LstdFlags | log.Ldate | log.Ltime
 	}
-
+	
 	if l.debugFlag == 0 {
 		l.debugFlag = log.LstdFlags | log.Ldate | log.Ltime | log.Lshortfile
 	}
-
+	
 	if l.errorFlag == 0 {
 		l.errorFlag = log.LstdFlags | log.Ldate | log.Ltime | log.Lshortfile
 	}
-
+	
 	if l.warnFlag == 0 {
 		l.warnFlag = log.LstdFlags | log.Ldate | log.Ltime
 	}
-
+	
 	if l.fatalFlag == 0 {
 		l.fatalFlag = log.LstdFlags | log.Llongfile | log.Ldate | log.Ltime
 	}
@@ -147,7 +147,7 @@ func (l *Logger) EnableLogToFile(logConf *shared.LogConfig) {
 		MaxAge:     logConf.MaxAge,
 		Compress:   logConf.Compress,
 	}
-
+	
 	l.Infof("set logger to file: %v", logConf.FileName)
 	l.SetDefaultLoggerOutput(jackLogger, jackLogger)
 }
@@ -212,7 +212,7 @@ func (l *Logger) Debugf(msg string, v ...any) {
 	if !l.enableDebug {
 		return
 	}
-
+	
 	ctx := context.TODO()
 	ctx = l.With(ctx, msg, v...)
 	l.logc(ctx, l.debugLog)
@@ -223,7 +223,7 @@ func (l *Logger) logc(ctx context.Context, lb logable) {
 	if lc == nil {
 		return
 	}
-
+	
 	msg := lc.LogFmt()
 	for _, line := range strings.Split(msg, "\n") {
 		lb.Output(l.callDepth, line)
@@ -248,24 +248,24 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
+	
 	if len(msg) == 0 && len(v) == 0 {
 		return ctx
 	}
-
+	
 	lc := ParseFromContext(ctx)
 	if lc == nil {
 		lc = &LogContext{}
 	}
-
+	
 	newLc := cloneLogContext(lc)
-
+	
 	msg, keys, values, remains, err := common.ParseFmtKeyValue(msg, v...)
 	if err != nil {
 		l.Errorf("%v", err.Error())
 		return ctx
 	}
-
+	
 	remainsParser := func(remains []any) {
 		var key, val string
 		for len(remains) > 0 {
@@ -274,9 +274,9 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 			values = append(values, val)
 		}
 	}
-
+	
 	var msgPrefix bool
-
+	
 	// l.With(ctx, "prefix", "logPrefix")
 	// output: "[INFO] this is a log prefix=logPrefix"
 	if len(remains) == len(v) {
@@ -292,7 +292,7 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 		} else {
 			keys = append(keys, msg)
 			values = append(values, fmt.Sprintf("%v", v[0]))
-
+			
 			remainsParser(remains[1:])
 		}
 	} else {
@@ -301,11 +301,11 @@ func (l *Logger) With(ctx context.Context, msg string, v ...any) context.Context
 		msgPrefix = true
 		remainsParser(remains)
 	}
-
+	
 	if msg != "" && msgPrefix {
 		newLc.msg = append(newLc.msg, msg)
 	}
-
+	
 	newLc.keys = append(newLc.keys, keys...)
 	newLc.values = append(newLc.values, values...)
 	return context.WithValue(ctx, logContextKey, newLc)
@@ -322,7 +322,7 @@ func (l *Logger) Debugc(ctx context.Context, msg string, v ...any) {
 	if !l.enableDebug {
 		return
 	}
-
+	
 	if len(msg) > 0 || len(v) > 0 {
 		ctx = l.With(ctx, msg, v...)
 	}

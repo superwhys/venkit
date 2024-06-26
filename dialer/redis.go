@@ -2,10 +2,10 @@ package dialer
 
 import (
 	"time"
-
+	
 	"github.com/gomodule/redigo/redis"
-	"github.com/superwhys/venkit/discover"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/discover"
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 func DialRedisPool(addr string, db int, maxIdle int, password ...string) *redis.Pool {
@@ -24,16 +24,16 @@ func consulRedisDial(addr string, db int, password ...string) func() (redis.Conn
 			serviceAddr = addr
 		}
 		lg.Debugf("Discover redis addr: %v", serviceAddr)
-
+		
 		options := []redis.DialOption{
 			redis.DialDatabase(db),
 			redis.DialConnectTimeout(5 * time.Second),
 		}
-
+		
 		if len(password) > 0 && password[0] != "" {
 			options = append(options, redis.DialPassword(password[0]))
 		}
-
+		
 		return redis.Dial("tcp", serviceAddr, options...)
 	}
 }

@@ -2,8 +2,8 @@ package vgorm
 
 import (
 	"fmt"
-
-	"github.com/superwhys/venkit/lg"
+	
+	"github.com/superwhys/venkit/v2/lg"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +30,7 @@ func NewClient(conf Config) *client {
 	if conf.GetService() == "" {
 		panic(fmt.Sprintf("vgorm: %v db service name can not be empty", conf.GetDBType()))
 	}
-
+	
 	c := &client{config: conf}
 	c.dial()
 	return c
@@ -39,7 +39,7 @@ func NewClient(conf Config) *client {
 func (c *client) dial() {
 	db, err := c.config.DialGorm()
 	lg.PanicError(err, "mqlClient: new client error")
-
+	
 	c.db = db
 }
 

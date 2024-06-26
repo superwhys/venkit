@@ -3,8 +3,8 @@ package vgorm
 import (
 	"fmt"
 	"time"
-
-	"github.com/superwhys/venkit/dialer"
+	
+	"github.com/superwhys/venkit/v2/dialer"
 	"gorm.io/gorm"
 )
 

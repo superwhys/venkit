@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"testing"
 	"time"
-
-	"github.com/superwhys/venkit/dialer"
+	
+	"github.com/superwhys/venkit/v2/dialer"
 )
 
 var (
@@ -39,11 +39,11 @@ func TestRedisTaskQueue(t *testing.T) {
 				return
 			}
 		}
-
+		
 		time.Sleep(time.Second * 3)
 		queue.Close()
 	}()
-
+	
 	for task := range queue.IterTask() {
 		fmt.Printf("receive task: %#v\n", task.Payload.(*TestObj))
 		time.Sleep(time.Second)
@@ -52,7 +52,7 @@ func TestRedisTaskQueue(t *testing.T) {
 
 func TestRedisTaskQueueDup(t *testing.T) {
 	task := &TestObj{Age: 1}
-
+	
 	if err := queue.PushToBucket("dupKey", task, 1, true); err != nil {
 		t.Error("push to bucket err")
 		return

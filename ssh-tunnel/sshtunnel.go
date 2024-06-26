@@ -8,9 +8,9 @@ import (
 	"strings"
 	"sync"
 	"time"
-
+	
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/lg"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -42,7 +42,7 @@ func (sc *SshConfig) ParseClientConfig() (*ssh.ClientConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	
 	return &ssh.ClientConfig{
 		User: sc.User,
 		Auth: []ssh.AuthMethod{
@@ -60,7 +60,7 @@ type SshTunnel struct {
 
 func NewTunnel(cf *SshConfig) *SshTunnel {
 	cf.SetDefaults()
-
+	
 	tunnel := &SshTunnel{
 		conf: cf,
 	}
@@ -68,7 +68,7 @@ func NewTunnel(cf *SshConfig) *SshTunnel {
 	lg.PanicError(err)
 	tunnel.sshClient = client
 	go tunnel.keepAlive()
-
+	
 	return tunnel
 }
 
@@ -81,7 +81,7 @@ func (st *SshTunnel) dial() (*ssh.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	
 	client, err := ssh.Dial("tcp", st.conf.HostName, clientConf)
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func (st *SshTunnel) dial() (*ssh.Client, error) {
 func (st *SshTunnel) keepAlive() {
 	tick := time.NewTicker(15 * time.Second)
 	defer tick.Stop()
-
+	
 	for range tick.C {
 		// send keep alive request
 		_, _, err := st.sshClient.SendRequest("keepalive@golang.org", true, nil)
@@ -106,7 +106,7 @@ func (st *SshTunnel) keepAlive() {
 				st.sshClient.Close()
 			}
 			st.sshClient = nil
-
+			
 			for {
 				lg.Error("ssh connection lost, try to reconnect", err)
 				newClient, err := st.dial()
@@ -124,38 +124,38 @@ func (st *SshTunnel) keepAlive() {
 
 func (st *SshTunnel) Reverse(ctx context.Context, remoteAddr, localAddr string) error {
 	st.wg.Add(1)
-
+	
 	ctx = lg.With(ctx, "[SSHReverse]")
-
+	
 	if strings.HasPrefix(remoteAddr, ":") {
 		remoteAddr = "0.0.0.0" + remoteAddr
 	}
-
+	
 	remoteLst, err := st.sshClient.Listen("tcp", remoteAddr)
 	if err != nil {
 		return errors.Wrapf(err, "listen on remote addr %s", remoteAddr)
 	}
-
+	
 	lg.Infof("listen remote %v success", remoteAddr)
-
+	
 	go func() {
 		defer func() {
 			lg.Infoc(ctx, "disconnected reversing %s to %s", remoteAddr, localAddr)
 		}()
 		defer st.wg.Done()
 		defer remoteLst.Close()
-
+		
 		for {
 			if err := ctx.Err(); err != nil {
 				return
 			}
-
+			
 			if remoteLst == nil {
 				if st.sshClient == nil {
 					lg.Warnc(ctx, "SSH connections lost")
 					continue
 				}
-
+				
 				newLst, err := st.sshClient.Listen("tcp", remoteAddr)
 				if err != nil {
 					lg.Errorc(ctx, "SSH listen redial failed, err: %v", err)
@@ -164,7 +164,7 @@ func (st *SshTunnel) Reverse(ctx context.Context, remoteAddr, localAddr string) 
 				lg.Debugc(ctx, "SSH listen redial success -> %v", remoteAddr)
 				remoteLst = newLst
 			}
-
+			
 			remote, err := remoteLst.Accept()
 			if err != nil {
 				if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
@@ -182,35 +182,35 @@ func (st *SshTunnel) Reverse(ctx context.Context, remoteAddr, localAddr string) 
 				return
 			}
 			lg.Debugc(ctx, "remote %s accept connection from %s", remote.LocalAddr().String(), remote.RemoteAddr())
-
+			
 			go func(remote net.Conn) {
 				local, err := net.Dial("tcp", localAddr)
 				if err != nil {
 					lg.Errorc(ctx, "dial local addr %s error: %v", localAddr, err)
 					return
 				}
-
+				
 				lg.Debugc(ctx, "start handle remote %s via %s to local %s", remote.RemoteAddr(), remote.LocalAddr(), localAddr)
 				st.handleClient(ctx, remote, local)
 				lg.Debugc(ctx, "end handle remote %s via %v to local %s", remote.RemoteAddr(), remote.LocalAddr(), localAddr)
 			}(remote)
 		}
 	}()
-
+	
 	return nil
 }
 
 func (st *SshTunnel) Forward(ctx context.Context, localAddr, remoteAddr string) error {
 	st.wg.Add(1)
-
+	
 	ctx = lg.With(ctx, "[SSHForward]")
-
+	
 	// start listen on local addr
 	localLst, err := net.Listen("tcp", localAddr)
 	if err != nil {
 		return errors.Wrapf(err, "listen on local addr %s", localAddr)
 	}
-
+	
 	go func() {
 		defer func() {
 			lg.Infoc(ctx, "disconnected forwarding %s to %s", localAddr, remoteAddr)
@@ -221,13 +221,13 @@ func (st *SshTunnel) Forward(ctx context.Context, localAddr, remoteAddr string) 
 			if err := ctx.Err(); err != nil {
 				return
 			}
-
+			
 			if localLst == nil {
 				if st.sshClient == nil {
 					lg.Warnc(ctx, "SSH connections lost")
 					continue
 				}
-
+				
 				newLocalLst, err := net.Listen("tcp", localAddr)
 				if err != nil {
 					lg.Errorc(ctx, "local listen redial failed, err: %v", err)
@@ -235,7 +235,7 @@ func (st *SshTunnel) Forward(ctx context.Context, localAddr, remoteAddr string) 
 				}
 				localLst = newLocalLst
 			}
-
+			
 			local, err := localLst.Accept()
 			if err != nil {
 				if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
@@ -252,20 +252,20 @@ func (st *SshTunnel) Forward(ctx context.Context, localAddr, remoteAddr string) 
 				return
 			}
 			lg.Debugc(ctx, "local %s accept connection from %s", local.LocalAddr(), local.RemoteAddr())
-
+			
 			go func(local net.Conn) {
 				defer local.Close()
 				if st.sshClient == nil {
 					lg.Errorc(ctx, "lost ssh connection")
 					return
 				}
-
+				
 				remote, err := st.sshClient.Dial("tcp", remoteAddr)
 				if err != nil {
 					lg.Errorc(ctx, "dial remote addr %s error: %v", remoteAddr, err)
 					return
 				}
-
+				
 				lg.Debugc(ctx, "start handle local %s connection to remote %s", local.LocalAddr(), remoteAddr)
 				st.handleClient(ctx, local, remote)
 				lg.Debugc(ctx, "end handle local %s connection to remote %s", local.LocalAddr(), remoteAddr)
@@ -278,9 +278,9 @@ func (st *SshTunnel) Forward(ctx context.Context, localAddr, remoteAddr string) 
 func (st *SshTunnel) handleClient(ctx context.Context, local, remote net.Conn) {
 	defer local.Close()
 	defer remote.Close()
-
+	
 	ctx, cancel := context.WithCancel(ctx)
-
+	
 	// remote -> local transfer
 	go func() {
 		_, err := io.Copy(local, remote)
@@ -289,7 +289,7 @@ func (st *SshTunnel) handleClient(ctx context.Context, local, remote net.Conn) {
 		}
 		cancel()
 	}()
-
+	
 	// local -> remote transfer
 	go func() {
 		_, err := io.Copy(remote, local)
@@ -304,6 +304,6 @@ func (st *SshTunnel) handleClient(ctx context.Context, local, remote net.Conn) {
 func (st *SshTunnel) Close() error {
 	lg.Debugf("SSH tunnel [%v] close", st.conf.HostName)
 	st.wg.Done()
-
+	
 	return st.sshClient.Close()
 }

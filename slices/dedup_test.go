@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
-
-	"github.com/superwhys/venkit/lg"
+	
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 type testStruct struct {
@@ -14,16 +14,16 @@ type testStruct struct {
 }
 
 func TestDeDup(t *testing.T) {
-
+	
 	t.Run("testDedupStruct", func(t *testing.T) {
-
+		
 		ts := []testStruct{
 			{id: "1", name: "one"},
 			{id: "1", name: "one"},
 			{id: "2", name: "two"},
 			{id: "3", name: "two"},
 		}
-
+		
 		deTs, err := DeDup(ts, func(idx int) string {
 			return ts[idx].id
 		})
@@ -118,7 +118,7 @@ func TestDupSliceLarge(t *testing.T) {
 		}
 		return res
 	}()
-
+	
 	doubleSixty := func() []string {
 		res := make([]string, 0, 120)
 		for i := 0; i < 60; i++ {
@@ -127,7 +127,7 @@ func TestDupSliceLarge(t *testing.T) {
 		}
 		return res
 	}()
-
+	
 	tests := []struct {
 		name string
 		args args

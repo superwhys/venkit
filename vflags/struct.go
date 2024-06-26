@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"strings"
 	"time"
-
+	
 	"github.com/spf13/pflag"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 var (
@@ -37,14 +37,14 @@ func Struct(key string, defaultVal any, usage string) func(out any) error {
 		if err := v.UnmarshalKey(key, out); err != nil {
 			return err
 		}
-
+		
 		if d, ok := out.(HasDefault); ok {
 			d.SetDefault()
 		}
 		if v, ok := out.(HasValidator); ok {
 			return v.Validate()
 		}
-
+		
 		return nil
 	}
 }
@@ -73,7 +73,7 @@ func setPFlagRecursively(prefix string, i interface{}) error {
 		}
 		usage := field.Tag.Get("usage")
 		name = prefix + "." + name
-
+		
 		switch vf.Field(i).Kind() {
 		case reflect.String:
 			setPFlag(name, pflag.String(name, vf.Field(i).String(), usage))
@@ -114,7 +114,7 @@ func setPFlagRecursively(prefix string, i interface{}) error {
 			return fmt.Errorf("unsupport kind of field %s %s", field.Name, vf.Field(i).Kind())
 		}
 	}
-
+	
 	return nil
 }
 

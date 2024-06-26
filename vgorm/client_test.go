@@ -2,8 +2,8 @@ package vgorm
 
 import (
 	"testing"
-
-	"github.com/superwhys/venkit/lg"
+	
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 type UserModel struct {
@@ -23,13 +23,13 @@ func TestDialMysqlDB(t *testing.T) {
 		Username: "root",
 		Password: "yang4869",
 	}
-
+	
 	RegisterSqlModel(&mysqlConf, &UserModel{})
 	var resp []*UserModel
 	if err := GetDbByModel(&UserModel{}).Find(&resp).Error; err != nil {
 		lg.Errorf("get user data error: %v", err)
 		return
 	}
-
+	
 	lg.Info(lg.Jsonify(resp))
 }

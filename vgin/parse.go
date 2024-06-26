@@ -1,189 +1,36 @@
 package vgin
 
 import (
-	"bytes"
 	"context"
-	"mime/multipart"
-	"net/http"
-	"reflect"
-	"regexp"
-	"strings"
-	"sync"
+	"encoding/json"
 
-	"github.com/gin-gonic/gin"
-	"github.com/goccy/go-json"
-	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/slices"
 )
 
-const (
-	ParamsJsonTag      = "vjson"
-	ParamsMultiFormTag = "vform"
-	ParamsQueryTag     = "vquery"
-	ParamsPathTag      = "vpath"
-	ParamsHeaderTag    = "vheader"
-
-	defaultMemory = 32 << 20
-)
-
-type WrapInHandler interface {
-	IsolatedHandler
-	OriginHandler() Handler
-}
-
-type paramsInHandler struct {
-	Into IsolatedHandler
-}
-
-func (ph *paramsInHandler) Name() string {
-	return guessHandlerName(ph.Into)
-}
-
-func (ph *paramsInHandler) InitHandler() IsolatedHandler {
-	return &paramsInHandler{ph.Into.InitHandler()}
-}
-
-func (ph *paramsInHandler) OriginHandler() Handler {
-	return ph.Into.InitHandler()
-}
-
-func (ph *paramsInHandler) HandleFunc(ctx context.Context, c *Context) HandleResponse {
-	if err := ParseMapParams(ctx, c, ph.Into); err != nil {
-		return &Ret{
-			Code:    http.StatusInternalServerError,
-			Data:    nil,
-			Err:     err,
-			Message: "Parse params error",
-		}
-	}
-
-	return ph.Into.HandleFunc(ctx, c)
-}
-
-func ParamsIn(handler IsolatedHandler) Handler {
-	if checkIsWebsocket(handler) {
-		lg.Fatal("Websocket can not use `ParamsIn` inject handler")
-	}
-	return &paramsInHandler{handler}
-}
-
-var (
-	pattern     = regexp.MustCompile(`(\w+):"[^"]+"`)
-	tagMap      = make(map[string]slices.StringSet)
-	tagMapMutex sync.RWMutex
-)
-
-func findHandlerTag(h Handler) slices.StringSet {
-	handlerName := lg.StructName(h)
-	tagMapMutex.RLock()
-	if r, exists := tagMap[handlerName]; exists {
-		tagMapMutex.RUnlock()
-		return r
-	}
-	tagMapMutex.RUnlock()
-
-	tagMapMutex.Lock()
-	defer tagMapMutex.Unlock()
-	if r, exists := tagMap[lg.StructName(h)]; exists {
-		return r
-	}
-
-	uv := reflect.TypeOf(h)
-
-	if uv.Kind() == reflect.Pointer {
-		uv = uv.Elem()
-	}
-
-	numField := uv.NumField()
-	if numField == 0 {
-		return nil
-	}
-
-	tagSet := slices.NewStringSet()
-	for idx := 0; idx < numField; idx++ {
-		field := uv.Field(idx)
-		ret := pattern.FindAllStringSubmatch(string(field.Tag), -1)
-		for _, r := range ret {
-			if len(r) != 2 {
-				continue
-			}
-			tagSet.Add(r[1])
-		}
-	}
-
-	tagMap[handlerName] = tagSet
-	return tagSet
-}
-
-func ParseMapParams(ctx context.Context, c *Context, into Handler) (err error) {
-	tagSet := findHandlerTag(into)
-	switch c.ContentType() {
-	case gin.MIMEJSON:
-		if !tagSet.Contains(ParamsJsonTag) {
-			break
-		}
-		var raw []byte
-		raw, err = BodyRawData(c)
-		if err != nil {
-			break
-		}
-		err = parseJson(ctx, raw, into)
-	case gin.MIMEMultipartPOSTForm:
-		if !tagSet.Contains(ParamsMultiFormTag) {
-			break
-		}
-		var form *multipart.Form
-		form, err = c.MultipartForm()
-		if err != nil {
-			break
-		}
-		err = parseMultiForm(form.Value, into)
-	case gin.MIMEPOSTForm:
-		if !tagSet.Contains(ParamsMultiFormTag) {
-			break
-		}
-
-		if err = c.Request.ParseForm(); err != nil {
-			break
-		}
-		if err = c.Request.ParseMultipartForm(defaultMemory); err != nil && !errors.Is(err, http.ErrNotMultipart) {
-			break
-		}
-		err = parseMultiForm(c.Request.Form, into)
-	}
-	if err != nil {
-		return errors.Wrap(err, "parse contentType data")
-	}
-
-	allwaysParse := []func(*Context, Handler) error{
-		parseQuery(tagSet.Contains(ParamsQueryTag)),
-		parsePath(tagSet.Contains(ParamsPathTag)),
-		parseHeader(tagSet.Contains(ParamsHeaderTag)),
-	}
-
-	for _, parser := range allwaysParse {
-		if err := parser(c, into); err != nil {
-			return err
-		}
+func parseJson(_ context.Context, data []byte, params any) error {
+	if err := json.Unmarshal(data, params); err != nil {
+		return errors.Wrap(err, "decode json")
 	}
 
 	return nil
 }
 
-func parseHeader(needDo bool) func(c *Context, intoHandler Handler) error {
-	return func(c *Context, intoHandler Handler) error {
+func parseMultiForm(data map[string][]string, params any) error {
+	return mapFormByTag(params, data, ParamsMultiFormTag)
+}
+
+func parseHeader(needDo bool) func(c *Context, params any) error {
+	return func(c *Context, params any) error {
 		if !needDo || len(c.Request.Header) == 0 {
 			return nil
 		}
 
-		return mapFormByTag(intoHandler, c.Request.Header, ParamsHeaderTag)
+		return mapFormByTag(params, c.Request.Header, ParamsHeaderTag)
 	}
 }
 
-func parsePath(needDo bool) func(c *Context, intoHandler Handler) error {
-	return func(c *Context, intoHandler Handler) error {
+func parsePath(needDo bool) func(c *Context, params any) error {
+	return func(c *Context, params any) error {
 		if !needDo || len(c.Params) == 0 {
 			return nil
 		}
@@ -192,58 +39,17 @@ func parsePath(needDo bool) func(c *Context, intoHandler Handler) error {
 		for _, p := range c.Params {
 			tmp[p.Key] = []string{p.Value}
 		}
-		return mapFormByTag(intoHandler, tmp, ParamsPathTag)
+		return mapFormByTag(params, tmp, ParamsPathTag)
 	}
 }
 
-func parseQuery(needDo bool) func(c *Context, intoHandler Handler) error {
-	return func(c *Context, intoHandler Handler) error {
+func parseQuery(needDo bool) func(c *Context, params any) error {
+	return func(c *Context, params any) error {
 		if !needDo {
 			return nil
 		}
 
 		queryMap := c.Request.URL.Query()
-		return mapFormByTag(intoHandler, queryMap, ParamsQueryTag)
+		return mapFormByTag(params, queryMap, ParamsQueryTag)
 	}
-}
-
-func mapstructureDecoder(tag string, result Handler) (*mapstructure.Decoder, error) {
-	config := &mapstructure.DecoderConfig{
-		Result:  result,
-		TagName: tag,
-	}
-
-	decoder, err := mapstructure.NewDecoder(config)
-	if err != nil {
-		return nil, err
-	}
-
-	return decoder, nil
-}
-
-func parseJson(ctx context.Context, data []byte, intoHandler Handler) error {
-	data = bytes.TrimSpace(data)
-	tmp := make(map[string]any)
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return errors.Wrap(err, "decode json")
-	}
-	decoder, err := mapstructureDecoder(ParamsJsonTag, intoHandler)
-	if err != nil {
-		return errors.Wrap(err, "map decode")
-	}
-
-	err = decoder.Decode(tmp)
-	if err != nil {
-		if strings.Contains(err.Error(), "unconvertible type") {
-			lg.Warnc(ctx, "Type error: %v", err)
-		} else {
-			return errors.Wrap(err, "map decode json")
-		}
-	}
-
-	return nil
-}
-
-func parseMultiForm(data map[string][]string, intoHandler Handler) error {
-	return mapFormByTag(intoHandler, data, ParamsMultiFormTag)
 }

@@ -2,9 +2,9 @@ package service
 
 import (
 	"strings"
-
+	
 	gwRuntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/lg"
 	"google.golang.org/grpc"
 )
 

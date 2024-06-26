@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/vflags"
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/vflags"
 )
 
 var (
@@ -11,6 +11,6 @@ var (
 
 func main() {
 	vflags.Parse()
-
+	
 	lg.Info(testStr())
 }

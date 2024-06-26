@@ -4,41 +4,41 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
-
+	
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/api/watch"
-	"github.com/superwhys/venkit/internal/shared"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/internal/shared"
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 func watchCnosulConfigChange(path string) {
 	plan, err := watch.Parse(map[string]interface{}{"type": "key", "key": path})
 	lg.PanicError(err)
-
+	
 	first := true
 	var currentVal []byte
-
+	
 	plan.Handler = func(u uint64, data interface{}) {
 		kvPair, ok := data.(*api.KVPair)
 		if !ok {
 			lg.Warnc(lg.Ctx, "Failed to watch remote config.")
 			return
 		}
-
+		
 		if first {
 			first = false
 			currentVal = kvPair.Value
 			return
 		}
-
+		
 		if string(kvPair.Value) == string(currentVal) {
 			lg.Debugc(lg.Ctx, "Remote config not change.")
 			return
 		}
-
+		
 		killToRestartServer(kvPair.Value)
 	}
-
+	
 	plan.Run(shared.GetConsulAddress())
 }
 

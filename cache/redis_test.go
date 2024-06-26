@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"testing"
 	"time"
-
+	
 	"github.com/gomodule/redigo/redis"
-	"github.com/superwhys/venkit/dialer"
+	"github.com/superwhys/venkit/v2/dialer"
 )
 
 var (
@@ -67,7 +67,7 @@ func TestRedisCache_Get(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RedisCache.Get() error = %v, wantErr %v", err, tt.wantErr)
 			}
-
+			
 			if !reflect.DeepEqual(tt.args.out, tt.args.want) {
 				t.Errorf("RedisCache.Get() want = %v, get = %v", tt.args.want, tt.args.out)
 			}
@@ -89,18 +89,18 @@ func TestRedisCache_GetOrCreate(t *testing.T) {
 	}{
 		{
 			"test_create_str", args{"test_create_key", func() (any, error) {
-				return "create_value", nil
-			}, "", "create_value"}, false,
+			return "create_value", nil
+		}, "", "create_value"}, false,
 		},
 		{
 			"test_create_struct", args{"test_create_struct_key", func() (any, error) {
-				return &testData{Message: "this is create message"}, nil
-			}, &testData{}, &testData{Message: "this is create message"}}, false,
+			return &testData{Message: "this is create message"}, nil
+		}, &testData{}, &testData{Message: "this is create message"}}, false,
 		},
 		{
 			"test_key_exists", args{"test_key", func() (any, error) {
-				return "create_value", nil
-			}, "", "test_value"}, false,
+			return "create_value", nil
+		}, "", "test_value"}, false,
 		},
 	}
 	for _, tt := range tests {
@@ -110,7 +110,7 @@ func TestRedisCache_GetOrCreate(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RedisCache.GetOrCreate() error = %v, wantErr %v", err, tt.wantErr)
 			}
-
+			
 			if !reflect.DeepEqual(tt.args.out, tt.args.want) {
 				t.Errorf("RedisCache.GetOrCreate() want = %v, get = %v", tt.args.want, tt.args.out)
 			}
@@ -136,7 +136,7 @@ func TestRedisCache_Delete(t *testing.T) {
 			if err != nil && !errors.Is(err, redis.ErrNil) {
 				t.Errorf("redisCache get key error = %v", err)
 			}
-
+			
 			if err == nil {
 				t.Error("redisCache key exists")
 			}
@@ -159,8 +159,8 @@ func TestRedisCache_GetOrCreateWithTTL(t *testing.T) {
 	}{
 		{
 			"test_not_exists_key", args{"test_create_key_ttl", time.Second * 5, func() (any, error) {
-				return "create_value", nil
-			}, "", ""}, false,
+			return "create_value", nil
+		}, "", ""}, false,
 		},
 	}
 	for _, tt := range tests {
@@ -169,7 +169,7 @@ func TestRedisCache_GetOrCreateWithTTL(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RedisCache.GetOrCreateWithTTL() error = %v, wantErr %v", err, tt.wantErr)
 			}
-
+			
 			if !reflect.DeepEqual(tt.args.out, tt.args.want) {
 				t.Errorf("RedisCache.GetOrCreate() want = %v, get = %v", tt.args.want, tt.args.out)
 			}

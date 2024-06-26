@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
+	
 	"github.com/gin-gonic/gin"
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/service"
-	"github.com/superwhys/venkit/vflags"
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/service"
+	"github.com/superwhys/venkit/v2/vflags"
 )
 
 func main() {
 	vflags.Parse()
-
+	
 	srv := service.NewVkService(
 		service.WithServiceName("serviceName"),
 		service.WithPprof(),
@@ -27,14 +27,14 @@ func main() {
 		}),
 		service.WithHttpHandler("/api/", func() http.Handler {
 			router := gin.Default()
-
+			
 			router.GET("/hello", func(ctx *gin.Context) {
 				ctx.JSON(200, "helloworld")
 			})
-
+			
 			return router
 		}()),
 	)
-
+	
 	lg.PanicError(srv.Run(28080))
 }

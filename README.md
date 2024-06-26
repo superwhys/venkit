@@ -3,7 +3,7 @@
 venkit provides a package of various components in golang for programmers to use.
 
 ## Installation
-`go get github.com/superwhys/venkit`
+`go get github.com/superwhys/venkit/v2`
 
 ## Introduce
 

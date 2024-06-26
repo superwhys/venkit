@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-
-	sshtunnel "github.com/superwhys/venkit/ssh-tunnel"
+	
+	sshtunnel "github.com/superwhys/venkit/v2/ssh-tunnel"
 )
 
 func main() {
@@ -12,10 +12,10 @@ func main() {
 		HostName:     "10.11.43.115",
 		IdentityFile: "/Users/yong/.ssh/id_rsa",
 	})
-
+	
 	if err := tunnel.Forward(context.TODO(), "localhost:28080", "localhost:80"); err != nil {
 		panic(err)
 	}
-
+	
 	tunnel.Wait()
 }

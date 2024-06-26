@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/vflags"
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/vflags"
 )
 
 type Config struct {
@@ -16,10 +16,10 @@ var (
 
 func main() {
 	vflags.Parse()
-
+	
 	config := Config{}
-
+	
 	lg.PanicError(confFlags(&config))
-
+	
 	lg.Info(lg.Jsonify(config))
 }

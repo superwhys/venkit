@@ -2,65 +2,41 @@ package main
 
 import (
 	"context"
-
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/vgin"
+	
+	"github.com/gin-gonic/gin"
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/vgin"
 )
 
-type BeforeRequestMiddleware struct {
+type User struct {
+	Username string `vquery:"user_name"`
 }
 
-func (m *BeforeRequestMiddleware) InitHandler() vgin.IsolatedHandler {
-	return &BeforeRequestMiddleware{}
+type jsonHandler struct {
+	JsonDataStr     string  `json:"name" form:"name"`
+	JsonDataInt     int     `json:"age" form:"age"`
+	JsonDataFloat64 float64 `json:"money" form:"money"`
 }
 
-func (m *BeforeRequestMiddleware) HandleFunc(ctx context.Context, c *vgin.Context) vgin.HandleResponse {
-	lg.Infoc(ctx, "into before request middleware")
-	c.Next()
-	lg.Infoc(ctx, "before request middleware done")
-	return nil
+func JsonHandler(ctx context.Context, c *vgin.Context, data *jsonHandler) vgin.HandleResponse {
+	return vgin.SuccessRet(data)
 }
 
-type AfterRequestMiddleware struct {
-}
-
-func (m *AfterRequestMiddleware) InitHandler() vgin.IsolatedHandler {
-	return &AfterRequestMiddleware{}
-}
-
-func (m *AfterRequestMiddleware) HandleFunc(ctx context.Context, c *vgin.Context) vgin.HandleResponse {
-	lg.Infoc(ctx, "into after request middleware")
-	return nil
-}
-
-type HelloHandler struct {
-	Id          int `vpath:"user_id"`
-	Name        string
-	Age         int
-	Money       float64
-	HeaderToken int `vheader:"Token"`
-}
-
-func (h *HelloHandler) InitHandler() vgin.IsolatedHandler {
-	return &HelloHandler{}
-}
-
-func (h *HelloHandler) HandleFunc(ctx context.Context, c *vgin.Context) vgin.HandleResponse {
-	lg.Info(lg.Jsonify(h))
-
-	ret := &vgin.Ret{
-		Code: 200,
-		Data: h,
+func Middleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		lg.Info("Middleware")
 	}
-
-	return ret
 }
 
 func main() {
 	lg.EnableDebug()
 	engine := vgin.New()
-
-	engine.POST("/hello/:user_id", vgin.ParamsIn(&HelloHandler{}))
-
+	
+	engine.GET("hello", Middleware(), func(ctx context.Context, c *vgin.Context, user *User) vgin.HandleResponse {
+		return vgin.SuccessRet(user.Username)
+	})
+	
+	engine.POST("json", JsonHandler)
+	
 	engine.Run(":8080")
 }

@@ -3,8 +3,8 @@ package vauth
 import (
 	"fmt"
 	"time"
-
-	"github.com/superwhys/venkit/lg"
+	
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 const (
@@ -46,11 +46,11 @@ func NewTokenManager(storager TokenStorager, opts ...TokenManagerOption) *TokenM
 		storager: storager,
 		cacheTTL: defaultTTL,
 	}
-
+	
 	for _, opt := range opts {
 		opt(tm)
 	}
-
+	
 	return tm
 }
 

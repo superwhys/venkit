@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/qmgoutil"
+	
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/qmgoutil"
 )
 
 type User struct {
@@ -29,7 +29,7 @@ func (u *User) CollectionName() string {
 func main() {
 	col := qmgoutil.CollectionByModel(&User{})
 	col.InsertOne(context.Background(), &User{Username: "yanghw"})
-
+	
 	var res []*User
 	if err := col.Find(context.Background(), &User{Username: "yanghw"}).All(&res); err != nil {
 		panic(err)

@@ -2,10 +2,10 @@ package vredis
 
 import (
 	"os"
-
-	"github.com/superwhys/venkit/dialer"
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/vflags"
+	
+	"github.com/superwhys/venkit/v2/dialer"
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/vflags"
 )
 
 var redisConfFlag = vflags.Struct("redisConf", (*RedisConf)(nil), "Redis config")
@@ -37,15 +37,15 @@ func init() {
 	if os.Getenv(autoRedisKey) != "1" {
 		return
 	}
-
+	
 	conf := &RedisConf{}
 	lg.PanicError(redisConfFlag(conf))
-
+	
 	var pwd []string
 	if conf.Password != "" {
 		pwd = append(pwd, conf.Password)
 	}
-
+	
 	lg.Debugf("auto connect to redis with config: %v", lg.Jsonify(conf))
 	RedisConn = func() *RedisClient {
 		return NewRedisClient(dialer.DialRedisPool(

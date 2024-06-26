@@ -7,13 +7,13 @@ import (
 	"context"
 	"fmt"
 	"strings"
-
+	
 	"github.com/spf13/cobra"
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/service"
-	"github.com/superwhys/venkit/ssh-tunnel/server"
-	"github.com/superwhys/venkit/ssh-tunnel/sshtunnelpb"
-	"github.com/superwhys/venkit/vflags"
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/service"
+	"github.com/superwhys/venkit/v2/ssh-tunnel/server"
+	"github.com/superwhys/venkit/v2/ssh-tunnel/sshtunnelpb"
+	"github.com/superwhys/venkit/v2/vflags"
 	"google.golang.org/grpc"
 )
 
@@ -21,13 +21,13 @@ import (
 var ReverseCmd = &cobra.Command{
 	Use:   "reverse -r <address:port> [flags] -l <address:port> [flags]",
 	Short: "Proxy a remote accessible address to a local address port",
-
+	
 	RunE: func(cmd *cobra.Command, args []string) error {
 		vflags.Parse()
-
+		
 		tunnel := newTunnel()
 		s := server.NewSSHTunnelServer(tunnel)
-
+		
 		ms := service.NewVkService(
 			service.WithServiceName("ssh-proxy"),
 			service.WithGrpcServer(func(srv *grpc.Server) {
@@ -39,34 +39,34 @@ var ReverseCmd = &cobra.Command{
 					Local:  localAddr,
 					Remote: remoteAddr,
 				}
-
+				
 				if strings.HasPrefix(in.Local, ":") {
 					in.Local = "0.0.0.0" + in.Local
 				}
-
+				
 				if strings.HasPrefix(in.Remote, ":") {
 					in.Remote = "0.0.0.0" + in.Remote
 				}
-
+				
 				resp, err := s.Reverse(ctx, in)
 				if err != nil {
 					return err
 				}
-
+				
 				table := make(map[string][]string)
 				table[resp.Uuid] = append(
 					table[resp.Uuid],
 					[]string{string(server.Reverse), fmt.Sprintf("%v -> %v", remoteAddr, localAddr)}...,
 				)
 				lg.Info(prettyMaps(table))
-
+				
 				<-ctx.Done()
 				tunnel.Close()
 				return nil
 			}),
 		)
 		ms.Run(port())
-
+		
 		return nil
 	},
 }

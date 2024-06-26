@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 	"time"
-
+	
 	"github.com/gin-gonic/gin"
-	log2 "github.com/superwhys/venkit/lg/log"
+	log2 "github.com/superwhys/venkit/v2/lg/log"
 )
 
 const (
@@ -18,12 +18,12 @@ const (
 	magenta = "\033[97;45m"
 	cyan    = "\033[97;46m"
 	reset   = "\033[0m"
-
+	
 	logMsg = "| %s %v %s | %13v | %15s | %s %4v %s| %#v"
 )
 
 func statusCodeColor(code int) string {
-
+	
 	switch {
 	case code >= http.StatusOK && code < http.StatusMultipleChoices:
 		return green
@@ -38,7 +38,7 @@ func statusCodeColor(code int) string {
 
 // MethodColor is the ANSI color for appropriately logging http method to a terminal.
 func methodColor(method string) string {
-
+	
 	switch method {
 	case http.MethodGet:
 		return blue
@@ -67,13 +67,13 @@ func LoggerMiddleware() gin.HandlerFunc {
 	)
 	return func(c *gin.Context) {
 		start := time.Now()
-
+		
 		path := c.Request.URL.Path
 		raw := c.Request.URL.RawQuery
-
+		
 		c.Next()
 		gin.Logger()
-
+		
 		clientIp := c.ClientIP()
 		method := c.Request.Method
 		if raw != "" {
@@ -81,7 +81,7 @@ func LoggerMiddleware() gin.HandlerFunc {
 		}
 		statusCode := c.Writer.Status()
 		spendTime := time.Since(start)
-
+		
 		var logFunc func(msg string, v ...any)
 		switch {
 		case statusCode >= http.StatusOK && statusCode < http.StatusMultipleChoices:
@@ -93,7 +93,7 @@ func LoggerMiddleware() gin.HandlerFunc {
 		default:
 			logFunc = newLogger.Errorf
 		}
-
+		
 		logFunc(
 			logMsg,
 			statusCodeColor(statusCode), statusCode, reset,

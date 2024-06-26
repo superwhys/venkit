@@ -5,17 +5,17 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
-
+	
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/vgin"
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/vgin"
 )
 
 const (
 	AuthHeaderKey = "Authorization"
-
+	
 	UnAuthInfo          = "Authorization failure"
 	TokenExpired        = "Authorization: Token is expired"
 	TokenNoBearerPrefix = "Authorization: Bearer your_access_token"
@@ -28,7 +28,7 @@ func GenerateJWTAuth(signKey string, claims jwt.Claims) (string, error) {
 		lg.Errorf("jwt sign with key: %v error: %v", signKey, err)
 		return "", errors.Wrap(err, "signedToken")
 	}
-
+	
 	return tokenStr, nil
 }
 
@@ -36,7 +36,7 @@ func jwtTokenCheck(token string) (bool, string, string) {
 	if token == "" {
 		return false, "", UnAuthInfo
 	}
-
+	
 	if !strings.HasPrefix(token, "Bearer ") {
 		return false, "", TokenNoBearerPrefix
 	}
@@ -51,20 +51,20 @@ func JWTMiddleware(signKey string, claimsTmp jwt.Claims) gin.HandlerFunc {
 			vgin.AbortWithError(c, http.StatusUnauthorized, errMsg)
 			return
 		}
-
+		
 		claimsType := reflect.TypeOf(claimsTmp)
 		if claimsType.Kind() == reflect.Pointer {
 			claimsType = claimsType.Elem()
 		}
 		claims := reflect.New(claimsType).Interface().(jwt.Claims)
-
+		
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 			}
 			return []byte(signKey), nil
 		})
-
+		
 		if err != nil {
 			lg.Errorf("jwt parse error: %v", err)
 			message := UnAuthInfo
@@ -74,19 +74,15 @@ func JWTMiddleware(signKey string, claimsTmp jwt.Claims) gin.HandlerFunc {
 			vgin.AbortWithError(c, http.StatusUnauthorized, message)
 			return
 		}
-
+		
 		if !token.Valid {
 			lg.Errorf("auth failure, token validate: %v", token.Valid)
 			vgin.AbortWithError(c, http.StatusUnauthorized, UnAuthInfo)
 			return
 		}
-
+		
 		c.Set("claims", token.Claims)
-
+		
 		c.Next()
 	}
-}
-
-func JWTMiddlewareHandler(signKey string, claimsTmp jwt.Claims) vgin.Handler {
-	return vgin.WrapGinHandlerFunc(JWTMiddleware(signKey, claimsTmp))
 }

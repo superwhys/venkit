@@ -7,10 +7,10 @@ import (
 	"reflect"
 	"strings"
 	"time"
-
+	
 	"github.com/qiniu/qmgo"
 	qoptions "github.com/qiniu/qmgo/options"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/lg"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -74,14 +74,14 @@ func (c *Client) newQmgoClient() (*qmgo.Client, error) {
 	} else {
 		lg.Warn("init JSONFallbackStructTagParser err, using default bson tag!!! cause:%v", err)
 	}
-
+	
 	clientOptions := options.Client().
 		SetMaxPoolSize(100).
 		SetMaxConnIdleTime(time.Second * 10).
 		SetReadPreference(readpref.Nearest()).
 		SetRetryWrites(false).
 		SetRegistry(registryBuilder.Build())
-
+	
 	conf := &qmgo.Config{
 		Uri:         c.uri,
 		MaxPoolSize: c.conf.MaxPoolSize,
@@ -132,9 +132,9 @@ func WithMaxPoolSize(maxPoolSize int) NewClientOption {
 
 func NewClient(address string, opts ...NewClientOption) *Client {
 	conf := &Config{}
-
+	
 	conf.Address = address
-
+	
 	for _, opt := range opts {
 		opt(conf)
 	}
@@ -155,7 +155,7 @@ func NewClientWithConfig(conf *Config) *Client {
 		conf: conf,
 	}
 	c.dial()
-
+	
 	return c
 }
 
@@ -165,10 +165,10 @@ func (c *Client) Client() *qmgo.Client {
 
 func GetDBInstance(m QmgoModel) *Client {
 	conf := m.DBConfig()
-
+	
 	if _, ok := clientCache[conf.Address]; !ok {
 		clientCache[conf.Address] = NewClientWithConfig(&conf)
 	}
-
+	
 	return clientCache[conf.Address]
 }

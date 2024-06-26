@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"errors"
 	"sort"
-
+	
 	"github.com/olekukonko/tablewriter"
-	"github.com/superwhys/venkit/lg"
-	sshtunnel "github.com/superwhys/venkit/ssh-tunnel"
-	"github.com/superwhys/venkit/vflags"
+	"github.com/superwhys/venkit/v2/lg"
+	sshtunnel "github.com/superwhys/venkit/v2/ssh-tunnel"
+	"github.com/superwhys/venkit/v2/vflags"
 )
 
 var (
@@ -47,18 +47,18 @@ func newTunnel() *sshtunnel.SshTunnel {
 	var profile *ConnectionProfile
 	var allProfiles []*ConnectionProfile
 	lg.PanicError(profiles(&allProfiles))
-
+	
 	for _, p := range allProfiles {
 		if p.EnvName == env() {
 			profile = p
 			break
 		}
 	}
-
+	
 	if profile == nil {
 		lg.Fatal("no connection profile found. env= ", env())
 	}
-
+	
 	return sshtunnel.NewTunnel(profile.Host)
 }
 
@@ -67,7 +67,7 @@ func prettyMaps(m map[string][]string) string {
 	buffer := &bytes.Buffer{}
 	table := tablewriter.NewWriter(buffer)
 	table.SetColWidth(400)
-
+	
 	type Record struct {
 		Uuid   string
 		Typ    string
@@ -80,7 +80,7 @@ func prettyMaps(m map[string][]string) string {
 			Typ:    us[0],
 			Tunnel: us[1],
 		}
-
+		
 		rs = append(rs, r)
 	}
 	sort.Slice(rs, func(i, j int) bool {

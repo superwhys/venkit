@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/superwhys/venkit/dialer"
+	
+	"github.com/superwhys/venkit/v2/dialer"
 	"gorm.io/gorm"
 )
 
@@ -42,7 +42,7 @@ func (m *MysqlConfig) GetUid() string {
 func (m *MysqlConfig) DialGorm() (*gorm.DB, error) {
 	m.TrimSpace()
 	logPrefix := fmt.Sprintf("mysql:%s", m.Database)
-
+	
 	return dialer.DialMysqlGorm(
 		m.Instance,
 		dialer.WithAuth(m.Username, m.Password),

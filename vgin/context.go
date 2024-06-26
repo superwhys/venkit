@@ -3,10 +3,10 @@ package vgin
 import (
 	"encoding/json"
 	"net/http"
-
+	
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 type Data gin.H
@@ -48,39 +48,16 @@ func (r *Ret) GetJson() string {
 	return string(b)
 }
 
-func (r *Ret) SuccessRet(data any) *Ret {
-	r.Code = http.StatusOK
-	r.Data = data
-	return r
-}
-
-func (r *Ret) FailedRet(code int, err error, message string) *Ret {
-	r.Code = code
-	r.Err = err
-	r.Message = message
-	return r
-}
-
-func (r *Ret) PackContent(code int, data any, err error, message string) *Ret {
-	r.Err = err
-	r.Message = message
-	r.Code = code
-	r.Data = data
-	return r
-}
-
 func FailedRet(code int, message string) *Ret {
 	return ErrorRet(code, errors.New(message), message)
 }
 
 func ErrorRet(code int, err error, message string) *Ret {
-	ret := &Ret{}
-	return ret.FailedRet(code, err, message)
+	return &Ret{Code: code, Err: err, Message: message}
 }
 
 func SuccessRet(data any) *Ret {
-	ret := &Ret{}
-	return ret.SuccessRet(data)
+	return &Ret{Code: http.StatusOK, Data: data}
 }
 
 func AbortWithError(c *gin.Context, code int, message string) {

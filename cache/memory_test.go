@@ -3,9 +3,9 @@ package cache
 import (
 	"testing"
 	"time"
-
+	
 	"github.com/stretchr/testify/assert"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 type People interface {
@@ -23,15 +23,15 @@ func (p *Peter) SayHello() string {
 
 func TestMemoryCacheStringValue(t *testing.T) {
 	c := NewMemoryCache(time.Second * 10)
-
+	
 	c.Set("string_key", "this is a string")
-
+	
 	// time.Sleep(time.Second * 3)
-
+	
 	resp := ""
 	err := c.Get("string_key", &resp)
 	assert.Nil(t, err)
-
+	
 	assert.Equal(t, "this is a string", resp)
 }
 
@@ -47,13 +47,13 @@ func getPeople(now time.Time) People {
 func TestMemoryCacheInterfaceValue(t *testing.T) {
 	now := time.Now()
 	c := NewMemoryCache(time.Second * 10)
-
+	
 	c.Set("interface_key", getPeople(now))
-
+	
 	var resp People
 	err := c.Get("interface_key", &resp)
 	assert.Nil(t, err)
-
+	
 	assert.Equal(t, getPeople(now).SayHello(), resp.SayHello())
 	lg.Info(resp.SayHello())
 }

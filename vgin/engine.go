@@ -2,12 +2,14 @@ package vgin
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"net/http"
-
+	
 	"github.com/fatih/color"
 	"github.com/gin-gonic/gin"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 var (
@@ -31,22 +33,22 @@ type Engine struct {
 func NewGinEngine(middlewares ...gin.HandlerFunc) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
-
+	
 	if lg.IsDebug() {
 		gin.SetMode(gin.DebugMode)
 	}
-
+	
 	engine.MaxMultipartMemory = 100 << 20
 	engine.Use(lg.LoggerMiddleware(), gin.Recovery())
 	engine.Use(middlewares...)
-
+	
 	return engine
 }
 
 func New(middlewares ...gin.HandlerFunc) *Engine {
 	engine := NewGinEngine()
 	gin.SetMode(gin.ReleaseMode)
-
+	
 	return NewWithEngine(engine, middlewares...)
 }
 
@@ -114,9 +116,9 @@ func (c HandlersChain) Last() Handler {
 
 func (g *RouterGroup) debugPrintRoute(method string, absolutePath string, handlers HandlersChain) {
 	handler := handlers.Last()
-
+	
 	handlerName := guessHandlerName(handler)
-
+	
 	routerMsg := color.MagentaString(fmt.Sprintf("Method=%-6s Router=%-26s Handler=%s", method, absolutePath, handlerName))
 	lg.Debugc(g.ctx, "Add router --> %v", routerMsg)
 }
@@ -161,4 +163,11 @@ func (g *RouterGroup) Specify(path string, methods []string, handler ...Handler)
 	for _, method := range methods {
 		g.RegisterRouter(method, path, handler)
 	}
+}
+
+func (g *RouterGroup) StaticFsEmbed(router, fileRelativePath string, files embed.FS) {
+	subFs, err := fs.Sub(files, fileRelativePath)
+	lg.PanicError(err)
+	
+	g.StaticFS(router, http.FS(subFs))
 }

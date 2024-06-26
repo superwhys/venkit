@@ -2,7 +2,7 @@ package snail
 
 import (
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 type slowerObject struct {

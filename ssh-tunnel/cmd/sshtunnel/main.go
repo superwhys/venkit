@@ -5,12 +5,12 @@ package main
 
 import (
 	"os"
-
+	
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/ssh-tunnel/internal/cmd"
-	"github.com/superwhys/venkit/vflags"
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/ssh-tunnel/internal/cmd"
+	"github.com/superwhys/venkit/v2/vflags"
 )
 
 var (
@@ -41,7 +41,7 @@ func init() {
 	pflag.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 	vflags.OverrideDefaultConfigFile(os.Getenv("HOME") + "/.ssh-tunnel.yaml")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug mode")
-
+	
 	rootCmd.AddCommand(cmd.ForwardCmd)
 	rootCmd.AddCommand(cmd.ReverseCmd)
 }

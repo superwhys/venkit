@@ -5,10 +5,10 @@ import (
 	"context"
 	"fmt"
 	"strings"
-
+	
 	"github.com/fatih/color"
 	"github.com/go-logfmt/logfmt"
-	"github.com/superwhys/venkit/lg/common"
+	"github.com/superwhys/venkit/v2/lg/common"
 )
 
 type logable interface {
@@ -31,7 +31,7 @@ func ParseFromContext(ctx context.Context) *LogContext {
 	if ctx == nil {
 		return nil
 	}
-
+	
 	val := ctx.Value(logContextKey)
 	lc, ok := val.(*LogContext)
 	if !ok {
@@ -49,7 +49,7 @@ func cloneLogContext(c *LogContext) *LogContext {
 		keys:   common.SliceClone(c.keys),
 		values: common.SliceClone(c.values),
 	}
-
+	
 	return clone
 }
 
@@ -59,11 +59,11 @@ func (lc *LogContext) LogFmt() string {
 		fmt.Println("Invalid numbers of keys and values")
 		return msg
 	}
-
+	
 	var buf bytes.Buffer
-
+	
 	encoder := logfmt.NewEncoder(&buf)
-
+	
 	for i := 0; i < len(lc.keys); i++ {
 		encoder.EncodeKeyval(lc.keys[i], lc.values[i])
 	}
@@ -71,6 +71,6 @@ func (lc *LogContext) LogFmt() string {
 	if str == "" {
 		return msg
 	}
-
+	
 	return msg + " " + color.MagentaString(str)
 }

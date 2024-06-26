@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"time"
-
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/lg/log"
+	
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/lg/log"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
 )
@@ -18,7 +18,7 @@ type gormLogger struct {
 	ignoreRecordNotFoundError bool
 	logMod                    logger.LogLevel
 	logger                    lg.Logger
-
+	
 	traceStr, traceErrStr, traceWarnStr string
 }
 
@@ -48,18 +48,18 @@ func NewGormLogger(opts ...GormLoggerOption) *gormLogger {
 		traceWarnStr = "%s %s\n[%.3fms] [rows:%v] %s"
 		traceErrStr  = "%s %s\n[%.3fms] [rows:%v] %s"
 	)
-
+	
 	l := &gormLogger{
 		logger:       log.New(),
 		traceStr:     traceStr,
 		traceWarnStr: traceWarnStr,
 		traceErrStr:  traceErrStr,
 	}
-
+	
 	for _, opt := range opts {
 		opt(l)
 	}
-
+	
 	return l
 }
 
@@ -67,7 +67,7 @@ func (gl *gormLogger) wrapPrefix(ctx context.Context) context.Context {
 	if gl.prefix != "" {
 		ctx = gl.logger.With(ctx, "[%v]", gl.prefix)
 	}
-
+	
 	return ctx
 }
 
@@ -93,10 +93,10 @@ func (gl *gormLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql
 	if lg.IsDebug() {
 		return
 	}
-
+	
 	ctx = gl.wrapPrefix(ctx)
 	elapsed := time.Since(begin)
-
+	
 	switch {
 	case err != nil && (!errors.Is(err, logger.ErrRecordNotFound) || !gl.ignoreRecordNotFoundError):
 		sql, rows := fc()

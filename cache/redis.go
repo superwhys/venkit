@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
+	
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/vredis"
+	"github.com/superwhys/venkit/v2/vredis"
 )
 
 var _ Cache = (*RedisCache)(nil)
@@ -33,21 +33,21 @@ func NewRedisCache(pool *redis.Pool, opts ...RedisCacheOption) *RedisCache {
 	rc := &RedisCache{
 		RedisClient: vredis.NewRedisClient(pool),
 	}
-
+	
 	for _, opt := range opts {
 		opt(rc)
 	}
-
+	
 	return rc
 }
 
 func (c *RedisCache) Get(key string, out any) error {
 	var p payload
-
+	
 	if err := c.RedisClient.Get(key, &p); err != nil {
 		return err
 	}
-
+	
 	return p.Get(out)
 }
 
@@ -69,7 +69,7 @@ func (c *RedisCache) setWithTTL(conn redis.Conn, key string, value any, ttl time
 	} else {
 		_, err = conn.Do("SET", key, value)
 	}
-
+	
 	return
 }
 
@@ -77,16 +77,16 @@ func (c *RedisCache) packKey(key string) string {
 	if c.prefix != "" {
 		key = fmt.Sprintf("%v::%v", c.prefix, key)
 	}
-
+	
 	return key
 }
 
 func (c *RedisCache) GetOrCreateWithTTL(key string, ttl time.Duration, creator Creater, out any) error {
 	conn := c.GetConn()
 	defer conn.Close()
-
+	
 	key = c.packKey(key)
-
+	
 	var p payload
 	data, err := redis.Bytes(conn.Do("GET", key))
 	// no data in redis
@@ -96,23 +96,23 @@ func (c *RedisCache) GetOrCreateWithTTL(key string, ttl time.Duration, creator C
 		if err != nil {
 			return errors.Wrap(err, "json.Marshal.redisData")
 		}
-
+		
 		if err = c.setWithTTL(conn, key, data, ttl); err != nil {
 			return errors.Wrap(err, "redis.setTTL")
 		}
 		return nil
 	}
-
+	
 	// other error
 	if err != nil {
 		return errors.Wrap(err, "do.redis.get")
 	}
-
+	
 	// get data from redis
 	if err := json.Unmarshal(data, &p); err != nil {
 		return errors.Wrap(err, "json.Unmarshal.redisData")
 	}
-
+	
 	return p.Get(out)
 }
 
@@ -122,15 +122,15 @@ func (c *RedisCache) SetWithTTL(key string, value any, ttl time.Duration) error 
 	if err != nil {
 		return errors.Wrap(err, "json.Marshal.redisData")
 	}
-
+	
 	key = c.packKey(key)
-
+	
 	if ttl > 0 {
 		_, err = c.RedisClient.Do("SET", key, data, "EX", int(ttl.Seconds()))
 	} else {
 		_, err = c.RedisClient.Do("SET", key, data)
 	}
-
+	
 	return errors.Wrap(err, "do.redis.set")
 }
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 	"time"
-
-	"github.com/superwhys/venkit/lg"
+	
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 type HashData interface {
@@ -24,12 +24,12 @@ type ReposKVEntry struct {
 
 type LocalRepos struct {
 	sync.RWMutex
-
+	
 	parentCtx context.Context
-
+	
 	dataStore DataStore
 	data      map[string]HashData
-
+	
 	refreshInterval time.Duration
 	ticker          *time.Ticker
 }
@@ -49,7 +49,7 @@ func NewLocalRepos(dataStore DataStore, opts ...ReposOptions) *LocalRepos {
 		parentCtx: context.Background(),
 		dataStore: dataStore,
 	}
-
+	
 	for _, opt := range opts {
 		opt(lp)
 	}
@@ -58,7 +58,7 @@ func NewLocalRepos(dataStore DataStore, opts ...ReposOptions) *LocalRepos {
 
 func (r *LocalRepos) Start() {
 	r.reloadEntries(r.parentCtx)
-
+	
 	r.ticker = time.NewTicker(r.refreshInterval)
 	go func() {
 		for range r.ticker.C {
@@ -85,13 +85,13 @@ func (r *LocalRepos) reloadEntries(ctx context.Context) {
 			default:
 			}
 		}
-
+	
 	Done:
 		r.Lock()
 		r.data = newData
 		r.Unlock()
 	}()
-
+	
 	if err := r.dataStore.ReloadEntries(ctx, ch); err != nil {
 		lg.Errorc(ctx, "reloadEntries error: %v", err)
 	}

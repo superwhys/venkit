@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
-
-	"github.com/superwhys/venkit/lg/log"
-	"github.com/superwhys/venkit/lg/slog"
+	
+	"github.com/superwhys/venkit/v2/lg/log"
+	"github.com/superwhys/venkit/v2/lg/slog"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -50,15 +50,15 @@ func FileLoggerWriter(filename string, maxSize, maxBackup, maxAge int, logCompre
 
 func salvageMsg(v ...any) (msg string, remain []any) {
 	first := v[0]
-
+	
 	if s, ok := first.(string); ok {
 		msg = s
 	}
-
+	
 	if len(v) > 1 {
 		remain = v[1:]
 	}
-
+	
 	return
 }
 
@@ -70,7 +70,7 @@ func Error(v ...any) {
 	if len(v) == 0 {
 		return
 	}
-
+	
 	msg, remain := salvageMsg(v...)
 	if len(remain) == 0 {
 		logger.Errorf(msg)
@@ -83,7 +83,7 @@ func Warn(v ...any) {
 	if len(v) == 0 {
 		return
 	}
-
+	
 	msg, remain := salvageMsg(v...)
 	if len(remain) == 0 {
 		logger.Errorf(msg)
@@ -96,7 +96,7 @@ func Info(v ...any) {
 	if len(v) == 0 {
 		return
 	}
-
+	
 	msg, remain := salvageMsg(v...)
 	if len(remain) == 0 {
 		logger.Infof(msg)
@@ -109,7 +109,7 @@ func Debug(v ...any) {
 	if len(v) == 0 {
 		return
 	}
-
+	
 	msg, remain := salvageMsg(v...)
 	if len(remain) == 0 {
 		logger.Debugf(msg)
@@ -122,7 +122,7 @@ func Fatal(v ...any) {
 	if len(v) == 0 {
 		return
 	}
-
+	
 	msg, remain := salvageMsg(v...)
 	if len(remain) == 0 {
 		logger.Fatalf(msg)
@@ -203,7 +203,7 @@ func TimeDurationDefer(prefix ...string) func() {
 		ps = strings.Join(prefix, ", ")
 	}
 	start := time.Now()
-
+	
 	return func() {
 		Infof("%v elapsed time: %v", ps, time.Since(start))
 	}

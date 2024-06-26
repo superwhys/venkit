@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-
-	"github.com/superwhys/venkit/lg"
+	
+	"github.com/superwhys/venkit/v2/lg"
 )
 
 type worker interface {

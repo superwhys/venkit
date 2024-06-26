@@ -3,8 +3,8 @@ package localrepos
 import (
 	"context"
 	"reflect"
-
-	"github.com/superwhys/venkit/qmgoutil"
+	
+	"github.com/superwhys/venkit/v2/qmgoutil"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -20,7 +20,7 @@ func NewQmgoDataStore(client *qmgoutil.Client, model HashData) *QmgoDataStore {
 	if !isQmgoModel {
 		panic("model need to implement qmgoutil.QmgoModel interface as well")
 	}
-
+	
 	return &QmgoDataStore{
 		client:    client,
 		hashModel: model,
@@ -30,24 +30,24 @@ func NewQmgoDataStore(client *qmgoutil.Client, model HashData) *QmgoDataStore {
 
 func (qds *QmgoDataStore) ReloadEntries(ctx context.Context, ch chan HashData) error {
 	defer close(ch)
-
+	
 	cursor := qmgoutil.CollectionByClient(qds.client, qds.hashModel.(qmgoutil.QmgoModel)).Find(qds.ctx, qds.selector).Cursor()
 	defer cursor.Close()
-
+	
 	var entryType reflect.Type
 	if reflect.TypeOf(qds.hashModel).Kind() == reflect.Ptr {
 		entryType = reflect.ValueOf(qds.hashModel).Elem().Type()
 	} else {
 		entryType = reflect.ValueOf(qds.hashModel).Type()
 	}
-
+	
 	newQmgoModel := reflect.New(entryType).Interface().(HashData)
 	for cursor.Next(newQmgoModel) {
 		ch <- newQmgoModel
-
+		
 		newQmgoModel = reflect.New(entryType).Interface().(HashData)
 	}
-
+	
 	return nil
 }
 

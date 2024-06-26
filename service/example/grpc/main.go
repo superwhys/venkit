@@ -1,19 +1,19 @@
 package main
 
 import (
-	"github.com/superwhys/venkit/lg"
-	"github.com/superwhys/venkit/service"
-	"github.com/superwhys/venkit/service/example/grpc/examplepb"
-	exampleSrv "github.com/superwhys/venkit/service/example/grpc/service"
-	"github.com/superwhys/venkit/vflags"
+	"github.com/superwhys/venkit/v2/lg"
+	"github.com/superwhys/venkit/v2/service"
+	"github.com/superwhys/venkit/v2/service/example/grpc/examplepb"
+	exampleSrv "github.com/superwhys/venkit/v2/service/example/grpc/service"
+	"github.com/superwhys/venkit/v2/vflags"
 	"google.golang.org/grpc"
 )
 
 func main() {
 	vflags.Parse()
-
+	
 	grpcSrv := exampleSrv.NewExampleService()
-
+	
 	cs := service.NewVkService(
 		service.WithServiceName(vflags.GetServiceName()),
 		service.WithHTTPCORS(),
@@ -24,7 +24,7 @@ func main() {
 			examplepb.RegisterExampleHelloServiceServer(srv, grpcSrv)
 		}),
 	)
-
+	
 	if err := cs.Run(0); err != nil {
 		lg.PanicError(err)
 	}

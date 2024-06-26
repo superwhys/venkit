@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-
-	sshtunnel "github.com/superwhys/venkit/ssh-tunnel"
-	"github.com/superwhys/venkit/vflags"
+	
+	sshtunnel "github.com/superwhys/venkit/v2/ssh-tunnel"
+	"github.com/superwhys/venkit/v2/vflags"
 )
 
 func main() {
@@ -14,12 +14,12 @@ func main() {
 		HostName:     "10.11.43.115",
 		IdentityFile: "/Users/yong/.ssh/id_rsa_cnns",
 	})
-
+	
 	defer tunnel.Close()
-
+	
 	if err := tunnel.Reverse(context.TODO(), ":28081", "localhost:8080"); err != nil {
 		panic(err)
 	}
-
+	
 	tunnel.Wait()
 }

@@ -9,11 +9,11 @@ import (
 	"strings"
 	"sync"
 	"time"
-
+	
 	"github.com/hashicorp/consul/api"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/internal/shared"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/internal/shared"
+	"github.com/superwhys/venkit/v2/lg"
 	"golang.org/x/sync/singleflight"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -59,7 +59,7 @@ func GetConsulClient() *Client {
 		defaultConsulClient = newConsulClient(shared.GetConsulAddress())
 		lg.Debugc(lg.Ctx, "Connect consul success. ConsulAddr=%v", shared.GetConsulAddress())
 	})
-
+	
 	return defaultConsulClient
 }
 
@@ -84,7 +84,7 @@ func (c *Client) findInConsul(serviceName string, tag string) ([]*api.ServiceEnt
 	if err != nil {
 		return nil, err
 	}
-
+	
 	v, ok := ret.([]*api.ServiceEntry)
 	if !ok {
 		return nil, nil
@@ -118,7 +118,7 @@ func parseIp(addr string) bool {
 	if ip != nil {
 		return true
 	}
-
+	
 	return false
 }
 
@@ -138,13 +138,13 @@ func (c *Client) GetAddressWithTag(service string, tag string) string {
 	if checkip(service) {
 		return service
 	}
-
+	
 	cs := c.GetAllAddressWithTag(service, tag)
 	if len(cs) == 0 {
 		return ""
 	}
 	addr := cs[0]
-
+	
 	lg.Debugf("Find %s address in consul. Addr=%s", strings.Join([]string{service, tag}, ":"), addr)
 	return addr
 }
@@ -159,12 +159,12 @@ func (c *Client) GetAllAddressWithTag(service string, tag string) []string {
 		lg.Errorf("Failed to find %s:%s in consul.", service, tag)
 		return nil
 	}
-
+	
 	cs := extractAddresses(entries)
 	rand.Shuffle(len(cs), func(i, j int) {
 		cs[i], cs[j] = cs[j], cs[i]
 	})
-
+	
 	return cs
 }
 
@@ -182,13 +182,13 @@ func (c *Client) RegisterServiceWithTags(serviceName string, address string, tag
 	if !validServiceName(serviceName) {
 		return errors.New("Invalid service name")
 	}
-
+	
 	// parse host and port from address
 	ip, err := net.ResolveTCPAddr("tcp", address)
 	if err != nil {
 		return err
 	}
-
+	
 	hostname, err := os.Hostname()
 	if err != nil {
 		hostname = bson.NewObjectId().Hex()
@@ -196,7 +196,7 @@ func (c *Client) RegisterServiceWithTags(serviceName string, address string, tag
 	hostname = strings.ReplaceAll(hostname, ".", "-")
 	serviceID := fmt.Sprintf("%s-%d-%s", serviceName, ip.Port, hostname)
 	checkID := fmt.Sprintf("service:%s", serviceID)
-
+	
 	regis := &api.AgentServiceRegistration{
 		ID:   serviceID,
 		Name: serviceName,
@@ -214,7 +214,7 @@ func (c *Client) RegisterServiceWithTags(serviceName string, address string, tag
 	if err := c.Agent().ServiceRegister(regis); err != nil {
 		return errors.Errorf("initial register service '%s' host to consul error: %s", serviceName, err.Error())
 	}
-
+	
 	c.services = append(c.services, RegisteredService{ServiceID: serviceID, CheckID: checkID})
 	return nil
 }
@@ -223,7 +223,7 @@ func (c *Client) deregisterServiceAndCheck(serviceID, checkID string) (reterr er
 	if err := c.Agent().CheckDeregister(checkID); err != nil {
 		reterr = errors.Wrap(err, "Deregister check")
 	}
-
+	
 	if err := c.Agent().ServiceDeregister(serviceID); err != nil {
 		reterr = errors.Wrap(err, "Deregister service")
 	}

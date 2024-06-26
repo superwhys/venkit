@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"reflect"
 	"sync"
-
+	
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/lg"
+	"github.com/superwhys/venkit/v2/lg"
 	"gorm.io/gorm"
 )
 
@@ -26,17 +26,17 @@ var (
 func getDbByModel(m SqlModel) *gorm.DB {
 	rt := reflect.TypeOf(m)
 	modelKey := fmt.Sprintf("%v-%v", rt.String(), m.TableName())
-
+	
 	key, exists := modelDbMap[modelKey]
 	if !exists {
 		panic(fmt.Sprintf("model %v has not been register", rt.String()))
 	}
-
+	
 	clientFunc, ok := getInstanceClientFunc(key)
 	if !ok {
 		panic(fmt.Sprintf("db instance %v not found", key))
 	}
-
+	
 	return clientFunc().DB()
 }
 
@@ -66,14 +66,14 @@ func registerInstance(conf Config) {
 	dbInstanceClientFuncMap[key] = func() getClientFunc {
 		var cli *client
 		var once sync.Once
-
+		
 		f := func() *client {
 			once.Do(func() {
 				cli = NewClient(conf)
 			})
 			return cli
 		}
-
+		
 		return f
 	}()
 }
@@ -82,9 +82,9 @@ func RegisterSqlModelWithConf(conf Config, ms ...SqlModel) error {
 	if _, exists := getInstanceClientFunc(conf.GetUid()); exists {
 		return fmt.Errorf("%v has been register", conf.GetUid())
 	}
-
+	
 	registerInstance(conf)
-
+	
 	for _, m := range ms {
 		rt := reflect.TypeOf(m)
 		modelKey := fmt.Sprintf("%v-%v", rt.String(), m.TableName())
@@ -92,7 +92,7 @@ func RegisterSqlModelWithConf(conf Config, ms ...SqlModel) error {
 			return fmt.Errorf("model %v has been register into %v", modelKey, key)
 		}
 		modelDbMap[modelKey] = conf.GetUid()
-
+		
 		// append SqlModel
 		if models[conf.GetUid()] == nil {
 			models[conf.GetUid()] = make([]any, 0)
@@ -109,9 +109,9 @@ func RegisterSqlModel(conf Config, ms ...SqlModel) {
 	if _, exists := getInstanceClientFunc(conf.GetUid()); exists {
 		panic(fmt.Sprintf("%v has been register", conf.GetUid()))
 	}
-
+	
 	registerInstance(conf)
-
+	
 	for _, m := range ms {
 		rt := reflect.TypeOf(m)
 		modelKey := fmt.Sprintf("%v-%v", rt.String(), m.TableName())
@@ -119,7 +119,7 @@ func RegisterSqlModel(conf Config, ms ...SqlModel) {
 			panic(fmt.Sprintf("model %v has been register into %v", modelKey, key))
 		}
 		modelDbMap[modelKey] = conf.GetUid()
-
+		
 		// append SqlModel
 		if models[conf.GetUid()] == nil {
 			models[conf.GetUid()] = make([]any, 0)
@@ -133,12 +133,12 @@ func AutoMigrate(conf Config) error {
 	if !exists {
 		panic(fmt.Sprintf("sqlConf %v not found", conf.GetUid()))
 	}
-
+	
 	db := GetDbByConf(conf)
 	if err := db.AutoMigrate(ms...); err != nil {
 		return errors.Wrap(err, "AutoMigrate")
 	}
-
+	
 	lg.Debugf("%v auto migrate success", conf.GetUid())
 	return nil
 }
