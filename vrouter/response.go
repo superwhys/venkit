@@ -1,11 +1,8 @@
 package vrouter
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
-
-	"github.com/superwhys/venkit/lg/v2"
 )
 
 type Ret struct {
@@ -29,12 +26,6 @@ func (r *Ret) GetData() any {
 
 func (r *Ret) GetMessage() string {
 	return r.Message
-}
-
-func (r *Ret) GetJson() string {
-	b, err := json.Marshal(r)
-	lg.PanicError(err)
-	return string(b)
 }
 
 func SuccessResponse(data any) *Ret {

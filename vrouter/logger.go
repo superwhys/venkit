@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	
+
 	"github.com/superwhys/venkit/lg/v2"
 )
 
@@ -19,7 +19,7 @@ const (
 	magenta = "\033[97;45m"
 	cyan    = "\033[97;46m"
 	reset   = "\033[0m"
-	
+
 	logMsg = "| %s %v %s | %13v | %15s | %s %4v %s| %#v"
 )
 
@@ -54,22 +54,22 @@ func (lm *LogMiddleware) ClientIP(r *http.Request) string {
 	if remoteIP == nil {
 		return ""
 	}
-	
+
 	return remoteIP.String()
 }
 
 func (lm *LogMiddleware) log(start time.Time, statusCode int, r *http.Request) {
 	path := r.URL.Path
 	raw := r.URL.RawQuery
-	
+
 	clientIp := lm.ClientIP(r)
 	method := r.Method
 	if raw != "" {
 		path = path + "?" + raw
 	}
-	
+
 	spendTime := time.Since(start)
-	
+
 	var logFunc func(msg string, v ...any)
 	switch {
 	case statusCode >= http.StatusOK && statusCode < http.StatusMultipleChoices:
@@ -81,12 +81,12 @@ func (lm *LogMiddleware) log(start time.Time, statusCode int, r *http.Request) {
 	default:
 		logFunc = lm.logger.Errorf
 	}
-	
+
 	var statusColor, mthColor, resetColor string
 	statusColor = statusCodeColor(statusCode)
 	mthColor = methodColor(method)
 	resetColor = reset
-	
+
 	logFunc(
 		logMsg,
 		statusColor, statusCode, resetColor,
@@ -100,12 +100,12 @@ func (lm *LogMiddleware) log(start time.Time, statusCode int, r *http.Request) {
 func (lm *LogMiddleware) WrapHandler(handler HandleFunc) HandleFunc {
 	return func(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) Response {
 		rw := WrapResponseWriter(w)
-		
+
 		start := time.Now()
 		defer func() {
 			lm.log(start, rw.StatusCode(), r)
 		}()
-		
+
 		return handler(ctx, rw, r, vars)
 	}
 }

@@ -11,14 +11,17 @@ const (
 	statusCodeKey = "vrouter-status-key"
 )
 
-// route the final route group which will use to register into mux.Router
-type route struct {
+// iRoute the final iRoute group which will use to register into mux.Router
+type iRoute struct {
 	Route
-	router     *mux.Router
-	middleware []Middleware
+	router      *mux.Router
+	middleware  []Middleware
+	routeOption RouteOption
 }
 
-func (r *route) handleSpecifyMiddleware(handler HandleFunc) HandleFunc {
+type RouteOption func(*mux.Route) *mux.Route
+
+func (r *iRoute) handleSpecifyMiddleware(handler HandleFunc) HandleFunc {
 	next := handler
 	for _, m := range r.middleware {
 		next = m.WrapHandler(next)
@@ -30,7 +33,6 @@ func (r *route) handleSpecifyMiddleware(handler HandleFunc) HandleFunc {
 type Response interface {
 	GetCode() int
 	GetMessage() string
-	GetJson() string
 	GetData() any
 	GetError() error
 }
@@ -45,6 +47,11 @@ type Route interface {
 	Handler() HandleFunc
 	Path() string
 	Method() string
+}
+
+type OptRoute interface {
+	Route
+	Option(*mux.Route) *mux.Route
 }
 
 type Middleware interface {

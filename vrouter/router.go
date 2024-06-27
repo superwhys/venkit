@@ -14,7 +14,6 @@ import (
 const (
 	DebugMode = iota
 	ReleaseMode
-	TestMode
 )
 
 var (
@@ -27,8 +26,6 @@ func SetMode(value int64) {
 		vrouterMode = DebugMode
 	case ReleaseMode:
 		vrouterMode = ReleaseMode
-	case TestMode:
-		vrouterMode = TestMode
 	default:
 		panic("Vrouter mode unknown: " + strconv.FormatInt(value, 10) + " (available mode: debug release test)")
 	}
@@ -109,8 +106,8 @@ func (v *Vrouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	v.router.ServeHTTP(w, r)
 }
 
-func (v *Vrouter) ServeHandler() http.Handler {
-	return v
+func (v *Vrouter) ServeHandler() *mux.Router {
+	return v.router
 }
 
 func (v *Vrouter) Run(addr string) error {
@@ -121,14 +118,20 @@ func (v *Vrouter) Run(addr string) error {
 	return srv.ListenAndServe()
 }
 
-func (v *Vrouter) initRouter(r route) {
+func (v *Vrouter) initRouter(r iRoute) {
 	f := v.makeHttpHandler(r)
 	
 	vr := r.router.Path(r.Path())
 	if r.Method() != "" {
 		vr = vr.Methods(r.Method())
 	}
+	
+	if r.routeOption != nil {
+		vr = r.routeOption(vr)
+	}
+	
 	mr := vr.Handler(f)
+	
 	v.debugPrintRoute(r.Method(), mr, r.Handler())
 }
 
@@ -145,7 +148,7 @@ func (v *Vrouter) handleGlobalMiddleware(handler HandleFunc) HandleFunc {
 	return h
 }
 
-func (v *Vrouter) makeHttpHandler(wr route) http.HandlerFunc {
+func (v *Vrouter) makeHttpHandler(wr iRoute) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := lg.With(context.Background(), "handler", lg.FuncName(wr.Handler()))
 		r = r.WithContext(ctx)
@@ -183,7 +186,7 @@ func (v *Vrouter) debugPrintRoute(method string, route *mux.Route, handler Handl
 	handlerName := lg.FuncName(handler)
 	url, err := route.GetPathTemplate()
 	if err != nil {
-		lg.Error("get route url error", "err", err, "handler", handlerName)
+		lg.Error("get iRoute url error", "err", err, "handler", handlerName)
 	}
 	routerMsg := color.MagentaString(fmt.Sprintf("Method=%-6s Router=%-26s Handler=%s", method, url, handlerName))
 	lg.Info(routerMsg)
