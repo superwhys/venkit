@@ -3,7 +3,7 @@ package vrouter
 import (
 	"context"
 	"net/http"
-	
+
 	"github.com/gorilla/mux"
 )
 
@@ -26,7 +26,7 @@ func (r *iRoute) handleSpecifyMiddleware(handler HandleFunc) HandleFunc {
 	for _, m := range r.middleware {
 		next = m.WrapHandler(next)
 	}
-	
+
 	return next
 }
 
@@ -71,6 +71,7 @@ type defaultRoute struct {
 	method  string
 	path    string
 	handler HandleFunc
+	opts    []RouteOption
 }
 
 func (r *defaultRoute) Handler() HandleFunc {
@@ -85,38 +86,47 @@ func (r *defaultRoute) Method() string {
 	return r.method
 }
 
-func NewRoute(method, path string, handler HandleFunc) Route {
-	return &defaultRoute{method, path, handler}
+func (r *defaultRoute) Option(route *mux.Route) *mux.Route {
+	next := route
+	for _, opt := range r.opts {
+		next = opt(next)
+	}
+
+	return next
 }
 
-func NewGetRoute(path string, handler HandleFunc) Route {
-	return NewRoute(http.MethodGet, path, handler)
+func NewRoute(method, path string, handler HandleFunc, opts ...RouteOption) Route {
+	return &defaultRoute{method, path, handler, opts}
 }
 
-func NewPostRoute(path string, handler HandleFunc) Route {
-	return NewRoute(http.MethodPost, path, handler)
+func NewGetRoute(path string, handler HandleFunc, opts ...RouteOption) Route {
+	return NewRoute(http.MethodGet, path, handler, opts...)
 }
 
-func NewPutRoute(path string, handler HandleFunc) Route {
-	return NewRoute(http.MethodPut, path, handler)
+func NewPostRoute(path string, handler HandleFunc, opts ...RouteOption) Route {
+	return NewRoute(http.MethodPost, path, handler, opts...)
 }
 
-func NewDeleteRoute(path string, handler HandleFunc) Route {
-	return NewRoute(http.MethodDelete, path, handler)
+func NewPutRoute(path string, handler HandleFunc, opts ...RouteOption) Route {
+	return NewRoute(http.MethodPut, path, handler, opts...)
 }
 
-func NewOptionsRoute(path string, handler HandleFunc) Route {
-	return NewRoute(http.MethodOptions, path, handler)
+func NewDeleteRoute(path string, handler HandleFunc, opts ...RouteOption) Route {
+	return NewRoute(http.MethodDelete, path, handler, opts...)
 }
 
-func NewHeadRoute(path string, handler HandleFunc) Route {
-	return NewRoute(http.MethodHead, path, handler)
+func NewOptionsRoute(path string, handler HandleFunc, opts ...RouteOption) Route {
+	return NewRoute(http.MethodOptions, path, handler, opts...)
 }
 
-func NewPatchRoute(path string, handler HandleFunc) Route {
-	return NewRoute(http.MethodPatch, path, handler)
+func NewHeadRoute(path string, handler HandleFunc, opts ...RouteOption) Route {
+	return NewRoute(http.MethodHead, path, handler, opts...)
 }
 
-func NewAnyRoute(path string, handler HandleFunc) Route {
-	return NewRoute("", path, handler)
+func NewPatchRoute(path string, handler HandleFunc, opts ...RouteOption) Route {
+	return NewRoute(http.MethodPatch, path, handler, opts...)
+}
+
+func NewAnyRoute(path string, handler HandleFunc, opts ...RouteOption) Route {
+	return NewRoute("", path, handler, opts...)
 }

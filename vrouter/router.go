@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	
+
 	"github.com/fatih/color"
 	"github.com/gorilla/mux"
 	"github.com/superwhys/venkit/lg/v2"
@@ -71,7 +71,7 @@ func (v *Vrouter) parseOptions(opts ...RouterOption) {
 	if v.host != "" {
 		v.router = v.router.Host(v.host).Subrouter()
 	}
-	
+
 	if v.scheme != "" {
 		v.router = v.router.Schemes(v.host).Subrouter()
 	}
@@ -79,7 +79,7 @@ func (v *Vrouter) parseOptions(opts ...RouterOption) {
 
 func New(opts ...RouterOption) *Vrouter {
 	m := mux.NewRouter()
-	
+
 	v := &Vrouter{
 		RouterGroup: newGroupWithRouter(m),
 		middlewares: make([]Middleware, 0),
@@ -87,14 +87,14 @@ func New(opts ...RouterOption) *Vrouter {
 	v.RouterGroup.root = true
 	v.RouterGroup.vrouter = v
 	v.parseOptions(opts...)
-	
+
 	return v
 }
 
 func NewVrouter(opts ...RouterOption) *Vrouter {
 	v := New(opts...)
 	v.UseMiddleware(NewLogMiddleware())
-	
+
 	notFoundHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_ = WriteJSON(w, http.StatusNotFound, ErrorResponse(http.StatusNotFound, "page not found"))
 	})
@@ -120,18 +120,17 @@ func (v *Vrouter) Run(addr string) error {
 
 func (v *Vrouter) initRouter(r iRoute) {
 	f := v.makeHttpHandler(r)
-	
+
 	vr := r.router.Path(r.Path())
 	if r.Method() != "" {
 		vr = vr.Methods(r.Method())
 	}
-	
+
 	if r.routeOption != nil {
 		vr = r.routeOption(vr)
 	}
-	
+
 	mr := vr.Handler(f)
-	
 	v.debugPrintRoute(r.Method(), mr, r.Handler())
 }
 
@@ -144,7 +143,7 @@ func (v *Vrouter) handleGlobalMiddleware(handler HandleFunc) HandleFunc {
 	for _, m := range v.middlewares {
 		h = m.WrapHandler(h)
 	}
-	
+
 	return h
 }
 
@@ -152,22 +151,22 @@ func (v *Vrouter) makeHttpHandler(wr iRoute) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := lg.With(context.Background(), "handler", lg.FuncName(wr.Handler()))
 		r = r.WithContext(ctx)
-		
+
 		// TODO: parse body data
-		
+
 		vars := mux.Vars(r)
 		if vars == nil {
 			vars = make(map[string]string)
 		}
-		
+
 		handlerFunc := v.handleGlobalMiddleware(wr.Handler())
 		handlerFunc = wr.handleSpecifyMiddleware(handlerFunc)
-		
+
 		resp := handlerFunc(ctx, w, r, vars)
 		if resp == nil {
 			return
 		}
-		
+
 		if resp.GetError() != nil {
 			lg.Errorc(ctx, "handle error", "err", resp.GetError())
 		}
@@ -182,7 +181,7 @@ func (v *Vrouter) debugPrintRoute(method string, route *mux.Route, handler Handl
 	if method == "" {
 		method = "ANY"
 	}
-	
+
 	handlerName := lg.FuncName(handler)
 	url, err := route.GetPathTemplate()
 	if err != nil {
