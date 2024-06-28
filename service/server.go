@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	
+
 	"github.com/gorilla/mux"
 	gwRuntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/pkg/errors"
@@ -42,22 +42,22 @@ type VkService struct {
 	ctx         context.Context
 	serviceName string
 	tags        []string
-	
+
 	cmux    cmux.CMux
 	httpLst net.Listener
 	grpcLst net.Listener
-	
+
 	httpCORS    bool
 	httpMux     *mux.Router
 	httpHandler http.Handler
-	
+
 	grpcUI                bool
 	grpcServer            *grpc.Server
 	grpcOptions           []grpc.ServerOption
 	grpcUnaryInterceptors []grpc.UnaryServerInterceptor
 	grpcServersFunc       []func(*grpc.Server)
 	grpcSelfConn          *grpc.ClientConn
-	
+
 	// grpc gateway
 	grpcGwServeMuxOption       []gwRuntime.ServeMuxOption
 	grpcIncomingHeaderMapping  map[string]string
@@ -65,7 +65,7 @@ type VkService struct {
 	gatewayAPIPrefix           []string
 	gatewayHandlers            []gatewayFunc
 	gatewayMiddlewaresHandlers [][]gatewatMiddlewareHandler
-	
+
 	workers    []worker
 	mounts     []mountFn
 	cronMounts []cronMountFn
@@ -79,7 +79,7 @@ func NewVkService(opts ...ServiceOption) *VkService {
 		httpMux: mux.NewRouter(),
 	}
 	s.httpHandler = s.httpMux
-	
+
 	for _, opt := range opts {
 		opt(s)
 	}
@@ -101,7 +101,7 @@ func (vs *VkService) notiKill() mountFn {
 				select {
 				case sg := <-ch:
 					lg.Infoc(vs.ctx, "Graceful stopped server successfully")
-					
+
 					return errors.Errorf("Signal: %s", sg.String())
 				case <-ctx.Done():
 					return ctx.Err()
@@ -114,7 +114,7 @@ func (vs *VkService) notiKill() mountFn {
 
 func (vs *VkService) runFinalMount() error {
 	grp, ctx := errgroup.WithContext(lg.ClearContext(vs.ctx))
-	
+
 	// run simple worker
 	for _, mount := range vs.mounts {
 		mf := mount
@@ -126,19 +126,19 @@ func (vs *VkService) runFinalMount() error {
 			} else {
 				err = mf.fn(ctx)
 			}
-			
+
 			if err != nil && mf.daemon {
 				return err
 			}
 			return nil
 		})
 	}
-	
+
 	// run cron worker
 	if len(vs.cronMounts) != 0 {
 		grp.Go(func() error {
 			c := cron.New()
-			
+
 			for _, cw := range vs.cronMounts {
 				cw := cw
 				runFn := func() {
@@ -149,7 +149,7 @@ func (vs *VkService) runFinalMount() error {
 						}
 						cw.running = true
 						defer func() { cw.running = false }()
-						
+
 						return cw.fn(ctx)
 					})
 					if err != nil {
@@ -159,12 +159,12 @@ func (vs *VkService) runFinalMount() error {
 				}
 				c.AddFunc(cw.cron, runFn)
 			}
-			
+
 			err := waitContext(ctx, func() error {
 				c.Run()
 				return nil
 			})
-			
+
 			if err != nil {
 				c.Stop()
 				lg.Errorc(ctx, "Run cron error: %v", err)
@@ -172,7 +172,7 @@ func (vs *VkService) runFinalMount() error {
 			return nil
 		})
 	}
-	
+
 	return grp.Wait()
 }
 
@@ -182,14 +182,14 @@ func waitContext(ctx context.Context, fn func() error) error {
 	go func() {
 		stop <- fn()
 	}()
-	
+
 	go func() {
 		<-ctx.Done()
 		lg.Debugc(ctx, "Worker force close after 5 seconds")
 		time.Sleep(time.Second * 5)
 		stop <- errors.Wrap(ctx.Err(), "Force close")
 	}()
-	
+
 	return <-stop
 }
 
@@ -198,19 +198,19 @@ func (vs *VkService) mountCronWorker(worker *cronWorker) cronMountFn {
 	if err != nil {
 		lg.Fatal("cron worker cron invalid. err: %v", err)
 	}
-	
+
 	fn := func(ctx context.Context) error {
 		if worker.isWithName {
 			ctx = lg.With(ctx, "Worker", worker.name)
 		}
-		
+
 		if err := worker.fn(ctx); err != nil {
 			lg.Errorc(ctx, "worker: %v run error: %v", worker.name, err)
 			return errors.Wrap(err, worker.name)
 		}
 		return nil
 	}
-	
+
 	return cronMountFn{
 		baseMount: baseMount{
 			fn: fn,
@@ -229,18 +229,18 @@ func (vs *VkService) mountWorker(worker *simpleWorker) mountFn {
 		} else {
 			c = context.TODO()
 		}
-		
+
 		if worker.isWithName {
 			c = lg.With(c, "Worker", worker.name)
 		}
-		
+
 		if err := worker.fn(c); err != nil {
 			lg.Errorc(c, "worker: %v run error: %v", worker.name, err)
 			return errors.Wrap(err, worker.name)
 		}
 		return nil
 	}
-	
+
 	return mountFn{
 		baseMount: baseMount{
 			fn: fn,
@@ -266,7 +266,7 @@ func (vs *VkService) setHTTPCORS() {
 	if !vs.httpCORS {
 		return
 	}
-	vs.httpHandler = cors.AllowAll().Handler(vs.httpHandler)
+	vs.httpHandler = cors.AllowAll().Handler(vs.httpMux)
 }
 
 func (vs *VkService) beginCmux(listener net.Listener) {
@@ -296,7 +296,7 @@ func (vs *VkService) serve(listener net.Listener) error {
 	vs.mounts = []mountFn{
 		vs.notiKill(),
 	}
-	
+
 	if len(vs.grpcServersFunc) != 0 {
 		vs.beginCmux(listener)
 		vs.beginGrpc()
@@ -306,12 +306,12 @@ func (vs *VkService) serve(listener net.Listener) error {
 	} else {
 		vs.mounts = append(vs.mounts, vs.listenHttpServer(listener))
 	}
-	
+
 	// grpc self connection will be used in grpcUI
 	if err := vs.prepareGrpcSelfConnect(listener); err != nil {
 		return errors.Wrap(err, "prepare selfConn")
 	}
-	
+
 	vs.loadServiceName()
 	vs.registerIntoConsul(listener)
 	vs.mountGRPCRestfulGateway()
@@ -327,7 +327,7 @@ func (vs *VkService) Run(port int) error {
 	if port > 0 {
 		addr = fmt.Sprintf(":%d", port)
 	}
-	
+
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err

@@ -5,7 +5,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
-	
+
 	"github.com/superwhys/venkit/lg/v2"
 )
 
@@ -25,14 +25,9 @@ func WithHttpHandler(pattern string, handler http.Handler) ServiceOption {
 		if !strings.HasPrefix(pattern, "/") {
 			pattern = "/" + pattern
 		}
-		
+
 		defer lg.Infof("Registered http endpoint prefix. Prefix=%s", pattern)
-		
-		if strings.HasSuffix(pattern, "/") {
-			vs.httpMux.Handle(pattern, http.StripPrefix(strings.TrimSuffix(pattern, "/"), handler))
-			return
-		}
-		
-		vs.httpMux.Handle(pattern, http.StripPrefix(pattern, handler))
+
+		vs.httpMux.PathPrefix(pattern).Handler(http.StripPrefix(strings.TrimSuffix(pattern, "/"), handler))
 	}
 }
