@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/gorilla/mux"
@@ -147,9 +148,17 @@ func (v *Vrouter) handleGlobalMiddleware(handler HandleFunc) HandleFunc {
 	return h
 }
 
+func (v *Vrouter) handelrName(handler HandleFunc) string {
+	funcName := lg.FuncName(handler)
+	fs := strings.Split(funcName, ".")
+
+	return fs[len(fs)-1]
+}
+
 func (v *Vrouter) makeHttpHandler(wr iRoute) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := lg.With(context.Background(), "handler", lg.FuncName(wr.Handler()))
+
+		ctx := lg.With(context.Background(), "handler", v.handelrName(wr.Handler()))
 		r = r.WithContext(ctx)
 
 		// TODO: parse body data
@@ -182,7 +191,7 @@ func (v *Vrouter) debugPrintRoute(method string, route *mux.Route, handler Handl
 		method = "ANY"
 	}
 
-	handlerName := lg.FuncName(handler)
+	handlerName := v.handelrName(handler)
 	url, err := route.GetPathTemplate()
 	if err != nil {
 		lg.Error("get iRoute url error", "err", err, "handler", handlerName)
