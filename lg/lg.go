@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/superwhys/venkit/lg/v2/common"
 	"github.com/superwhys/venkit/lg/v2/log"
 	"github.com/superwhys/venkit/lg/v2/slog"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -40,6 +41,20 @@ func IsDebug() bool {
 
 func EnableDebug() {
 	logger.EnableDebug()
+}
+
+func EnableLogToFile(conf *common.LogConfig, loggers ...Logger) {
+	l := logger
+	if len(loggers) != 0 {
+		l = loggers[0]
+	}
+
+	switch o := l.(type) {
+	case *log.Logger:
+		o.EnableLogToFile(conf)
+	case *slog.Logger:
+		o.EnableLogToFile(conf)
+	}
 }
 
 func FileLoggerWriter(filename string, maxSize, maxBackup, maxAge int, logCompress bool) *lumberjack.Logger {

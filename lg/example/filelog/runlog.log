@@ -1,0 +1,40 @@
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 0
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 1
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 2
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 3
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 4
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 5
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 6
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 7
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 8
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 9
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 10
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 11
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 12
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 13
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 14
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 15
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 16
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 17
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 18
+[36;1m[INFO]  [0;22m2024/07/02 18:01:17 this is a log: 19
+{"time":"2024-07-02T21:59:30.975596+08:00","level":"INFO","msg":"this is a log: 0"}
+{"time":"2024-07-02T21:59:30.976031+08:00","level":"INFO","msg":"this is a log: 1"}
+{"time":"2024-07-02T21:59:30.976052+08:00","level":"INFO","msg":"this is a log: 2"}
+{"time":"2024-07-02T21:59:30.976076+08:00","level":"INFO","msg":"this is a log: 3"}
+{"time":"2024-07-02T21:59:30.976097+08:00","level":"INFO","msg":"this is a log: 4"}
+{"time":"2024-07-02T21:59:30.976115+08:00","level":"INFO","msg":"this is a log: 5"}
+{"time":"2024-07-02T21:59:30.976131+08:00","level":"INFO","msg":"this is a log: 6"}
+{"time":"2024-07-02T21:59:30.976152+08:00","level":"INFO","msg":"this is a log: 7"}
+{"time":"2024-07-02T21:59:30.976175+08:00","level":"INFO","msg":"this is a log: 8"}
+{"time":"2024-07-02T21:59:30.976195+08:00","level":"INFO","msg":"this is a log: 9"}
+{"time":"2024-07-02T21:59:30.976211+08:00","level":"INFO","msg":"this is a log: 10"}
+{"time":"2024-07-02T21:59:30.976692+08:00","level":"INFO","msg":"this is a log: 11"}
+{"time":"2024-07-02T21:59:30.976735+08:00","level":"INFO","msg":"this is a log: 12"}
+{"time":"2024-07-02T21:59:30.976761+08:00","level":"INFO","msg":"this is a log: 13"}
+{"time":"2024-07-02T21:59:30.976784+08:00","level":"INFO","msg":"this is a log: 14"}
+{"time":"2024-07-02T21:59:30.976816+08:00","level":"INFO","msg":"this is a log: 15"}
+{"time":"2024-07-02T21:59:30.976948+08:00","level":"INFO","msg":"this is a log: 16"}
+{"time":"2024-07-02T21:59:30.976982+08:00","level":"INFO","msg":"this is a log: 17"}
+{"time":"2024-07-02T21:59:30.977006+08:00","level":"INFO","msg":"this is a log: 18"}
+{"time":"2024-07-02T21:59:30.977024+08:00","level":"INFO","msg":"this is a log: 19"}

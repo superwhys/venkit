@@ -10,6 +10,7 @@ import (
 	"runtime"
 
 	"github.com/superwhys/venkit/lg/v2/common"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type Logger struct {
@@ -84,6 +85,18 @@ func NewSlogTextLogger(w io.Writer, opts ...Opt) *Logger {
 	}
 	handler := slog.NewTextHandler(w, slogOpts)
 	return NewSlogWithHandler(handler, lv, opts...)
+}
+
+func (sl *Logger) EnableLogToFile(logConf *common.LogConfig) {
+	jackLogger := &lumberjack.Logger{
+		Filename:   logConf.FileName,
+		MaxSize:    logConf.MaxSize,
+		MaxBackups: logConf.MaxBackup,
+		MaxAge:     logConf.MaxAge,
+		Compress:   logConf.Compress,
+	}
+	sl.Logger = slog.New(slog.NewJSONHandler(jackLogger, nil))
+	sl.Debugf("set logger to file with json")
 }
 
 func (sl *Logger) EnableDebug() {
