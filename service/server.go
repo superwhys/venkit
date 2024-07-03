@@ -322,15 +322,20 @@ func (vs *VkService) serve(listener net.Listener) error {
 	return vs.runFinalMount()
 }
 
+func (vs *VkService) RunWithAddr(addr string) error {
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+
+	return vs.serve(lis)
+}
+
 func (vs *VkService) Run(port int) error {
 	var addr string
 	if port > 0 {
 		addr = fmt.Sprintf(":%d", port)
 	}
 
-	lis, err := net.Listen("tcp", addr)
-	if err != nil {
-		return err
-	}
-	return vs.serve(lis)
+	return vs.RunWithAddr(addr)
 }
