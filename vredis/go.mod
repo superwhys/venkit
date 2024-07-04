@@ -5,9 +5,9 @@ go 1.22.0
 require (
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/superwhys/venkit/lg/v2 v2.2.0
-	github.com/superwhys/venkit/slices/v2 v2.2.0
-	github.com/superwhys/venkit/v2 v2.2.3
+	github.com/superwhys/venkit/lg/v2 v2.2.6
+	github.com/superwhys/venkit/slices/v2 v2.2.3
+	github.com/superwhys/venkit/v2 v2.2.5
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.2
 )
 
@@ -111,8 +111,8 @@ require (
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20240617180043-68d350f18fd4 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240624140628-dc46fd24d27d // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240624140628-dc46fd24d27d // indirect
-	google.golang.org/grpc v1.64.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240701130421-f6361c86f094 // indirect
+	google.golang.org/grpc v1.65.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
