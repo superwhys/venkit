@@ -7,7 +7,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/superwhys/venkit/lg/v2 v2.2.6
 	github.com/superwhys/venkit/slices/v2 v2.2.3
-	github.com/superwhys/venkit/v2 v2.2.7
+	github.com/superwhys/venkit/v2 v2.2.8
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.2
 )
 
