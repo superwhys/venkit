@@ -58,11 +58,6 @@ func init() {
 
 	lg.Debugf("auto connect to redis with config: %v", lg.Jsonify(conf))
 	RedisConn = func() *RedisClient {
-		return NewRedisClient(dialer.DialRedisPool(
-			conf.Server,
-			conf.Db,
-			conf.MaxIdle,
-			pwd...,
-		))
+		return NewRedisClient(conf.DialRedisPool())
 	}
 }
