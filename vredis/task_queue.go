@@ -6,11 +6,11 @@ import (
 	"math/rand"
 	"reflect"
 	"time"
-	
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
-	"github.com/superwhys/venkit/slices/v2"
 	"github.com/superwhys/venkit/lg/v2"
+	"github.com/superwhys/venkit/slices/v2"
 	"gopkg.in/vmihailenco/msgpack.v2"
 )
 
@@ -35,7 +35,7 @@ func WithBucket(size int) QueueOption {
 		if size <= 0 {
 			lg.Fatal("Bucket size is invalid", size)
 		}
-		
+
 		for i := 0; i < size; i++ {
 			tq.buckets = append(tq.buckets, i)
 		}
@@ -47,9 +47,9 @@ func NewTaskQueue(pool *redis.Pool, queueName string, taskObj any, opts ...Queue
 	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Struct {
 		lg.Fatal("NewTaskQueue: typeObj should be ptr to struct")
 	}
-	
+
 	ctx, cancel := context.WithCancel(context.TODO())
-	
+
 	q := &TaskQueue{
 		ctx:      ctx,
 		cancel:   cancel,
@@ -57,16 +57,16 @@ func NewTaskQueue(pool *redis.Pool, queueName string, taskObj any, opts ...Queue
 		name:     queueName,
 		taskTmpl: t.Elem(),
 	}
-	
+
 	for _, opt := range opts {
 		opt(q)
 	}
-	
+
 	// if no buckets provide, use `0` as default
 	if len(q.buckets) == 0 {
 		q.buckets = append(q.buckets, 0)
 	}
-	
+
 	q.buckets = slices.DupInt(q.buckets)
 	return q
 }
@@ -84,7 +84,7 @@ func (q *TaskQueue) checkWorkInProcess(conn redis.Conn, key string) error {
 	if err != nil {
 		return errors.Wrap(err, "SISMEMBER")
 	}
-	
+
 	if exists {
 		return ErrDuplicated
 	}
@@ -108,7 +108,7 @@ func (q *TaskQueue) PushToBucket(key string, obj any, bucket int, noDup bool) er
 		return err
 	}
 	defer conn.Close()
-	
+
 	// if noDup. it need to check whether this key is in process
 	if noDup {
 		err = q.checkWorkInProcess(conn, key)
@@ -116,25 +116,25 @@ func (q *TaskQueue) PushToBucket(key string, obj any, bucket int, noDup bool) er
 			return err
 		}
 	}
-	
+
 	if ot := reflect.TypeOf(obj); ot != reflect.PtrTo(q.taskTmpl) {
 		return errors.Errorf("object tpye not correct: %v", ot)
 	}
-	
+
 	task := &Task{
 		Key:     key,
 		Payload: obj,
 	}
-	
+
 	b, err := msgpack.Marshal(task)
 	if err != nil {
 		return errors.Wrap(err, "encode")
 	}
-	
+
 	if err := q.pushToBucket(conn, bucket, key, b); err != nil {
 		return errors.Wrap(err, "pushToBucket")
 	}
-	
+
 	return nil
 }
 
@@ -164,16 +164,20 @@ func (q *TaskQueue) iter(c chan *Task) {
 		return
 	}
 	defer conn.Close()
-	
+
 	for {
 		if q.checkCancel() {
 			close(c)
 			return
 		}
-		
+
 		bulk, err := redis.Values(q.blpop(conn))
-		if err != nil || len(bulk) != 2 {
-			lg.Errorf("queue %v blpop err(maybe timeout): %v", q.name, err)
+		if err != nil {
+			if errors.Is(err, redis.ErrNil) {
+				lg.Debugf("queue %v blpop is nil", q.name)
+				continue
+			}
+			lg.Errorf("queue %v blpop err: %v", q.name, err)
 			time.Sleep(time.Second * 2)
 			conn.Close()
 			conn, err = q.rc.GetConnWithContext(q.ctx)
@@ -183,18 +187,18 @@ func (q *TaskQueue) iter(c chan *Task) {
 			}
 			continue
 		}
-		
+
 		if q.checkCancel() {
 			close(c)
 			return
 		}
-		
+
 		task, err := q.parseQueueData(bulk)
 		if err != nil {
 			lg.Errorf("parse bulk data error: %v", err)
 			continue
 		}
-		
+
 		if err := q.removeWip(conn, task.Key); err != nil {
 			lg.Errorf("remove task process status error: %v", err)
 			continue
@@ -214,11 +218,11 @@ func (q *TaskQueue) parseQueueData(bulk []any) (*Task, error) {
 	task := &Task{
 		Payload: reflect.New(q.taskTmpl).Interface(),
 	}
-	
+
 	if err := msgpack.Unmarshal(bulk[1].([]byte), task); err != nil {
 		return nil, errors.Wrap(err, "decode")
 	}
-	
+
 	return task, nil
 }
 
@@ -227,19 +231,19 @@ func (q *TaskQueue) blpop(conn redis.Conn) (any, error) {
 	for i, b := range rand.Perm(len(q.buckets)) {
 		keys[i] = q.genQueueKey(q.buckets[b])
 	}
-	
+
 	// timeout
 	keys[len(q.buckets)] = 5
-	
+
 	return conn.Do("BLPOP", keys...)
 }
 
 func (q *TaskQueue) Close() error {
 	q.cancel()
-	
+
 	conn := q.rc.GetConn()
 	defer conn.Close()
-	
+
 	_, err := redis.Int(conn.Do("DEL", "wip:"+q.name, "queue:"+q.name))
 	return err
 }
