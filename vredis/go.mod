@@ -3,11 +3,11 @@ module github.com/superwhys/venkit/vredis/v2
 go 1.22.0
 
 require (
-	github.com/gomodule/redigo v2.0.0+incompatible
+	github.com/gomodule/redigo v1.9.2
 	github.com/pkg/errors v0.9.1
 	github.com/superwhys/venkit/lg/v2 v2.2.6
 	github.com/superwhys/venkit/slices/v2 v2.2.3
-	github.com/superwhys/venkit/v2 v2.2.5
+	github.com/superwhys/venkit/v2 v2.2.7
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.2
 )
 

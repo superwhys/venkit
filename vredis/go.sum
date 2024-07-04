@@ -124,6 +124,8 @@ github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaS
 github.com/golang/protobuf v1.5.2/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
 github.com/golang/protobuf v1.5.4 h1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=
 github.com/golang/protobuf v1.5.4/go.mod h1:lnTiLA8Wa4RWRcIUkrtSVa5nRhsEGBg48fD6rSs7xps=
+github.com/gomodule/redigo v1.9.2 h1:HrutZBLhSIU8abiSfW8pj8mPhOyMYjZT/wcA4/L9L9s=
+github.com/gomodule/redigo v1.9.2/go.mod h1:KsU3hiK/Ay8U42qpaJk+kuNa3C+spxapWpM+ywhcgtw=
 github.com/gomodule/redigo v2.0.0+incompatible h1:K/R+8tc58AaqLkqG2Ol3Qk+DR/TlNuhuh457pBFPtt0=
 github.com/gomodule/redigo v2.0.0+incompatible/go.mod h1:B4C85qUVwatsJoIUNIfCRsp7qO0iAmpGFZ4EELWSbC4=
 github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c/go.mod h1:lNA+9X1NB3Zf8V7Ke586lFgjr2dZNuvo3lPJSGZ5JPQ=
@@ -341,10 +343,15 @@ github.com/superwhys/venkit/slices/v2 v2.2.0 h1:K2LYO5ULS6+UoC5uKk0rL2HDpVLreH6j
 github.com/superwhys/venkit/slices/v2 v2.2.0/go.mod h1:k1gIqaHRpz8JgnKQid9GZjGe2KjSGnOLpDr8N97H+Uk=
 github.com/superwhys/venkit/slices/v2 v2.2.3 h1:G4IROvgsajcb2bS8KeZaHP85I5JxIuojQat7aXHY56M=
 github.com/superwhys/venkit/slices/v2 v2.2.3/go.mod h1:GAV6j170B0hDnrGsaKReoDZUDqeGsNr/A2++xfv3HSc=
+github.com/superwhys/venkit/v2 v2.1.0/go.mod h1:zKFg+EOUlW9XG04RVugeFbCO8TNkjFH2j7ENbjE9elw=
 github.com/superwhys/venkit/v2 v2.2.3 h1:Gd5jcJLEhKiG3QR3BaNCR3efZDxsQbkP1y4+dRkbe44=
 github.com/superwhys/venkit/v2 v2.2.3/go.mod h1:32mqit6t5HCTP1RzNsqwkLnz0ewDKJXv/1DqgBP0GOE=
 github.com/superwhys/venkit/v2 v2.2.5 h1:78VxiHWgTQWNW4d+whDSZI6PeIXzGqRvxriaGdzZQf8=
 github.com/superwhys/venkit/v2 v2.2.5/go.mod h1:YUtGwaIbj3WBAI+0Zw42WjltJjBGHI3xEUJfMXWBvd4=
+github.com/superwhys/venkit/v2 v2.2.6 h1:l4WCBVGAS3fIAhOKWzIXxmM9wHedN+C1NuCpKWyi5Bs=
+github.com/superwhys/venkit/v2 v2.2.6/go.mod h1:rywpViq91V7vvUHK8Fql+TstH15bKJmx/yyU2SeU+gk=
+github.com/superwhys/venkit/v2 v2.2.7 h1:zYwRZerjmCgvgSfKoyLvWXyRvUHViS5J+WXPHR0kX3o=
+github.com/superwhys/venkit/v2 v2.2.7/go.mod h1:wMfdaf9J0RAvXsCWSRouh7KtuTAxJBv176NF1khGDx4=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
