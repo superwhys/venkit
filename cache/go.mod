@@ -8,8 +8,8 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
 	github.com/superwhys/venkit/lg/v2 v2.2.6
-	github.com/superwhys/venkit/v2 v2.2.7
-	github.com/superwhys/venkit/vredis/v2 v2.2.5
+	github.com/superwhys/venkit/v2 v2.2.8
+	github.com/superwhys/venkit/vredis/v2 v2.2.6
 )
 
 require (
