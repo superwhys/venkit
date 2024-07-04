@@ -121,3 +121,5 @@ require (
 	gorm.io/driver/sqlite v1.5.6 // indirect
 	gorm.io/gorm v1.25.10 // indirect
 )
+
+replace github.com/armon/go-metrics => github.com/hashicorp/go-metrics v0.4.1
