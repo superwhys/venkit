@@ -2,7 +2,8 @@ package vredis
 
 import (
 	"os"
-	
+
+	"github.com/gomodule/redigo/redis"
 	"github.com/superwhys/venkit/lg/v2"
 	"github.com/superwhys/venkit/v2/dialer"
 	"github.com/superwhys/venkit/v2/vflags"
@@ -15,6 +16,15 @@ type RedisConf struct {
 	Password string `desc:"redis server password"`
 	Db       int    `desc:"redis db (default 0)"`
 	MaxIdle  int    `desc:"redis maxIdle (default 100)"`
+}
+
+func (conf *RedisConf) DialRedisPool() *redis.Pool {
+	return dialer.DialRedisPool(
+		conf.Server,
+		conf.Db,
+		conf.MaxIdle,
+		conf.Password,
+	)
 }
 
 func (rc *RedisConf) SetDefault() {
@@ -37,15 +47,15 @@ func init() {
 	if os.Getenv(autoRedisKey) != "1" {
 		return
 	}
-	
+
 	conf := &RedisConf{}
 	lg.PanicError(redisConfFlag(conf))
-	
+
 	var pwd []string
 	if conf.Password != "" {
 		pwd = append(pwd, conf.Password)
 	}
-	
+
 	lg.Debugf("auto connect to redis with config: %v", lg.Jsonify(conf))
 	RedisConn = func() *RedisClient {
 		return NewRedisClient(dialer.DialRedisPool(
