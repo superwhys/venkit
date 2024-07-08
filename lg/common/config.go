@@ -9,9 +9,19 @@ type LogConfig struct {
 }
 
 func (l *LogConfig) SetDefault() {
-	l.FileName = "runlog.log"
-	l.MaxSize = 3
-	l.MaxBackup = 3
-	l.MaxAge = 30
-	l.Compress = false
+	if l.FileName == "" {
+		l.FileName = "runlog.log"
+	}
+
+	if l.MaxAge == 0 {
+		l.MaxAge = 30
+	}
+
+	if l.MaxBackup == 0 {
+		l.MaxBackup = 3
+	}
+
+	if l.MaxSize == 0 {
+		l.MaxSize = 3
+	}
 }
