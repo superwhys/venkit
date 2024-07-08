@@ -44,6 +44,10 @@ func EnableDebug() {
 }
 
 func EnableLogToFile(conf *common.LogConfig, loggers ...Logger) {
+	if conf.DisableToFile {
+		return
+	}
+
 	l := logger
 	if len(loggers) != 0 {
 		l = loggers[0]
