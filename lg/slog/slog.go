@@ -95,7 +95,17 @@ func (sl *Logger) EnableLogToFile(logConf *common.LogConfig) {
 		MaxAge:     logConf.MaxAge,
 		Compress:   logConf.Compress,
 	}
+
+	debugMode := false
+	if sl.IsDebug() {
+		debugMode = true
+	}
+
 	sl.Logger = slog.New(slog.NewJSONHandler(jackLogger, nil))
+	if debugMode {
+		sl.EnableDebug()
+	}
+
 	sl.Debugf("set logger to file with json")
 }
 
