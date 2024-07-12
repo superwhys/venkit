@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 	"time"
-	
+
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -30,6 +30,7 @@ var (
 
 type VflagOption struct {
 	autoParseConfig bool
+	useConsul       bool
 }
 
 type VflagOptionFunc func(*VflagOption)
@@ -38,20 +39,20 @@ func Viper() *viper.Viper {
 	return v
 }
 
-func declareDefaultFlags() {
+func declareConsulFlags() {
+	shared.UseConsul = Bool("useConsul", true, "Whether to use the consul service center.")
+	shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr.")
+	useRemoteConfig = Bool("useRemoteConfig", false, "Set true to use remote config.")
+	watchRemoteConfig = Bool("watchRemoteConfig", false, "Set true to watch change of remote config.")
+}
+
+func declareDefaultFlags(o *VflagOption) {
 	config = StringP("config", "f", defaultConfigFile, "Specify config file. Support json, yaml.")
 	debug = Bool("debug", false, "Whether to enable debug mode.")
 	shared.ServiceName = StringP("service", "s", os.Getenv("VENKIT_SERVICE"), "Set the service name.")
-	if useConsul() {
-		shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr.")
-		shared.UseConsul = Bool("useConsul", true, "Whether to use the consul service center.")
-		useRemoteConfig = Bool("useRemoteConfig", false, "Set true to use remote config.")
-		watchRemoteConfig = Bool("watchRemoteConfig", false, "Set true to watch change of remote config.")
+	if o.useConsul {
+		declareConsulFlags()
 	}
-}
-
-func useConsul() bool {
-	return shared.UseConsul == nil || shared.UseConsul()
 }
 
 func OverrideDefaultConfigFile(configFile string) {
@@ -64,23 +65,28 @@ func BindPFlag(key string, flag *pflag.Flag) {
 	}
 }
 
-func initVFlags() {
+func initVFlags(o *VflagOption) {
 	v.AddConfigPath(".")
 	v.AddConfigPath("./configs")
 	v.AddConfigPath("./tmp/config/")
 	v.SetConfigFile("config.yaml")
-	
-	declareDefaultFlags()
+
+	declareDefaultFlags(o)
 	if err := v.BindPFlags(pflag.CommandLine); err != nil {
 		lg.Fatal("BindPFlags error: %v", err)
 	}
 }
 
+func EnableConsul() VflagOptionFunc {
+	return func(vo *VflagOption) {
+		vo.useConsul = true
+	}
+}
+
+// Deprecated: ProhibitConsul Disable consul
 func ProhibitConsul() VflagOptionFunc {
-	return func(_ *VflagOption) {
-		shared.UseConsul = func() bool {
-			return false
-		}
+	return func(vo *VflagOption) {
+		vo.useConsul = false
 	}
 }
 
@@ -105,14 +111,14 @@ func Parse(opts ...VflagOptionFunc) {
 	o := &VflagOption{
 		autoParseConfig: true,
 	}
-	
+
 	for _, opt := range opts {
 		opt(o)
 	}
-	
-	initVFlags()
+
+	initVFlags(o)
 	pflag.Parse()
-	
+
 	injectNestedKey()
 	readConfig(o)
 	checkFlagKey()
@@ -124,7 +130,7 @@ func optionInit() {
 	if debug() {
 		lg.EnableDebug()
 	}
-	
+
 	if shared.GetIsUseConsul() {
 		discover.SetConsulFinderToDefault()
 	}
@@ -149,7 +155,7 @@ func getServiceTag() string {
 }
 
 func readConfig(opt *VflagOption) {
-	if useConsul() && useRemoteConfig() {
+	if opt.useConsul && useRemoteConfig() {
 		path := readConsulConfig()
 		if watchRemoteConfig() {
 			go watchCnosulConfigChange(path)

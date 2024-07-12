@@ -11,9 +11,7 @@ import (
 )
 
 func main() {
-	vflags.Parse(
-		vflags.ProhibitConsul(),
-	)
+	vflags.Parse()
 
 	router := gin.Default()
 
