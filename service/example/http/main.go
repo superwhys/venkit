@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +11,9 @@ import (
 )
 
 func main() {
-	vflags.Parse()
+	vflags.Parse(
+		vflags.ProhibitConsul(),
+	)
 
 	router := gin.Default()
 
@@ -24,12 +25,21 @@ func main() {
 		service.WithServiceName("ServiceTest"),
 		service.WithHttpHandler("", router),
 		service.WithTransientWorker("transientWorker", func(ctx context.Context) error {
-			time.Sleep(time.Second * 15)
-			return errors.New("return")
+			t := time.NewTicker(time.Second * 2)
+			defer t.Stop()
+
+			for {
+				select {
+				case <-ctx.Done():
+					lg.Errorf("ctx done")
+					return ctx.Err()
+				case <-t.C:
+					lg.Infoc(ctx, "2 second run")
+				}
+			}
 		}),
 		service.WithCronWorker("cronWorker", "@every 5s", func(ctx context.Context) error {
-			lg.Infoc(ctx, "10s run")
-			time.Sleep(time.Second * 20)
+			lg.Infoc(ctx, "cron run")
 			return nil
 		}),
 	)
