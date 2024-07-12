@@ -43,15 +43,17 @@ type VkService struct {
 	serviceName string
 	tags        []string
 
-	cmux    cmux.CMux
-	httpLst net.Listener
-	grpcLst net.Listener
+	listener net.Listener
+	cmux     cmux.CMux
+	httpLst  net.Listener
+	grpcLst  net.Listener
 
 	httpCORS    bool
 	httpMux     *mux.Router
 	httpHandler http.Handler
 
 	grpcUI                bool
+	grpcEnable            bool
 	grpcServer            *grpc.Server
 	grpcOptions           []grpc.ServerOption
 	grpcUnaryInterceptors []grpc.UnaryServerInterceptor
@@ -86,6 +88,17 @@ func NewVkService(opts ...ServiceOption) *VkService {
 	return s
 }
 
+func (vs *VkService) GracefulStopListener() {
+	if vs.grpcEnable {
+		vs.httpLst.Close()
+		vs.grpcSelfConn.Close()
+		vs.grpcServer.GracefulStop()
+		vs.grpcLst.Close()
+		vs.cmux.Close()
+	}
+	vs.listener.Close()
+}
+
 func (vs *VkService) notiKill() mountFn {
 	return mountFn{
 		baseMount: baseMount{
@@ -100,6 +113,7 @@ func (vs *VkService) notiKill() mountFn {
 				)
 				select {
 				case sg := <-ch:
+					vs.GracefulStopListener()
 					lg.Infoc(vs.ctx, "Graceful stopped server successfully")
 
 					return errors.Errorf("Signal: %s", sg.String())
@@ -127,8 +141,11 @@ func (vs *VkService) runFinalMount() error {
 				err = mf.fn(ctx)
 			}
 
-			if err != nil && mf.daemon {
-				return err
+			if err != nil {
+				if mf.daemon {
+					return err
+				}
+				return nil
 			}
 			return nil
 		})
@@ -227,7 +244,14 @@ func (vs *VkService) mountWorker(worker *simpleWorker) mountFn {
 		if worker.daemon {
 			c = ctx
 		} else {
-			c = context.TODO()
+			var cancel func()
+			c, cancel = context.WithCancel(context.TODO())
+			go func() {
+				select {
+				case <-ctx.Done():
+					cancel()
+				}
+			}()
 		}
 
 		if worker.isWithName {
@@ -298,6 +322,10 @@ func (vs *VkService) serve(listener net.Listener) error {
 	}
 
 	if len(vs.grpcServersFunc) != 0 {
+		vs.grpcEnable = true
+	}
+
+	if vs.grpcEnable {
 		vs.beginCmux(listener)
 		vs.beginGrpc()
 		vs.mounts = append(vs.mounts, vs.listenHttpServer(vs.httpLst))
@@ -328,6 +356,7 @@ func (vs *VkService) RunWithAddr(addr string) error {
 		return err
 	}
 
+	vs.listener = lis
 	return vs.serve(lis)
 }
 
