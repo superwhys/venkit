@@ -1,5 +1,5 @@
 testConfig:
-  name: "super"
+  name: "haowen"
   address:
-    - {"city": "shenzhen"}
-    - {"province": "guangdong"}
+    - {"city": "changsha"}
+    - {"province": "hunan"}

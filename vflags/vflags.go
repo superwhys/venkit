@@ -25,7 +25,11 @@ var (
 	debug             BoolGetter
 	config            StringGetter
 	useRemoteConfig   BoolGetter
-	watchRemoteConfig BoolGetter
+	watchConfig       BoolGetter
+	// killWhileChange will kill this service while config change
+	// If used in conjunction with the restart configuration of docker,
+	// the service can be restarted immediately upon configuration change
+	killWhileChange BoolGetter
 )
 
 type VflagOption struct {
@@ -43,13 +47,16 @@ func declareConsulFlags() {
 	shared.UseConsul = Bool("useConsul", true, "Whether to use the consul service center.")
 	shared.ConsulAddr = String("consulAddr", fmt.Sprintf("%v:8500", discover.HostAddress), "Set the conusl addr.")
 	useRemoteConfig = Bool("useRemoteConfig", false, "Set true to use remote config.")
-	watchRemoteConfig = Bool("watchRemoteConfig", false, "Set true to watch change of remote config.")
 }
 
 func declareDefaultFlags(o *VflagOption) {
 	config = StringP("config", "f", defaultConfigFile, "Specify config file. Support json, yaml.")
 	debug = Bool("debug", false, "Whether to enable debug mode.")
 	shared.ServiceName = StringP("service", "s", os.Getenv("VENKIT_SERVICE"), "Set the service name.")
+	watchConfig = Bool("watchConfig", false, "Set true to watch config.")
+	killWhileChange = Bool("killWhenChange", false, `It will kill this service while config change. 
+If used in conjunction with the restart configuration of docker,
+the service can be restarted immediately upon configuration change.`)
 	if o.useConsul {
 		declareConsulFlags()
 	}
@@ -134,6 +141,10 @@ func optionInit() {
 	if shared.GetIsUseConsul() {
 		discover.SetConsulFinderToDefault()
 	}
+
+	if watchConfig() {
+		setStructConfWatch()
+	}
 }
 
 func getServiceNameWithoutTag() string {
@@ -157,7 +168,7 @@ func getServiceTag() string {
 func readConfig(opt *VflagOption) {
 	if opt.useConsul && useRemoteConfig() {
 		path := readConsulConfig()
-		if watchRemoteConfig() {
+		if watchConfig() {
 			go watchCnosulConfigChange(path)
 		}
 		lg.Infoc(lg.Ctx, "Read consul config success. Config=%v", path)

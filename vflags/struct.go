@@ -1,18 +1,21 @@
 package vflags
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"strings"
 	"time"
-	
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
 	"github.com/superwhys/venkit/lg/v2"
 )
 
 var (
 	ErrNotStruct = errors.New("not struct")
+
+	keyStructMap = make(map[string]any)
 )
 
 type HasDefault interface {
@@ -23,30 +26,74 @@ type HasValidator interface {
 	Validate() error
 }
 
+type HasReloader interface {
+	Reload()
+}
+
 func Struct(key string, defaultVal any, usage string) func(out any) error {
 	err := setPFlagRecursively(key, defaultVal)
 	if err != nil {
 		if !errors.Is(err, ErrNotStruct) {
-			lg.Errorf("Bind struct flags error: %v", err)
+			lg.Errorc(lg.Ctx, "Bind struct flags error: %v", err)
 			lg.PanicError(err)
 		}
-		lg.Debugf("it won't display `%v` desciption with not struct default val", key)
+		lg.Debugc(lg.Ctx, "it won't display `%v` desciption with not struct default val", key)
 	}
 	v.SetDefault(key, defaultVal)
 	return func(out any) error {
 		if err := v.UnmarshalKey(key, out); err != nil {
 			return err
 		}
-		
-		if d, ok := out.(HasDefault); ok {
-			d.SetDefault()
+
+		if err := structCheck(out); err != nil {
+			return errors.Wrap(err, "check")
 		}
-		if v, ok := out.(HasValidator); ok {
-			return v.Validate()
-		}
-		
+
+		keyStructMap[key] = out
+
 		return nil
 	}
+}
+
+func structCheck(out any) error {
+	if d, ok := out.(HasDefault); ok {
+		d.SetDefault()
+	}
+	if v, ok := out.(HasValidator); ok {
+		return v.Validate()
+	}
+
+	return nil
+}
+
+func structConfReload() {
+	for key, out := range keyStructMap {
+		if err := v.UnmarshalKey(key, out); err != nil {
+			lg.Errorc(lg.Ctx, "reunmarshal %v error: %v", key, err)
+			continue
+		}
+
+		if err := structCheck(out); err != nil {
+			lg.Errorc(lg.Ctx, "%v check error: %v", key, err)
+			continue
+		}
+
+		if r, ok := out.(HasReloader); ok {
+			r.Reload()
+		}
+	}
+}
+
+func setStructConfWatch() {
+	v.WatchConfig()
+	v.OnConfigChange(func(in fsnotify.Event) {
+		lg.Debugf("local config change")
+		if killWhileChange() {
+			killToRestartServer()
+			return
+		}
+		structConfReload()
+	})
 }
 
 func setPFlag(key string, ptr interface{}) {
@@ -73,7 +120,7 @@ func setPFlagRecursively(prefix string, i interface{}) error {
 		}
 		usage := field.Tag.Get("usage")
 		name = prefix + "." + name
-		
+
 		switch vf.Field(i).Kind() {
 		case reflect.String:
 			setPFlag(name, pflag.String(name, vf.Field(i).String(), usage))
@@ -114,7 +161,7 @@ func setPFlagRecursively(prefix string, i interface{}) error {
 			return fmt.Errorf("unsupport kind of field %s %s", field.Name, vf.Field(i).Kind())
 		}
 	}
-	
+
 	return nil
 }
 
