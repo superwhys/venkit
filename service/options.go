@@ -2,12 +2,14 @@ package service
 
 import (
 	"strings"
-	
+
 	gwRuntime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/superwhys/venkit/lg/v2"
 	"google.golang.org/grpc"
 )
 
+// WithServiceName set the name of VkService
+// if you set use consul in vflags, it will register the service with consul using only that name,
 func WithServiceName(name string) ServiceOption {
 	return func(vs *VkService) {
 		segs := strings.SplitN(name, ":", 2)
