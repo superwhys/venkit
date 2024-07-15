@@ -21,7 +21,7 @@ require (
 	github.com/spf13/viper v1.20.0-alpha.4
 	github.com/spf13/viper/remote v1.20.0-alpha.4
 	github.com/stretchr/testify v1.9.0
-	github.com/superwhys/venkit/lg/v2 v2.2.10
+	github.com/superwhys/venkit/lg/v2 v2.2.11
 	golang.org/x/sync v0.7.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240624140628-dc46fd24d27d
 	google.golang.org/grpc v1.65.0
