@@ -12,7 +12,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/superwhys/venkit/lg/v2 v2.2.10
 	github.com/superwhys/venkit/slices/v2 v2.2.0
-	github.com/superwhys/venkit/v2 v2.2.11
+	github.com/superwhys/venkit/v2 v2.2.12
 )
 
 require (
