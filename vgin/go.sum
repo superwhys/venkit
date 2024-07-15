@@ -248,12 +248,12 @@ github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-github.com/superwhys/venkit/lg/v2 v2.2.10 h1:TVkctzV7eNdI6sm6ROjnMXWGOIWTwuWhWei2ehpJpmw=
-github.com/superwhys/venkit/lg/v2 v2.2.10/go.mod h1:QcDKOcsYyfKMzOvfIRLgRUP3aRGcIRRHCt+ueteJSec=
+github.com/superwhys/venkit/lg/v2 v2.2.11 h1:SSHOV48lTaO9NgY0PuBvgF7oZD+0Uw0OWVHoRXd5+Zk=
+github.com/superwhys/venkit/lg/v2 v2.2.11/go.mod h1:oPHS55iA/iLWaR7vrWcpOU+3gv3+1EnCOke7f9j7El8=
 github.com/superwhys/venkit/slices/v2 v2.2.0 h1:K2LYO5ULS6+UoC5uKk0rL2HDpVLreH6ji4HsLVTOdwI=
 github.com/superwhys/venkit/slices/v2 v2.2.0/go.mod h1:k1gIqaHRpz8JgnKQid9GZjGe2KjSGnOLpDr8N97H+Uk=
-github.com/superwhys/venkit/v2 v2.2.12 h1:2E8i6GS95n/nYvSKrMeQwINKFlqp9h9sbBhXRNtPCp0=
-github.com/superwhys/venkit/v2 v2.2.12/go.mod h1:mLf7bNof2k+iIjWYSI/QCN9rM84nYP415Q4Vqo96QD8=
+github.com/superwhys/venkit/v2 v2.2.13 h1:2bZYGyRgCksNCEFENgYUuAkzfQ3EePqC0pB43cYcu5c=
+github.com/superwhys/venkit/v2 v2.2.13/go.mod h1:vjVPYLrAeMFJw0ApItod1c8TpxvhUiDBN25aQwvSZd8=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=

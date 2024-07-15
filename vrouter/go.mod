@@ -6,7 +6,7 @@ require (
 	github.com/fatih/color v1.17.0
 	github.com/gorilla/mux v1.8.1
 	github.com/pkg/errors v0.9.1
-	github.com/superwhys/venkit/lg/v2 v2.2.10
+	github.com/superwhys/venkit/lg/v2 v2.2.11
 )
 
 require (
