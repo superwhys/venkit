@@ -10,7 +10,7 @@ require (
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
-	github.com/superwhys/venkit/lg/v2 v2.2.10
+	github.com/superwhys/venkit/lg/v2 v2.2.11
 	github.com/superwhys/venkit/slices/v2 v2.2.0
 	github.com/superwhys/venkit/v2 v2.2.12
 )
