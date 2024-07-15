@@ -3,6 +3,7 @@ module github.com/superwhys/venkit/v2
 go 1.22.0
 
 require (
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/fullstorydev/grpcui v1.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-sql-driver/mysql v1.8.1
@@ -20,7 +21,7 @@ require (
 	github.com/spf13/viper v1.20.0-alpha.4
 	github.com/spf13/viper/remote v1.20.0-alpha.4
 	github.com/stretchr/testify v1.9.0
-	github.com/superwhys/venkit/lg/v2 v2.2.6
+	github.com/superwhys/venkit/lg/v2 v2.2.10
 	golang.org/x/sync v0.7.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240624140628-dc46fd24d27d
 	google.golang.org/grpc v1.65.0
@@ -53,7 +54,6 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.0.4 // indirect
 	github.com/fatih/color v1.17.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fullstorydev/grpcurl v1.9.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.4 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
