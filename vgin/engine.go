@@ -10,7 +10,6 @@ import (
 	"github.com/fatih/color"
 	"github.com/gin-gonic/gin"
 	"github.com/superwhys/venkit/lg/v2"
-	"github.com/superwhys/venkit/vgin/v2/middlewares"
 )
 
 var (
@@ -40,7 +39,7 @@ func NewGinEngine(mds ...gin.HandlerFunc) *gin.Engine {
 	}
 	
 	engine.MaxMultipartMemory = 100 << 20
-	engine.Use(middlewares.LoggerMiddleware(), gin.Recovery())
+	engine.Use(LoggerMiddleware(), gin.Recovery())
 	engine.Use(mds...)
 	
 	return engine
