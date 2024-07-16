@@ -101,7 +101,10 @@ func (sl *Logger) EnableLogToFile(logConf *common.LogConfig) {
 		debugMode = true
 	}
 
-	sl.Logger = slog.New(slog.NewJSONHandler(jackLogger, nil))
+	lv := &slog.LevelVar{}
+	slogOpts := &slog.HandlerOptions{Level: lv}
+	sl.lv = lv
+	sl.Logger = slog.New(slog.NewJSONHandler(jackLogger, slogOpts))
 	if debugMode {
 		sl.EnableDebug()
 	}
