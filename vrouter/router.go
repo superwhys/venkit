@@ -2,12 +2,10 @@ package vrouter
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/gorilla/mux"
 	"github.com/superwhys/venkit/lg/v2"
 )
@@ -196,6 +194,5 @@ func (v *Vrouter) debugPrintRoute(method string, route *mux.Route, handler Handl
 	if err != nil {
 		lg.Error("get iRoute url error", "err", err, "handler", handlerName)
 	}
-	routerMsg := color.MagentaString(fmt.Sprintf("Method=%-6s Router=%-26s Handler=%s", method, url, handlerName))
-	lg.Info(routerMsg)
+	lg.Infof("Method=%-6s Router=%-26s Handler=%s", method, url, handlerName)
 }
